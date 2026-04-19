@@ -34,7 +34,7 @@ import numpy as np
 # Make the package importable when run from the repo root
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from topoopt import ElasticityProblem, HelmholtzFilter, SIMPOptimizer
+from topoopt import ElasticityProblem, HelmholtzFilter, SIMPOptimizer, OptimizationRecorder
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,10 +108,8 @@ def main() -> None:
 
     t0 = time.perf_counter()
 
-    def callback(it: int, C: float, vol: float, rho: np.ndarray) -> None:
-        print(f"  Iter {it:4d} | C = {C:10.4f} | vol = {vol:.4f}")
-
-    result = opt.optimize(fem_solve, callback=callback)
+    recorder = OptimizationRecorder(nx=ny, ny=nx, out_dir="results")
+    result = opt.optimize(fem_solve, callback=recorder.callback)
 
     elapsed = time.perf_counter() - t0
 
@@ -124,52 +122,15 @@ def main() -> None:
     print(f"  Wall time   : {elapsed:.1f} s")
     print("=" * 60)
 
-    # --- Visualise ----------------------------------------------------------
+    # --- Save PNGs ----------------------------------------------------------
     if not args.no_plot:
-        _plot_density(result.densities, ny, nx, result.compliance_history)
+        recorder.save_all(
+            final_rho=result.densities,
+            final_C=result.compliance_history[-1],
+        )
 
     if args.save_vtk:
         _save_vtk(fem_prob, result.densities)
-
-
-def _plot_density(
-    rho: np.ndarray, nx: int, ny: int, compliance_history: list[float]
-) -> None:
-    """Plot the optimized density and convergence history."""
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print("matplotlib not available — skipping plot")
-        return
-
-    # dolfinx DG0 on a quad mesh numbers cells row-by-row (y then x)
-    rho_grid = rho.reshape((ny, nx))
-
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4))
-
-    im = axes[0].imshow(
-        rho_grid.T,
-        origin="lower",
-        cmap="gray_r",
-        vmin=0, vmax=1,
-        aspect="equal",
-    )
-    axes[0].set_title("Optimized Density (black = solid)")
-    axes[0].set_xlabel("x elements")
-    axes[0].set_ylabel("y elements")
-    plt.colorbar(im, ax=axes[0], label="ρ")
-
-    axes[1].semilogy(compliance_history, "b-o", markersize=3)
-    axes[1].set_xlabel("Iteration")
-    axes[1].set_ylabel("Compliance C")
-    axes[1].set_title("Convergence History")
-    axes[1].grid(True, which="both", alpha=0.4)
-
-    plt.tight_layout()
-    out = Path("cantilever_result.png")
-    plt.savefig(out, dpi=150)
-    print(f"  Plot saved  : {out.resolve()}")
-    plt.show()
 
 
 def _save_vtk(fem_prob: ElasticityProblem, rho: np.ndarray) -> None:
