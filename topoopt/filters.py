@@ -4,212 +4,168 @@ Density filters for topology optimization.
 Filtering regularises the problem, prevents checkerboard patterns, and
 introduces a minimum length-scale.
 
-Two approaches are provided:
+**ConeFilter** (default)
+    Classical weighted-average filter from Sigmund (2001) and Andreassen (2011).
+    For each element e:
 
-1. **HelmholtzFilter** — PDE-based (Lazarov & Sigmund 2016).
-   Solves:  -r² Δρ̃ + ρ̃ = ρ   with homogeneous Neumann BC.
-   Uses a CG1 space internally (DG0 has zero element-interior gradient).
-   The filter radius r is related to the physical radius R by r = R / (2√3).
+        rho_tilde_e = (sum_f w_ef * rho_f) / (sum_f w_ef)
+        w_ef = max(0, r_min - dist(centroid_e, centroid_f))
 
-2. **ProjectionFilter** — smooth Heaviside projection applied on top of the
-   Helmholtz filter (Wang, Lazarov & Sigmund 2011).
-   β controls sharpness; β→∞ recovers crisp 0/1 designs.
+    Implemented as sparse matrix-vector products; the adjoint M^T is EXACT
+    (not an approximation), which avoids gradient errors near boundaries.
+
+    Requires r_min >= ~2 * h_element for effective regularization.
+
+**ProjectionFilter**
+    Smooth Heaviside projection applied on top of a ConeFilter
+    (Wang, Lazarov & Sigmund 2011). β controls sharpness; doubling β
+    periodically drives the design toward crisp 0/1.
 """
 
 from __future__ import annotations
 
 import numpy as np
 from dolfinx import fem
-from dolfinx.fem import functionspace
-from dolfinx.fem.petsc import (
-    assemble_matrix,
-    assemble_vector,
-    create_vector,
-    LinearProblem,
-)
 import ufl
-from petsc4py import PETSc
-from mpi4py import MPI
+
+# scipy is available in dolfinx_complex environment
+import scipy.sparse as sp
+from scipy.spatial import cKDTree
 
 
-class HelmholtzFilter:
+class ConeFilter:
     """
-    PDE-based density filter.
-
-    The filter PDE is solved on a CG1 space (continuous piecewise-linear)
-    so that the Laplacian couples neighbouring elements.  The DG0 input is
-    used directly as the source term; the CG1 filtered field is then
-    projected back to DG0.
-
-    The stiffness matrix is assembled once and factorised (MUMPS LU); only
-    the RHS changes each iteration, so the solve is cheap.
+    Weighted-average (cone kernel) density filter.
 
     Parameters
     ----------
     DG0 :
         DG0 function space already built on the mesh.
     r_min :
-        Physical filter radius R.  Converted to PDE radius r = R / (2√3).
+        Filter radius in the same physical units as the mesh.
+        Rule of thumb: r_min >= 2 * h_element for effective regularization.
     """
 
     def __init__(self, DG0: fem.FunctionSpaceBase, r_min: float) -> None:
+        self.r_min = r_min
         self.DG0 = DG0
-        self.r = r_min / (2.0 * np.sqrt(3.0))
+
+        centroids = self._centroids(DG0)
+        self.centroids = centroids   # (n, 2) physical coords in dolfinx DOF order
+        n = len(centroids)
+
+        # Build sparse filter matrix H (cone kernel, symmetric in distance)
+        tree = cKDTree(centroids)
+        pairs = tree.query_pairs(r_min, output_type="ndarray")  # upper-triangle pairs
+
+        rows, cols, vals = [], [], []
+        # Self-entries (every element is within r_min of itself)
+        for i in range(n):
+            rows.append(i); cols.append(i); vals.append(r_min)
+
+        # Cross-entries (symmetric: H_ij = H_ji)
+        for i, j in pairs:
+            d = np.linalg.norm(centroids[i] - centroids[j])
+            w = r_min - d
+            rows.extend([i, j]); cols.extend([j, i]); vals.extend([w, w])
+
+        H = sp.csr_matrix((vals, (rows, cols)), shape=(n, n), dtype=float)
+
+        # Row sums Hs_i = sum_j H_ij  (larger for interior elements)
+        Hs = np.asarray(H.sum(axis=1)).ravel()
+
+        # Forward filter: M = diag(1/Hs) @ H  →  rho_tilde = M @ rho
+        self._M = sp.diags(1.0 / Hs) @ H  # shape (n, n)
+
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _centroids(DG0: fem.FunctionSpaceBase) -> np.ndarray:
+        """Return element centroids as (n, 2) array using DG0 interpolation."""
         domain = DG0.mesh
+        x = ufl.SpatialCoordinate(domain)
+        pts = DG0.element.interpolation_points()
 
-        # CG1 scalar space for the filtered field
-        self._CG1 = functionspace(domain, ("Lagrange", 1))
-
-        phi = ufl.TestFunction(self._CG1)
-        psi = ufl.TrialFunction(self._CG1)
-        r = self.r
-
-        # Bilinear form: -r² Δρ̃ + ρ̃ = ρ  →  a(ρ̃, φ) = L(φ)
-        a_ufl = (r**2 * ufl.dot(ufl.grad(psi), ufl.grad(phi)) + psi * phi) * ufl.dx
-
-        # Source function lives in DG0; used in the RHS each call
-        self._rho_in = fem.Function(DG0, name="rho_unfiltered")
-        L_ufl = self._rho_in * phi * ufl.dx
-
-        # Pre-compile and assemble stiffness matrix (constant)
-        self._a_form = fem.form(a_ufl)
-        self._A = assemble_matrix(self._a_form)
-        self._A.assemble()
-
-        self._L_form = fem.form(L_ufl)
-        self._b = create_vector(self._L_form)
-
-        # Solution vector (CG1)
-        self._x_cg1 = self._A.createVecRight()
-
-        # Factorised KSP — reused across all iterations
-        self._ksp = PETSc.KSP().create(MPI.COMM_WORLD)
-        self._ksp.setOperators(self._A)
-        self._ksp.setType("preonly")
-        pc = self._ksp.getPC()
-        pc.setType("lu")
-        pc.setFactorSolverType("mumps")
-        self._ksp.setUp()
-
-        # Pre-built L2 projection from CG1 → DG0
-        self._cg1_fn = fem.Function(self._CG1, name="rho_filtered_cg1")
-        self._dg0_out = fem.Function(DG0, name="rho_filtered")
-        phi0 = ufl.TestFunction(DG0)
-        psi0 = ufl.TrialFunction(DG0)
-        # DG0 mass matrix (diagonal)
-        self._proj_a = fem.form(psi0 * phi0 * ufl.dx)
-        self._proj_L = fem.form(self._cg1_fn * phi0 * ufl.dx)
-        self._proj_A = assemble_matrix(self._proj_a)
-        self._proj_A.assemble()
-        self._proj_b = create_vector(self._proj_L)
-        self._proj_x = self._proj_A.createVecRight()
-
-        self._proj_ksp = PETSc.KSP().create(MPI.COMM_WORLD)
-        self._proj_ksp.setOperators(self._proj_A)
-        self._proj_ksp.setType("preonly")
-        self._proj_ksp.getPC().setType("jacobi")  # diagonal mass matrix
-        self._proj_ksp.setUp()
+        cx = fem.Function(DG0)
+        cy = fem.Function(DG0)
+        cx.interpolate(fem.Expression(x[0], pts))
+        cy.interpolate(fem.Expression(x[1], pts))
+        return np.column_stack([cx.x.array, cy.x.array])
 
     # ------------------------------------------------------------------
 
     def apply(self, rho: np.ndarray) -> np.ndarray:
         """
-        Filter DG0 density field rho → DG0 filtered field rho_tilde.
+        Filter density field rho → rho_tilde.
 
         Parameters
         ----------
         rho : np.ndarray
-            Unfiltered element densities.
+            Unfiltered element densities (length = number of cells).
 
         Returns
         -------
         rho_tilde : np.ndarray
-            Filtered densities (DG0).
+            Filtered densities.
         """
-        # 1. Load source
-        self._rho_in.x.array[:] = rho
-        self._rho_in.x.scatter_forward()
-
-        # 2. Assemble and solve Helmholtz PDE on CG1
-        with self._b.localForm() as loc:
-            loc.set(0.0)
-        assemble_vector(self._b, self._L_form)
-        self._b.ghostUpdate(addv=PETSc.InsertMode.ADD, mode=PETSc.ScatterMode.REVERSE)
-        self._ksp.solve(self._b, self._x_cg1)
-
-        # 3. L2-project CG1 solution → DG0
-        self._cg1_fn.x.array[:] = self._x_cg1.array
-        self._cg1_fn.x.scatter_forward()
-
-        with self._proj_b.localForm() as loc:
-            loc.set(0.0)
-        assemble_vector(self._proj_b, self._proj_L)
-        self._proj_b.ghostUpdate(
-            addv=PETSc.InsertMode.ADD, mode=PETSc.ScatterMode.REVERSE
-        )
-        self._proj_ksp.solve(self._proj_b, self._proj_x)
-
-        return self._proj_x.array.copy()
-
-    # ------------------------------------------------------------------
+        return self._M @ rho
 
     def sensitivity_chain(
         self, drho_tilde: np.ndarray, rho: np.ndarray
     ) -> np.ndarray:
         """
-        Back-propagate sensitivity through the filter via the adjoint.
+        Back-propagate sensitivity through the filter (exact adjoint).
 
-        The combined filter F = P_{DG0} ∘ F_{CG1} is self-adjoint in the
-        sense that the adjoint solve uses the same system matrices.
+        dC/drho = M^T @ dC/drho_tilde
+
+        M is NOT symmetric (Hs_i varies near boundaries), so M^T ≠ M.
+        Using M^T is exact; using M (forward) would bias boundary gradients.
 
         Parameters
         ----------
         drho_tilde : np.ndarray
-            dC/d(rho_tilde) in DG0.
+            dC/d(rho_tilde) — sensitivity w.r.t. filtered density.
         rho : np.ndarray
             Current unfiltered density (unused; kept for API consistency).
 
         Returns
         -------
         drho : np.ndarray
-            dC/drho in DG0.
+            dC/drho — sensitivity w.r.t. unfiltered density.
         """
-        # Adjoint of (DG0-mass)^{-1} ∘ (CG1→DG0 coupling) ∘ (CG1-Helmholtz)^{-1}
-        # ∘ (DG0→CG1 coupling) ∘ (DG0-mass)^{-1}  ∘ drho_tilde
-        # Since all operators are symmetric this reduces to apply().
-        return self.apply(drho_tilde)
+        return self._M.T @ drho_tilde
 
 
 class ProjectionFilter:
     """
-    Smooth Heaviside projection applied after Helmholtz filtering.
+    Smooth Heaviside projection applied after a ConeFilter.
 
     rho_bar = [tanh(β η) + tanh(β (rho_tilde − η))]
               / [tanh(β η) + tanh(β (1 − η))]
 
     Parameters
     ----------
-    helmholtz :
-        A configured HelmholtzFilter instance.
+    cone :
+        A configured ConeFilter instance.
     beta :
-        Sharpness parameter.  Start at 1–2 and double periodically.
+        Sharpness parameter.  Start at 1 and double every ~50 iterations.
     eta :
         Threshold (typically 0.5).
     """
 
     def __init__(
         self,
-        helmholtz: HelmholtzFilter,
+        cone: ConeFilter,
         beta: float = 1.0,
         eta: float = 0.5,
     ) -> None:
-        self.helmholtz = helmholtz
+        self.cone = cone
         self.beta = beta
         self.eta = eta
 
     def apply(self, rho: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Filter then project.  Returns (rho_bar, rho_tilde)."""
-        rho_tilde = self.helmholtz.apply(rho)
+        rho_tilde = self.cone.apply(rho)
         rho_bar = self._project(rho_tilde)
         return rho_bar, rho_tilde
 
@@ -227,6 +183,12 @@ class ProjectionFilter:
     def sensitivity_chain(
         self, drho_bar: np.ndarray, rho_tilde: np.ndarray, rho: np.ndarray
     ) -> np.ndarray:
-        """Chain rule through projection and Helmholtz filter."""
+        """Chain rule through projection and cone filter."""
         drho_tilde = drho_bar * self._dproject(rho_tilde)
-        return self.helmholtz.sensitivity_chain(drho_tilde, rho)
+        return self.cone.sensitivity_chain(drho_tilde, rho)
+
+
+# ---------------------------------------------------------------------------
+# Backward-compatibility alias
+# ---------------------------------------------------------------------------
+HelmholtzFilter = ConeFilter  # old name kept for existing test imports

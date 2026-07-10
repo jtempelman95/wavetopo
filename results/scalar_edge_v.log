@@ -1,0 +1,3 @@
+domain 120x175, nnode=21296, omega=2.264
+  T topo=1.165e-01  iso=2.141e-01  ratio=0.5x
+saved results/scalar_edge_straight.png

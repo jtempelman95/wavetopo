@@ -1,0 +1,23 @@
+mesh 140x105=14700  M=130 support pts  omega=42.0
+baseline focus energy J0=3.7414e-01
+[  0] focus energy J=3.7414e-01  gain=1.00x
+[  5] focus energy J=3.7671e+00  gain=10.07x
+[ 10] focus energy J=4.7911e+00  gain=12.81x
+[ 15] focus energy J=6.1064e+00  gain=16.32x
+[ 20] focus energy J=6.6730e+00  gain=17.84x
+[ 25] focus energy J=7.1027e+00  gain=18.98x
+[ 30] focus energy J=7.3681e+00  gain=19.69x
+[ 35] focus energy J=7.5037e+00  gain=20.06x
+[ 40] focus energy J=7.5594e+00  gain=20.20x
+[ 45] focus energy J=7.5849e+00  gain=20.27x
+[ 50] focus energy J=7.6707e+00  gain=20.50x
+[ 55] focus energy J=7.7010e+00  gain=20.58x
+[ 60] focus energy J=7.7080e+00  gain=20.60x
+[ 65] focus energy J=7.7099e+00  gain=20.61x
+[ 70] focus energy J=7.7084e+00  gain=20.60x
+[ 75] focus energy J=7.7101e+00  gain=20.61x
+[ 80] focus energy J=7.7086e+00  gain=20.60x
+[ 85] focus energy J=7.7103e+00  gain=20.61x
+[ 89] focus energy J=7.7104e+00  gain=20.61x
+optimized in 116s  best gain=20.61x
+saved results/wave_lens.png

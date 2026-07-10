@@ -1,0 +1,3 @@
+ribbon 3281 nodes, 6144 tris, reduced 3072; fiber-frac 0.312
+bands entering gap: 3; interface-localized in-gap branches: 3
+saved results/valley_ribbon.png

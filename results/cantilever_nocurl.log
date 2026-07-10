@@ -1,0 +1,75 @@
+mesh 240x150 = 36000 elems, M=160 support pts, Fourier fit err=8.5e-16, dx=0.0100 wavelength d=0.06 (6.0 elems)
+[outer   0] f=3.0136 |zeta|max= 6.651 vg=-0.0409 dW=4.55e-01 mu=6.2e+00 vfg=-0.0165
+[outer   1] f=2.9476 |zeta|max= 6.740 vg=-0.1326 dW=3.29e-01 mu=7.8e+00 vfg=-0.0734
+[outer   2] f=2.8332 |zeta|max= 5.932 vg=-0.1717 dW=3.23e-01 mu=9.8e+00 vfg=-0.0835
+[outer   3] f=2.1159 |zeta|max= 7.387 vg=-0.1954 dW=1.72e-01 mu=1.2e+01 vfg=-0.0977
+[outer   4] f=2.0914 |zeta|max= 8.256 vg=-0.2118 dW=1.33e-01 mu=1.5e+01 vfg=-0.1049
+[outer   5] f=1.5094 |zeta|max= 9.235 vg=-0.2175 dW=1.21e-01 mu=1.9e+01 vfg=-0.1094
+[outer   6] f=1.3893 |zeta|max= 9.570 vg=-0.2027 dW=7.59e-02 mu=2.4e+01 vfg=-0.1044
+[outer   7] f=1.1177 |zeta|max= 8.695 vg=-0.1788 dW=4.60e-02 mu=3.0e+01 vfg=-0.0908
+[outer   8] f=0.8834 |zeta|max= 9.035 vg=-0.1497 dW=4.10e-02 mu=3.7e+01 vfg=-0.0767
+[outer   9] f=0.8218 |zeta|max= 9.325 vg=-0.1131 dW=3.80e-02 mu=4.7e+01 vfg=-0.0524
+[outer  10] f=0.7347 |zeta|max= 9.049 vg=-0.0544 dW=5.94e-02 mu=5.8e+01 vfg=-0.0315
+[outer  11] f=0.6936 |zeta|max= 8.981 vg=+0.0141 dW=7.08e-02 mu=7.3e+01 vfg=+0.0094
+[outer  12] f=0.6074 |zeta|max= 8.685 vg=-0.0042 dW=8.19e-02 mu=9.1e+01 vfg=-0.0038
+[outer  13] f=0.6015 |zeta|max= 8.595 vg=+0.0020 dW=1.22e-01 mu=1.1e+02 vfg=+0.0017
+[outer  14] f=0.5710 |zeta|max= 8.282 vg=-0.0010 dW=1.05e-01 mu=1.4e+02 vfg=-0.0015
+[outer  15] f=0.5981 |zeta|max= 8.386 vg=+0.0006 dW=1.35e-01 mu=1.8e+02 vfg=-0.0011
+[outer  16] f=0.5578 |zeta|max= 8.526 vg=+0.0017 dW=5.33e-02 mu=2.2e+02 vfg=+0.0038
+[outer  17] f=0.5959 |zeta|max= 9.115 vg=-0.0019 dW=5.48e-02 mu=2.8e+02 vfg=+0.0012
+[outer  18] f=0.5073 |zeta|max= 9.227 vg=-0.0008 dW=3.22e-02 mu=3.5e+02 vfg=-0.0002
+[outer  19] f=0.5803 |zeta|max= 9.057 vg=-0.0004 dW=5.14e-02 mu=4.3e+02 vfg=+0.0013
+[outer  20] f=0.4640 |zeta|max= 9.436 vg=-0.0003 dW=6.71e-02 mu=5.4e+02 vfg=+0.0022
+[outer  21] f=0.5117 |zeta|max= 9.030 vg=-0.0001 dW=8.66e-02 mu=6.8e+02 vfg=+0.0009
+[outer  22] f=0.4575 |zeta|max= 9.232 vg=-0.0044 dW=6.76e-02 mu=8.5e+02 vfg=-0.0002
+[outer  23] f=0.4906 |zeta|max= 9.072 vg=-0.0006 dW=4.91e-02 mu=1.1e+03 vfg=-0.0005
+[outer  24] f=0.5029 |zeta|max= 8.795 vg=-0.0009 dW=3.74e-02 mu=1.3e+03 vfg=+0.0010
+[outer  25] f=0.4658 |zeta|max= 9.055 vg=-0.0028 dW=6.51e-02 mu=1.7e+03 vfg=-0.0007
+[outer  26] f=0.4784 |zeta|max= 9.105 vg=-0.0019 dW=6.84e-02 mu=2.1e+03 vfg=+0.0005
+[outer  27] f=0.4398 |zeta|max= 9.123 vg=-0.0022 dW=5.47e-02 mu=2.6e+03 vfg=+0.0000
+[outer  28] f=0.4970 |zeta|max= 8.992 vg=-0.0016 dW=5.63e-02 mu=3.2e+03 vfg=+0.0010
+[outer  29] f=0.4668 |zeta|max= 8.842 vg=-0.0042 dW=3.00e-02 mu=4.0e+03 vfg=-0.0025
+[outer  30] f=0.4589 |zeta|max= 8.831 vg=+0.0003 dW=3.05e-02 mu=5.0e+03 vfg=-0.0033
+[outer  31] f=0.5047 |zeta|max= 8.890 vg=-0.0091 dW=2.87e-02 mu=6.3e+03 vfg=-0.0077
+[outer  32] f=0.5065 |zeta|max= 8.795 vg=-0.0005 dW=3.53e-02 mu=7.9e+03 vfg=-0.0028
+[outer  33] f=0.4905 |zeta|max= 8.831 vg=-0.0030 dW=1.76e-02 mu=9.9e+03 vfg=-0.0017
+[outer  34] f=0.5167 |zeta|max= 9.337 vg=-0.0026 dW=5.73e-02 mu=1.2e+04 vfg=-0.0012
+[outer  35] f=0.5125 |zeta|max=10.004 vg=-0.0000 dW=2.96e-02 mu=1.5e+04 vfg=-0.0005
+[outer  36] f=0.6036 |zeta|max=10.411 vg=-0.0031 dW=6.21e-02 mu=1.9e+04 vfg=-0.0019
+[outer  37] f=0.5104 |zeta|max=10.218 vg=-0.0003 dW=8.14e-02 mu=2.4e+04 vfg=-0.0018
+[outer  38] f=0.5868 |zeta|max=10.001 vg=-0.0077 dW=6.31e-02 mu=3.0e+04 vfg=-0.0019
+[outer  39] f=0.4475 |zeta|max= 9.689 vg=-0.0046 dW=4.39e-02 mu=3.8e+04 vfg=-0.0015
+[outer  40] f=0.4297 |zeta|max= 9.761 vg=-0.0027 dW=3.60e-02 mu=4.7e+04 vfg=-0.0006
+[outer  41] f=0.4835 |zeta|max= 9.286 vg=-0.0029 dW=1.58e-01 mu=5.9e+04 vfg=+0.0039
+[outer  42] f=0.4855 |zeta|max= 9.073 vg=-0.0103 dW=6.53e-02 mu=7.3e+04 vfg=-0.0011
+[outer  43] f=0.4780 |zeta|max= 8.972 vg=-0.0105 dW=3.21e-02 mu=9.2e+04 vfg=-0.0087
+[outer  44] f=0.5120 |zeta|max= 9.328 vg=-0.0083 dW=6.01e-02 mu=1.1e+05 vfg=-0.0025
+[outer  45] f=0.5729 |zeta|max= 9.793 vg=-0.0060 dW=5.87e-02 mu=1.4e+05 vfg=-0.0039
+[outer  46] f=0.5140 |zeta|max= 9.648 vg=-0.0083 dW=7.91e-02 mu=1.8e+05 vfg=-0.0095
+[outer  47] f=0.4634 |zeta|max= 9.752 vg=-0.0076 dW=4.03e-02 mu=2.2e+05 vfg=+0.0042
+[outer  48] f=0.4761 |zeta|max= 9.725 vg=-0.0117 dW=2.62e-02 mu=2.8e+05 vfg=+0.0030
+[outer  49] f=0.6901 |zeta|max= 9.245 vg=-0.0139 dW=1.45e-01 mu=3.5e+05 vfg=-0.0059
+[outer  50] f=0.5639 |zeta|max= 9.051 vg=-0.0030 dW=4.26e-02 mu=4.4e+05 vfg=-0.0039
+[outer  51] f=0.4999 |zeta|max= 9.013 vg=-0.0058 dW=5.24e-02 mu=5.5e+05 vfg=-0.0041
+[outer  52] f=0.4617 |zeta|max= 8.888 vg=-0.0070 dW=1.28e-01 mu=6.8e+05 vfg=+0.0027
+[outer  53] f=0.5634 |zeta|max= 9.041 vg=-0.0070 dW=5.91e-02 mu=8.6e+05 vfg=-0.0026
+[outer  54] f=0.5975 |zeta|max=10.869 vg=+0.0010 dW=1.64e-01 mu=1.1e+06 vfg=+0.0016
+[outer  55] f=0.5934 |zeta|max=10.666 vg=-0.0099 dW=6.49e-02 mu=1.3e+06 vfg=-0.0018
+[outer  56] f=0.5298 |zeta|max=10.478 vg=-0.0089 dW=4.41e-02 mu=1.7e+06 vfg=-0.0026
+[outer  57] f=0.5331 |zeta|max=10.514 vg=-0.0009 dW=3.41e-02 mu=2.1e+06 vfg=+0.0001
+[outer  58] f=0.4886 |zeta|max=10.470 vg=-0.0021 dW=7.78e-02 mu=2.6e+06 vfg=-0.0026
+[outer  59] f=0.6940 |zeta|max=11.009 vg=-0.0023 dW=2.12e-01 mu=3.3e+06 vfg=-0.0007
+[outer  60] f=0.7931 |zeta|max=10.772 vg=-0.0018 dW=9.96e-02 mu=4.1e+06 vfg=-0.0011
+[outer  61] f=0.6645 |zeta|max=10.517 vg=-0.0079 dW=7.57e-02 mu=5.1e+06 vfg=-0.0038
+[outer  62] f=0.7000 |zeta|max=10.748 vg=+0.0013 dW=3.60e-02 mu=6.4e+06 vfg=+0.0001
+[outer  63] f=0.6350 |zeta|max=10.263 vg=-0.0090 dW=6.49e-02 mu=8.0e+06 vfg=-0.0069
+[outer  64] f=0.5987 |zeta|max=10.046 vg=-0.0089 dW=4.38e-02 mu=1.0e+07 vfg=-0.0055
+[outer  65] f=0.5090 |zeta|max= 9.604 vg=-0.0064 dW=1.22e-01 mu=1.0e+07 vfg=-0.0045
+[outer  66] f=0.4646 |zeta|max= 9.576 vg=-0.0065 dW=6.90e-02 mu=1.0e+07 vfg=-0.0023
+[outer  67] f=0.4883 |zeta|max= 9.504 vg=-0.0067 dW=7.26e-02 mu=1.0e+07 vfg=-0.0027
+[outer  68] f=0.4736 |zeta|max= 9.436 vg=-0.0069 dW=3.49e-02 mu=1.0e+07 vfg=+0.0024
+[outer  69] f=0.6053 |zeta|max= 9.710 vg=-0.0122 dW=5.55e-02 mu=1.0e+07 vfg=-0.0064
+[outer  70] f=0.5529 |zeta|max= 9.552 vg=-0.0085 dW=6.05e-02 mu=1.0e+07 vfg=-0.0025
+[outer  71] f=0.5837 |zeta|max= 9.290 vg=-0.0073 dW=3.66e-02 mu=1.0e+07 vfg=-0.0032
+[outer  72] f=0.4581 |zeta|max= 9.167 vg=-0.0013 dW=8.03e-02 mu=1.0e+07 vfg=-0.0030
+[outer  73] f=0.4958 |zeta|max= 9.969 vg=-0.0025 dW=6.44e-02 mu=1.0e+07 vfg=+0.0016

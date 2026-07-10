@@ -1,0 +1,3 @@
+mesh 69291 nodes 137600 tris, fiber frac 0.242
+mid-gap T=5.300e-06  in-band T=2.555e+00  ratio=0.0x
+saved results/valley_wg_tri_bent.png

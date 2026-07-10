@@ -1,0 +1,5 @@
+mesh 120x90, 3 freqs [28.0, 38.0, 48.0], M=180
+straight-fiber baseline focus energies: [1.09196 0.20059 0.11301]
+broadband (max-min) gains per freq: [13.8  13.85 13.8 ]  (167s)
+centre-only lens gains across band: [ 0.55 49.45  8.12]
+saved results/wave_lens_multifreq.png

@@ -1,0 +1,24 @@
+initial: gapY=-0.6428  gapX=-0.8964
+[  0] gap_tar=-0.4294 gap_orth=-0.8355 vol=0.500 J=0.4294
+[  5] gap_tar=+0.0242 gap_orth=-0.2632 vol=0.483 J=-0.0022
+[ 10] gap_tar=+1.1487 gap_orth=-0.7510 vol=0.508 J=-1.1435
+[ 15] gap_tar=+1.1490 gap_orth=-0.6008 vol=0.507 J=-1.1447
+[ 20] gap_tar=+1.3469 gap_orth=-0.6204 vol=0.497 J=-1.3463
+[ 25] gap_tar=+1.4108 gap_orth=-0.4761 vol=0.500 J=-1.4108
+[ 30] gap_tar=+1.4228 gap_orth=-0.4792 vol=0.502 J=-1.4224
+[ 35] gap_tar=+1.4280 gap_orth=-0.4155 vol=0.502 J=-1.4277
+[ 40] gap_tar=+1.4335 gap_orth=-0.4391 vol=0.502 J=-1.4332
+[ 45] gap_tar=+1.4317 gap_orth=-0.3840 vol=0.503 J=-1.4309
+[ 50] gap_tar=+1.4357 gap_orth=-0.4214 vol=0.503 J=-1.4350
+[ 55] gap_tar=+1.4322 gap_orth=-0.3767 vol=0.504 J=-1.4310
+[ 60] gap_tar=+1.4364 gap_orth=-0.4161 vol=0.503 J=-1.4355
+[ 65] gap_tar=+1.4326 gap_orth=-0.3724 vol=0.504 J=-1.4311
+[ 70] gap_tar=+1.4369 gap_orth=-0.4126 vol=0.504 J=-1.4358
+[ 75] gap_tar=+1.4328 gap_orth=-0.3694 vol=0.505 J=-1.4312
+[ 80] gap_tar=+1.4373 gap_orth=-0.4101 vol=0.504 J=-1.4361
+[ 85] gap_tar=+1.4330 gap_orth=-0.3672 vol=0.505 J=-1.4313
+[ 89] gap_tar=+1.4331 gap_orth=-0.3664 vol=0.505 J=-1.4314
+optimized in 1059s
+final:   gapY=+1.4319  gapX=-0.4391   (directional ratio gapY/|gapX| favorable)
+periodicity (filtered density) max edge mismatch: L-R=3.44e-03  T-B=1.60e-03
+saved results/bandgap_periodic.png

@@ -1,0 +1,3 @@
+mesh 28919 nodes, 57200 tris, fiber frac 0.325
+mid-gap T=5.916e-02  in-band T=8.947e-02  ratio=0.7x
+saved results/valley_wg_gmsh.png

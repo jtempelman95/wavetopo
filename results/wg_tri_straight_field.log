@@ -1,0 +1,3 @@
+mesh 72070 nodes 143138 tris, fiber frac 0.246
+mid-gap T=8.118e+00  in-band T=5.539e-03  ratio=1465.6x
+saved results/valley_wg_tri_straight.png

@@ -14,6 +14,32 @@ from typing import Sequence
 import numpy as np
 
 
+def _rho_to_grid(
+    rho: np.ndarray,
+    nx: int,
+    ny: int,
+    centroids: np.ndarray | None,
+    lx: float,
+    ly: float,
+) -> np.ndarray:
+    """Map a flat dolfinx DG0 density array to a (ny, nx) grid for imshow.
+
+    dolfinx does NOT use a simple ix*ny+iy ordering — it visits cells along
+    diagonals.  When centroids are supplied the grid is built by computing
+    each cell's (ix, iy) from its physical centroid, which is ordering-agnostic.
+    Without centroids the old reshape heuristic is used as a fallback.
+    """
+    if centroids is not None:
+        hx, hy = lx / nx, ly / ny
+        ix = np.round((centroids[:, 0] - hx / 2) / hx).astype(int)
+        iy = np.round((centroids[:, 1] - hy / 2) / hy).astype(int)
+        grid = np.zeros((ny, nx))
+        grid[iy, ix] = rho
+        return grid
+    # fallback (only correct if dolfinx happens to use ix*ny+iy order)
+    return rho.reshape((nx, ny)).T
+
+
 def density_snapshot(
     rho: np.ndarray,
     nx: int,
@@ -21,6 +47,9 @@ def density_snapshot(
     out_path: str | Path,
     title: str = "",
     cmap: str = "gray_r",
+    centroids: np.ndarray | None = None,
+    lx: float = 1.0,
+    ly: float = 1.0,
 ) -> None:
     """
     Save a single density field as a PNG.
@@ -28,17 +57,17 @@ def density_snapshot(
     Parameters
     ----------
     rho :
-        Flat DG0 density array, length = nx*ny.
-        dolfinx quad mesh numbers cells column-major (x-major for rows,
-        i.e. index = ix*ny + iy), so reshape to (nx, ny) then transpose.
+        Flat DG0 density array, length = nx*ny, in dolfinx DOF order.
     nx, ny :
         Number of elements in x and y directions.
     out_path :
         Output file path (PNG).
-    title :
-        Optional figure title.
-    cmap :
-        Matplotlib colormap (default 'gray_r': black=solid, white=void).
+    centroids :
+        Physical (x, y) centroids in dolfinx DOF order.  When provided the
+        grid is built by centroid lookup, which is correct for any dolfinx
+        cell ordering.  Pass ``filt.centroids`` from the ConeFilter.
+    lx, ly :
+        Physical domain dimensions (needed with centroids).
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -47,8 +76,7 @@ def density_snapshot(
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # dolfinx quad mesh: cell index = ix * ny + iy  (x varies fastest in col)
-    rho_grid = rho.reshape((nx, ny)).T  # shape (ny, nx) for imshow
+    rho_grid = _rho_to_grid(rho, nx, ny, centroids, lx, ly)
 
     # Two panels: continuous density + thresholded (binary) view
     fig, axes = plt.subplots(1, 2, figsize=(13, 4))
@@ -125,6 +153,9 @@ def save_optimization_strip(
     ny: int,
     out_path: str | Path,
     cmap: str = "gray_r",
+    centroids: np.ndarray | None = None,
+    lx: float = 1.0,
+    ly: float = 1.0,
 ) -> None:
     """
     Save a horizontal strip of density snapshots at selected iterations.
@@ -137,6 +168,8 @@ def save_optimization_strip(
         Number of elements in x and y directions.
     out_path :
         Output PNG path.
+    centroids :
+        Physical centroids in dolfinx DOF order (pass ``filt.centroids``).
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -151,7 +184,7 @@ def save_optimization_strip(
         axes = [axes]
 
     for ax, (it, C, rho) in zip(axes, snapshots):
-        rho_grid = rho.reshape((nx, ny)).T
+        rho_grid = _rho_to_grid(rho, nx, ny, centroids, lx, ly)
         # Show thresholded design in the strip for clarity
         ax.imshow((rho_grid >= 0.5).astype(float),
                   origin="lower", cmap=cmap, vmin=0, vmax=1, aspect="equal")
@@ -184,12 +217,18 @@ class OptimizationRecorder:
         ny: int,
         out_dir: str | Path = "results",
         snapshot_iters: list[int] | None = None,
+        centroids: np.ndarray | None = None,
+        lx: float = 1.0,
+        ly: float = 1.0,
     ) -> None:
         self.nx = nx
         self.ny = ny
         self.out_dir = Path(out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.snapshot_iters = snapshot_iters  # None = auto-select
+        self.centroids = centroids
+        self.lx = lx
+        self.ly = ly
         self._compliances: list[float] = []
         self._volumes: list[float] = []
         self._snapshots: list[tuple[int, float, np.ndarray]] = []
@@ -216,6 +255,7 @@ class OptimizationRecorder:
             final_rho, nx, ny,
             self.out_dir / "density_final.png",
             title=f"Final density  C = {final_C:.2f}",
+            centroids=self.centroids, lx=self.lx, ly=self.ly,
         )
         print(f"  Saved: {self.out_dir / 'density_final.png'}")
 
@@ -236,4 +276,5 @@ class OptimizationRecorder:
             save_optimization_strip(
                 raw, nx, ny,
                 self.out_dir / "optimization_strip.png",
+                centroids=self.centroids, lx=self.lx, ly=self.ly,
             )

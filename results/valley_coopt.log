@@ -1,0 +1,17 @@
+initial gap=0.0355 at kyD=0.469
+[  0] gap=0.0355 iso(below/above)=1.019/0.849 vol=0.271 omega=2.673 kyD=0.469
+[  5] gap=0.2117 iso(below/above)=1.000/0.780 vol=0.311 omega=2.783 kyD=0.469
+[ 10] gap=0.2441 iso(below/above)=0.993/0.772 vol=0.269 omega=2.776 kyD=0.479
+[ 15] gap=0.3694 iso(below/above)=0.959/0.767 vol=0.274 omega=2.816 kyD=0.479
+[ 20] gap=0.5411 iso(below/above)=0.908/0.742 vol=0.282 omega=2.906 kyD=1.626
+[ 25] gap=0.6943 iso(below/above)=0.870/0.684 vol=0.296 omega=3.008 kyD=1.626
+[ 30] gap=0.7633 iso(below/above)=0.856/0.644 vol=0.291 omega=3.046 kyD=1.616
+[ 35] gap=0.8195 iso(below/above)=0.851/0.625 vol=0.291 omega=3.085 kyD=0.489
+[ 40] gap=0.8732 iso(below/above)=0.842/0.604 vol=0.294 omega=3.129 kyD=0.489
+[ 45] gap=0.9021 iso(below/above)=0.834/0.614 vol=0.294 omega=3.147 kyD=0.489
+[ 50] gap=0.9246 iso(below/above)=0.833/0.611 vol=0.295 omega=3.165 kyD=0.489
+[ 55] gap=0.9352 iso(below/above)=0.837/0.614 vol=0.295 omega=3.173 kyD=1.606
+[ 59] gap=0.9437 iso(below/above)=0.836/0.606 vol=0.295 omega=3.179 kyD=1.606
+optimized in 177s  best gap=0.9457
+final gap=0.9457  isolation=0.611
+saved results/valley_cooptimized.png

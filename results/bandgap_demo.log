@@ -1,0 +1,25 @@
+initial: gapY=-0.6430  gapX=-0.8965
+[  0] gap_tar=-0.4297 gap_orth=-0.8356 vol=0.500 J=0.4297
+[  5] gap_tar=-0.0482 gap_orth=+0.0208 vol=0.477 J=0.1003
+[ 10] gap_tar=+0.3451 gap_orth=-0.0458 vol=0.496 J=-0.3436
+[ 15] gap_tar=+0.4238 gap_orth=-0.0227 vol=0.499 J=-0.4238
+[ 20] gap_tar=+0.5688 gap_orth=-0.0785 vol=0.497 J=-0.5680
+[ 25] gap_tar=+0.8831 gap_orth=-0.0065 vol=0.501 J=-0.8831
+[ 30] gap_tar=+1.0128 gap_orth=-0.0590 vol=0.505 J=-1.0108
+[ 35] gap_tar=+1.3598 gap_orth=-0.0564 vol=0.506 J=-1.3572
+[ 40] gap_tar=+1.6238 gap_orth=-0.0321 vol=0.516 J=-1.6032
+[ 45] gap_tar=+1.7740 gap_orth=-0.0277 vol=0.514 J=-1.7594
+[ 50] gap_tar=+1.9512 gap_orth=-0.0060 vol=0.524 J=-1.9069
+[ 55] gap_tar=+2.0032 gap_orth=-0.0392 vol=0.519 J=-1.9753
+[ 60] gap_tar=+2.1154 gap_orth=-0.0061 vol=0.524 J=-2.0680
+[ 65] gap_tar=+2.1451 gap_orth=-0.0235 vol=0.522 J=-2.1074
+[ 70] gap_tar=+2.2153 gap_orth=-0.0076 vol=0.526 J=-2.1611
+[ 75] gap_tar=+2.2343 gap_orth=-0.0015 vol=0.523 J=-2.1904
+[ 80] gap_tar=+2.2561 gap_orth=-0.0385 vol=0.524 J=-2.2085
+[ 85] gap_tar=+2.2799 gap_orth=+0.0145 vol=0.525 J=-2.2260
+[ 90] gap_tar=+2.2929 gap_orth=-0.0108 vol=0.524 J=-2.2452
+[ 95] gap_tar=+2.2958 gap_orth=+0.0112 vol=0.522 J=-2.2525
+[ 99] gap_tar=+2.3126 gap_orth=-0.0218 vol=0.523 J=-2.2721
+optimized in 1170s
+final:   gapY=+2.3256  gapX=+0.0130   (directional ratio gapY/|gapX| favorable)
+saved results/bandgap_demo.png

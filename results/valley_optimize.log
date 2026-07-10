@@ -1,0 +1,5 @@
+mesh 336 nodes, 602 tris, vtarget=0.290; initial complete gap (orientation=0 rod) = -0.5403
+  optimize [theta]: best complete valley gap = -0.0821
+  optimize [z    ]: best complete valley gap = -0.0339
+  optimize [both ]: best complete valley gap = +0.2835
+saved results/valley_optimize.png

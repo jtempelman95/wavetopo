@@ -1,0 +1,6 @@
+cell 16x28, omega(mid-gap)=2.954
+domain 144x168=24192 elems, ndof=49010, 15.6 x 18.0
+  topological : transmission(output box) = 2.295e-01
+  isotropic   : transmission(output box) = 2.228e-01
+  -> topological / isotropic transmission = 1.0x
+saved results/valley_edge.png

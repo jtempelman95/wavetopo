@@ -1,0 +1,9 @@
+mesh 26x45  fill fraction=0.270
+min gap between bands (3, 4) = 0.0431 at k=(1.270,0.942)
+  pair 1-2: min gap over BZ = 0.0062
+  pair 2-3: min gap over BZ = 0.0004
+  pair 3-4: min gap over BZ = 0.0431
+  pair 4-5: min gap over BZ = 0.0008
+  pair 5-6: min gap over BZ = 0.0105
+  pair 6-7: min gap over BZ = 0.0001
+saved results/valley_bands.png

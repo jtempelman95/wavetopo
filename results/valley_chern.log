@@ -1,0 +1,5 @@
+phi=+30:  C_K=+1.208  C_K'=-1.208  total Chern=+0.000
+phi=-30:  C_K=-0.410  C_K'=+0.410  total Chern=+0.000
+saved results/valley_berry.png
+
+valley Chern flips: C_K(+φ)=+1.21  C_K(-φ)=-0.41  (ideal ±0.5)

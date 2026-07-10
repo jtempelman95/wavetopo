@@ -1,11 +1,62 @@
 # topoopt
 
-Topology optimization using [FEniCSx](https://fenicsproject.org/) (dolfinx).
+Topology **and fiber-orientation** optimization of continuous-fiber composites,
+for quasi-static design and **elastic wave control**. The fiber *toolpath*
+(orientation field) and structural *topology* (density field) are optimized
+together; only the physics/objective changes between applications.
 
-Implements the classical **SIMP** (Solid Isotropic Material with Penalization)
-method with a **Helmholtz PDE filter** and **Optimality Criteria (OC)** density
-update.  The first example is the canonical **cantilever beam** compliance
-minimization benchmark.
+The wave-control core is pure **numpy/scipy** (no FEniCSx needed) and lives in
+the `topoopt/` package; all sensitivities are adjoint-based and
+finite-difference verified (`tests/test_wave_grad.py`, `tests/test_cfrp_grad.py`).
+
+## Capabilities & how to run
+
+Use the base conda env (`/home/jrt/miniforge3/bin/python3`, numpy/scipy) and set
+`PYTHONPATH=$PWD`. Figures land in `results/`.
+
+| Deliverable | Script | Result |
+|---|---|---|
+| **CFRP validation** (Wong et al. 2026: curvature-constrained cantilever) | `examples/cfrp_reproduce_table3.py` | `results/cfrp_cant_*_clean.png` |
+| **Wave-energy localization** (single-freq lens, 20× focus) | `examples/wave_lens.py` | `results/wave_lens.png` |
+| **Broadband localization** (multi-freq max–min lens) | `examples/wave_lens_multifreq.py` | `results/wave_lens_multifreq.png` |
+| **Elastic cloak** (void + toolpath, 15× less scatter) | `examples/wave_cloak.py` | `results/wave_cloak.png` |
+| **Topological valley waveguide** (triangular-rod, orientation = Dirac mass) | `examples/valley_phase.py`, `examples/valley_ribbon_tri.py`, `examples/valley_waveguide_tri.py` | `results/valley_phase.png`, `valley_ribbon_tri.png`, `valley_wg_tri_straight.png` |
+| **Periodic metamaterials** (Bloch bands, band gaps) | `examples/valley_mass.py`, `examples/bandgap_demo.py` | `results/valley_*.png` |
+
+```bash
+export PYTHONPATH=$PWD
+PY=/home/jrt/miniforge3/bin/python3
+$PY -m tests.test_wave_grad          # verify wave-control gradients
+$PY examples/wave_lens_multifreq.py  # broadband lens (~3 min)
+$PY examples/wave_cloak.py           # elastic cloak (~1 min)
+```
+
+### Paper
+
+`docs/paper/toolpath_wave.tex` — full write-up (method, adjoints, all results,
+honest topology negative result). Build: `cd docs/paper && pdflatex toolpath_wave`.
+
+### Package map
+
+- **Modeling**: `cfrp.py` (anisotropic FE, exact Fourier stiffness, CS-RBF
+  orientation map, wave-projection toolpaths), `scalar.py` (antiplane-shear).
+- **Quasi-static CFRP**: `cfrp_problem.py`, `cfrp_optimizer.py` (MMA + augmented
+  Lagrangian), `cfrp_viz.py`.
+- **Wave control**: `harmonic.py` (`HarmonicLens`, `HarmonicCloak`),
+  `wave_control.py` (`WaveFocus`, single/multi-frequency).
+- **Periodic (Bloch)**: `bloch.py` (bands, FHS Berry curvature, eigen
+  sensitivities), `bandgap_opt.py`, `valley_opt.py`, `rhombic.py`.
+- **Topological valley-Hall**: `honeycomb_mesh.py` (periodic gmsh mesh +
+  `HoneycombBloch`), `valley_cell.py` (triangular-rod cell/ribbon; rod rotation
+  = tunable Dirac mass). Requires `gmsh` (in the base env).
+
+---
+
+## Legacy: SIMP compliance (FEniCSx / dolfinx)
+
+The original module implements classical **SIMP** with a **Helmholtz PDE filter**
+and **Optimality Criteria** density update (canonical cantilever benchmark).
+Requires a FEniCSx environment.
 
 ---
 

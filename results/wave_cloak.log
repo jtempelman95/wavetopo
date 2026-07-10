@@ -1,0 +1,15 @@
+mesh 110x73, 108 active support pts, uncloaked scatter J=1.2274e+00
+[  0] scatter J=1.2274e+00  reduction=1.00x
+[  5] scatter J=1.3402e+00  reduction=0.92x
+[ 10] scatter J=4.8807e-01  reduction=2.51x
+[ 15] scatter J=1.9061e-01  reduction=6.44x
+[ 20] scatter J=1.1838e-01  reduction=10.37x
+[ 25] scatter J=9.5452e-02  reduction=12.86x
+[ 30] scatter J=8.5525e-02  reduction=14.35x
+[ 35] scatter J=8.1126e-02  reduction=15.13x
+[ 40] scatter J=8.0772e-02  reduction=15.20x
+[ 45] scatter J=8.0299e-02  reduction=15.28x
+[ 50] scatter J=8.0682e-02  reduction=15.21x
+[ 54] scatter J=8.0682e-02  reduction=15.21x
+optimized in 38s  cloaked J=8.0226e-02  scatter reduced 15.3x
+saved results/wave_cloak.png

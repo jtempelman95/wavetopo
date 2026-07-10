@@ -1,0 +1,4 @@
+mesh 22x38, ndof_red=1672, fill=0.258
+valley Dirac: bands 3-4 at k=(0,0.482) omega~2.673: gap(phi=0)=0.0013 -> gap(phi=20)=0.0469
+saved results/valley_cone.png
+saved results/valley_mass.png  gap(0)=0.0013 gap(40)=0.1001

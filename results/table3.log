@@ -1,0 +1,144 @@
+
+########## no constraint ##########
+[outer   0] f=3.0136 |zeta|max= 6.651 vg=-0.0409 dW=4.55e-01 mu=5.0e+00 best=3.0136 vfg=-0.0165
+[outer   1] f=2.9323 |zeta|max= 6.544 vg=-0.1074 dW=4.33e-01 mu=5.0e+00 best=2.9323 vfg=-0.0497
+[outer   2] f=2.8270 |zeta|max= 6.947 vg=-0.1869 dW=4.35e-01 mu=5.0e+00 best=2.8270 vfg=-0.0991
+[outer   3] f=2.1741 |zeta|max= 8.288 vg=-0.2132 dW=3.50e-01 mu=5.0e+00 best=2.1741 vfg=-0.1067
+[outer   4] f=2.0863 |zeta|max= 6.679 vg=-0.2389 dW=2.42e-01 mu=5.0e+00 best=2.0863 vfg=-0.1197
+[outer   5] f=2.2524 |zeta|max= 7.152 vg=-0.2458 dW=1.64e-01 mu=5.0e+00 best=2.0863 vfg=-0.1252
+[outer   6] f=1.8795 |zeta|max= 7.422 vg=-0.2484 dW=7.94e-02 mu=5.0e+00 best=1.8795 vfg=-0.1223
+[outer   7] f=1.7146 |zeta|max= 7.877 vg=-0.2512 dW=6.71e-02 mu=5.0e+00 best=1.7146 vfg=-0.1249
+[outer   8] f=1.3892 |zeta|max= 8.399 vg=-0.2522 dW=1.24e-01 mu=5.0e+00 best=1.3892 vfg=-0.1247
+[outer   9] f=1.2726 |zeta|max= 8.436 vg=-0.2527 dW=3.90e-02 mu=5.0e+00 best=1.2726 vfg=-0.1259
+[outer  10] f=1.2546 |zeta|max= 8.634 vg=-0.2513 dW=3.90e-02 mu=5.0e+00 best=1.2546 vfg=-0.1249
+[outer  11] f=1.2979 |zeta|max= 8.659 vg=-0.2498 dW=6.75e-02 mu=5.0e+00 best=1.2546 vfg=-0.1235
+[outer  12] f=1.1814 |zeta|max= 9.047 vg=-0.2430 dW=5.12e-02 mu=5.0e+00 best=1.1814 vfg=-0.1221
+[outer  13] f=1.2436 |zeta|max= 8.944 vg=-0.2288 dW=7.11e-02 mu=5.0e+00 best=1.1814 vfg=-0.1198
+[outer  14] f=1.0065 |zeta|max= 9.610 vg=-0.2197 dW=8.35e-02 mu=5.0e+00 best=1.0065 vfg=-0.1117
+[outer  15] f=1.0072 |zeta|max= 9.410 vg=-0.2111 dW=7.88e-02 mu=5.0e+00 best=1.0065 vfg=-0.1029
+[outer  16] f=1.0706 |zeta|max= 9.087 vg=-0.2019 dW=4.48e-02 mu=5.0e+00 best=1.0065 vfg=-0.1002
+[outer  17] f=1.0084 |zeta|max= 9.456 vg=-0.1936 dW=3.90e-02 mu=5.0e+00 best=1.0065 vfg=-0.0954
+[outer  18] f=0.9359 |zeta|max= 9.269 vg=-0.1836 dW=2.87e-02 mu=5.0e+00 best=0.9359 vfg=-0.0881
+[outer  19] f=0.8300 |zeta|max= 9.230 vg=-0.1768 dW=6.49e-02 mu=5.0e+00 best=0.8300 vfg=-0.0909
+[outer  20] f=0.7788 |zeta|max= 9.369 vg=-0.1700 dW=3.41e-02 mu=5.0e+00 best=0.7788 vfg=-0.0878
+[outer  21] f=0.8136 |zeta|max= 9.141 vg=-0.1647 dW=4.71e-02 mu=5.0e+00 best=0.7788 vfg=-0.0851
+[outer  22] f=0.7605 |zeta|max= 9.522 vg=-0.1602 dW=6.11e-02 mu=5.0e+00 best=0.7605 vfg=-0.0797
+[outer  23] f=0.7638 |zeta|max=10.869 vg=-0.1561 dW=9.63e-02 mu=5.0e+00 best=0.7605 vfg=-0.0797
+[outer  24] f=0.6541 |zeta|max=10.377 vg=-0.1524 dW=8.06e-02 mu=5.0e+00 best=0.6541 vfg=-0.0732
+[outer  25] f=0.6843 |zeta|max=10.194 vg=-0.1479 dW=3.82e-02 mu=5.0e+00 best=0.6541 vfg=-0.0742
+[outer  26] f=0.6598 |zeta|max=10.057 vg=-0.1395 dW=1.23e-01 mu=5.0e+00 best=0.6541 vfg=-0.0740
+[outer  27] f=0.6247 |zeta|max=10.202 vg=-0.1283 dW=3.75e-02 mu=5.0e+00 best=0.6247 vfg=-0.0659
+[outer  28] f=0.5659 |zeta|max=10.393 vg=-0.1177 dW=8.01e-02 mu=5.0e+00 best=0.5659 vfg=-0.0603
+[outer  29] f=0.5783 |zeta|max=10.271 vg=-0.1039 dW=3.76e-02 mu=5.0e+00 best=0.5659 vfg=-0.0519
+[outer  30] f=0.5745 |zeta|max=10.690 vg=-0.0872 dW=6.18e-02 mu=5.0e+00 best=0.5659 vfg=-0.0485
+[outer  31] f=0.6121 |zeta|max=10.264 vg=-0.0649 dW=1.17e-01 mu=5.0e+00 best=0.5659 vfg=-0.0345
+[outer  32] f=0.5390 |zeta|max=10.768 vg=-0.0399 dW=1.15e-01 mu=5.0e+00 best=0.5390 vfg=-0.0225
+[outer  33] f=0.6320 |zeta|max=10.765 vg=-0.0143 dW=1.60e-01 mu=5.0e+00 best=0.5390 vfg=-0.0069
+[outer  34] f=0.6767 |zeta|max=10.795 vg=+0.0123 dW=1.41e-01 mu=6.2e+00 best=0.5390 vfg=+0.0065
+[outer  35] f=0.5355 |zeta|max=10.715 vg=+0.0273 dW=2.10e-01 mu=7.8e+00 best=0.5390 vfg=+0.0121
+[outer  36] f=0.5497 |zeta|max=11.019 vg=+0.0216 dW=1.76e-01 mu=9.8e+00 best=0.5390 vfg=+0.0089
+[outer  37] f=0.5535 |zeta|max=10.905 vg=+0.0130 dW=5.58e-02 mu=1.2e+01 best=0.5390 vfg=+0.0084
+[outer  38] f=0.5456 |zeta|max=11.065 vg=+0.0064 dW=3.94e-02 mu=1.5e+01 best=0.5390 vfg=+0.0023
+[outer  39] f=0.5206 |zeta|max=10.751 vg=-0.0007 dW=5.12e-02 mu=1.5e+01 best=0.5206 vfg=+0.0000
+[outer  40] f=0.4856 |zeta|max=10.663 vg=-0.0021 dW=8.19e-02 mu=1.5e+01 best=0.4856 vfg=+0.0012
+[outer  41] f=0.4995 |zeta|max=10.700 vg=-0.0065 dW=1.08e-01 mu=1.5e+01 best=0.4856 vfg=-0.0026
+[outer  42] f=0.4794 |zeta|max=10.486 vg=-0.0041 dW=6.96e-02 mu=1.5e+01 best=0.4794 vfg=-0.0066
+[outer  43] f=0.4702 |zeta|max=10.547 vg=-0.0009 dW=5.11e-02 mu=1.9e+01 best=0.4794 vfg=+0.0026
+[outer  44] f=0.5104 |zeta|max=10.438 vg=+0.0006 dW=6.59e-02 mu=1.9e+01 best=0.4794 vfg=-0.0013
+[outer  45] f=0.4825 |zeta|max=10.392 vg=+0.0004 dW=4.72e-02 mu=2.4e+01 best=0.4794 vfg=+0.0023
+[outer  46] f=0.4879 |zeta|max=10.612 vg=+0.0003 dW=4.69e-02 mu=3.0e+01 best=0.4794 vfg=+0.0048
+[outer  47] f=0.4785 |zeta|max=10.438 vg=-0.0012 dW=3.22e-02 mu=3.0e+01 best=0.4785 vfg=-0.0013
+[outer  48] f=0.4801 |zeta|max=10.500 vg=-0.0006 dW=2.85e-02 mu=3.7e+01 best=0.4785 vfg=+0.0029
+[outer  49] f=0.4688 |zeta|max=10.733 vg=-0.0010 dW=2.73e-02 mu=3.7e+01 best=0.4688 vfg=-0.0028
+[outer  50] f=0.4701 |zeta|max=10.745 vg=-0.0001 dW=2.87e-02 mu=3.7e+01 best=0.4688 vfg=-0.0016
+[outer  51] f=0.4516 |zeta|max=10.731 vg=+0.0013 dW=2.96e-02 mu=3.7e+01 best=0.4516 vfg=+0.0012
+[outer  52] f=0.4761 |zeta|max=10.541 vg=+0.0004 dW=6.27e-02 mu=4.7e+01 best=0.4516 vfg=+0.0050
+[outer  53] f=0.4836 |zeta|max=10.869 vg=-0.0006 dW=1.05e-01 mu=4.7e+01 best=0.4516 vfg=-0.0008
+[outer  54] f=0.7553 |zeta|max=10.821 vg=+0.0055 dW=1.59e-01 mu=5.8e+01 best=0.4516 vfg=+0.0047
+[outer  55] f=0.6471 |zeta|max=10.848 vg=+0.0022 dW=9.06e-02 mu=7.3e+01 best=0.4516 vfg=+0.0004
+[outer  56] f=0.6661 |zeta|max=10.984 vg=-0.0018 dW=4.46e-02 mu=7.3e+01 best=0.4516 vfg=+0.0002
+[outer  57] f=0.7457 |zeta|max=11.105 vg=+0.0014 dW=7.32e-02 mu=9.1e+01 best=0.4516 vfg=+0.0034
+[outer  58] f=0.7171 |zeta|max=10.885 vg=-0.0004 dW=3.67e-02 mu=9.1e+01 best=0.4516 vfg=-0.0020
+[outer  59] f=0.7404 |zeta|max=11.002 vg=+0.0016 dW=4.43e-02 mu=1.1e+02 best=0.4516 vfg=+0.0027
+[outer  60] f=0.6683 |zeta|max=10.593 vg=-0.0007 dW=6.81e-02 mu=1.1e+02 best=0.4516 vfg=+0.0005
+[outer  61] f=0.6909 |zeta|max=10.711 vg=-0.0010 dW=3.36e-02 mu=1.1e+02 best=0.4516 vfg=-0.0016
+[outer  62] f=0.6426 |zeta|max=10.423 vg=-0.0005 dW=6.71e-02 mu=1.1e+02 best=0.4516 vfg=-0.0002
+[outer  63] f=0.6046 |zeta|max=10.415 vg=-0.0025 dW=3.28e-02 mu=1.1e+02 best=0.4516 vfg=-0.0063
+[outer  64] f=0.6317 |zeta|max=10.041 vg=+0.0025 dW=1.56e-01 mu=1.4e+02 best=0.4516 vfg=+0.0025
+[outer  65] f=0.5981 |zeta|max=10.376 vg=+0.0007 dW=6.01e-02 mu=1.8e+02 best=0.4516 vfg=+0.0040
+[outer  66] f=0.5629 |zeta|max=10.837 vg=-0.0018 dW=5.40e-02 mu=1.8e+02 best=0.4516 vfg=-0.0012
+[outer  67] f=0.5431 |zeta|max=10.546 vg=-0.0003 dW=6.79e-02 mu=1.8e+02 best=0.4516 vfg=-0.0036
+[outer  68] f=0.5677 |zeta|max=10.165 vg=+0.0006 dW=1.01e-01 mu=1.8e+02 best=0.4516 vfg=-0.0024
+[outer  69] f=0.5434 |zeta|max=10.547 vg=+0.0012 dW=6.71e-02 mu=1.8e+02 best=0.4516 vfg=+0.0002
+[outer  70] f=0.5539 |zeta|max=10.552 vg=-0.0003 dW=4.42e-02 mu=1.8e+02 best=0.4516 vfg=-0.0027
+[outer  71] f=0.5115 |zeta|max=10.536 vg=+0.0002 dW=7.37e-02 mu=1.8e+02 best=0.4516 vfg=+0.0004
+[outer  72] f=0.5423 |zeta|max=10.850 vg=+0.0008 dW=6.78e-02 mu=1.8e+02 best=0.4516 vfg=-0.0009
+[outer  73] f=0.5296 |zeta|max=10.832 vg=+0.0004 dW=4.39e-02 mu=1.8e+02 best=0.4516 vfg=-0.0017
+[outer  74] f=0.5529 |zeta|max=10.548 vg=-0.0002 dW=6.77e-02 mu=1.8e+02 best=0.4516 vfg=-0.0017
+[outer  75] f=0.4964 |zeta|max=11.115 vg=-0.0014 dW=9.33e-02 mu=1.8e+02 best=0.4516 vfg=-0.0006
+[outer  76] f=0.5437 |zeta|max=10.968 vg=+0.0019 dW=8.98e-02 mu=1.8e+02 best=0.4516 vfg=-0.0018
+No feasible improvement for 25 iters; stopping.
+>>> no constraint: f=0.4516  |zeta|max=10.731  (77 outer, 725s)
+
+########## curl <= 2 /m ##########
+[outer   0] f=2.9575 |zeta|max= 3.497 vg=-0.0695 dW=3.57e-01 mu=6.2e+00 best=inf vfg=-0.0315
+[outer   1] f=2.5976 |zeta|max= 3.353 vg=-0.1555 dW=2.37e-01 mu=7.8e+00 best=inf vfg=-0.0789
+[outer   2] f=2.4764 |zeta|max= 2.793 vg=-0.1942 dW=2.13e-01 mu=9.8e+00 best=inf vfg=-0.0930
+[outer   3] f=1.9653 |zeta|max= 2.333 vg=-0.2063 dW=1.04e-01 mu=1.2e+01 best=inf vfg=-0.1050
+[outer   4] f=1.6084 |zeta|max= 2.163 vg=-0.2204 dW=7.16e-02 mu=1.5e+01 best=inf vfg=-0.1159
+[outer   5] f=1.5160 |zeta|max= 2.085 vg=-0.2217 dW=6.01e-02 mu=1.9e+01 best=inf vfg=-0.1154
+[outer   6] f=1.2510 |zeta|max= 2.243 vg=-0.1997 dW=7.84e-02 mu=2.4e+01 best=inf vfg=-0.0959
+[outer   7] f=1.3648 |zeta|max= 2.176 vg=-0.1767 dW=4.47e-02 mu=3.0e+01 best=inf vfg=-0.0937
+[outer   8] f=0.9502 |zeta|max= 1.938 vg=-0.1526 dW=4.76e-02 mu=3.0e+01 best=0.9502 vfg=-0.0656
+[outer   9] f=0.8050 |zeta|max= 2.199 vg=-0.1167 dW=4.37e-02 mu=3.7e+01 best=0.9502 vfg=-0.0568
+[outer  10] f=0.8357 |zeta|max= 2.106 vg=-0.0627 dW=6.48e-02 mu=4.7e+01 best=0.9502 vfg=-0.0322
+[outer  11] f=0.7142 |zeta|max= 2.103 vg=+0.0094 dW=9.54e-02 mu=5.8e+01 best=0.9502 vfg=+0.0055
+[outer  12] f=0.6050 |zeta|max= 2.167 vg=+0.0008 dW=5.98e-02 mu=7.3e+01 best=0.9502 vfg=-0.0018
+[outer  13] f=0.6509 |zeta|max= 1.967 vg=+0.0021 dW=7.11e-02 mu=9.1e+01 best=0.9502 vfg=-0.0020
+[outer  14] f=0.5761 |zeta|max= 2.086 vg=-0.0011 dW=3.77e-02 mu=1.1e+02 best=0.9502 vfg=-0.0033
+[outer  15] f=0.6308 |zeta|max= 2.231 vg=+0.0018 dW=7.23e-02 mu=1.4e+02 best=0.9502 vfg=+0.0068
+[outer  16] f=0.5880 |zeta|max= 2.028 vg=-0.0007 dW=3.20e-02 mu=1.8e+02 best=0.9502 vfg=+0.0076
+[outer  17] f=0.6609 |zeta|max= 1.990 vg=-0.0015 dW=5.23e-02 mu=2.2e+02 best=0.9502 vfg=+0.0022
+[outer  18] f=0.6892 |zeta|max= 2.117 vg=-0.0016 dW=4.39e-02 mu=2.8e+02 best=0.9502 vfg=-0.0029
+[outer  19] f=0.6657 |zeta|max= 2.122 vg=+0.0011 dW=2.74e-02 mu=3.5e+02 best=0.9502 vfg=-0.0026
+[outer  20] f=0.7055 |zeta|max= 2.012 vg=+0.0016 dW=4.44e-02 mu=4.3e+02 best=0.9502 vfg=-0.0020
+[outer  21] f=0.6703 |zeta|max= 1.981 vg=+0.0004 dW=3.01e-02 mu=4.3e+02 best=0.6703 vfg=+0.0016
+[outer  22] f=0.5883 |zeta|max= 2.076 vg=-0.0045 dW=7.78e-02 mu=5.4e+02 best=0.6703 vfg=-0.0036
+[outer  23] f=0.6058 |zeta|max= 1.945 vg=+0.0013 dW=2.58e-02 mu=5.4e+02 best=0.6058 vfg=-0.0011
+[outer  24] f=0.5533 |zeta|max= 2.075 vg=-0.0014 dW=6.61e-02 mu=6.8e+02 best=0.6058 vfg=-0.0038
+[outer  25] f=0.5947 |zeta|max= 2.064 vg=+0.0014 dW=3.40e-02 mu=8.5e+02 best=0.6058 vfg=+0.0010
+[outer  26] f=0.5775 |zeta|max= 1.934 vg=-0.0004 dW=2.96e-02 mu=8.5e+02 best=0.5775 vfg=-0.0009
+[outer  27] f=0.5539 |zeta|max= 2.233 vg=-0.0036 dW=4.22e-02 mu=1.1e+03 best=0.5775 vfg=-0.0022
+[outer  28] f=0.5393 |zeta|max= 2.357 vg=-0.0001 dW=5.13e-02 mu=1.3e+03 best=0.5775 vfg=-0.0004
+[outer  29] f=0.5366 |zeta|max= 2.181 vg=+0.0007 dW=7.16e-02 mu=1.7e+03 best=0.5775 vfg=-0.0031
+[outer  30] f=0.5071 |zeta|max= 2.087 vg=+0.0006 dW=6.35e-02 mu=2.1e+03 best=0.5775 vfg=+0.0039
+[outer  31] f=0.5568 |zeta|max= 2.190 vg=-0.0059 dW=4.44e-02 mu=2.6e+03 best=0.5775 vfg=-0.0015
+[outer  32] f=0.5335 |zeta|max= 2.068 vg=-0.0090 dW=5.46e-02 mu=3.2e+03 best=0.5775 vfg=-0.0041
+[outer  33] f=0.5220 |zeta|max= 2.079 vg=-0.0031 dW=6.06e-02 mu=4.0e+03 best=0.5775 vfg=-0.0039
+[outer  34] f=0.5155 |zeta|max= 2.194 vg=-0.0033 dW=4.16e-02 mu=5.0e+03 best=0.5775 vfg=-0.0009
+[outer  35] f=0.5038 |zeta|max= 2.182 vg=-0.0009 dW=3.38e-02 mu=6.3e+03 best=0.5775 vfg=-0.0023
+[outer  36] f=0.5021 |zeta|max= 2.151 vg=-0.0003 dW=4.85e-02 mu=7.9e+03 best=0.5775 vfg=+0.0017
+[outer  37] f=0.5292 |zeta|max= 2.044 vg=-0.0060 dW=5.44e-02 mu=9.9e+03 best=0.5775 vfg=-0.0026
+[outer  38] f=0.5428 |zeta|max= 2.139 vg=-0.0027 dW=4.34e-02 mu=1.2e+04 best=0.5775 vfg=-0.0024
+[outer  39] f=0.5442 |zeta|max= 2.279 vg=-0.0016 dW=3.79e-02 mu=1.5e+04 best=0.5775 vfg=-0.0007
+[outer  40] f=0.5972 |zeta|max= 2.208 vg=-0.0019 dW=4.08e-02 mu=1.9e+04 best=0.5775 vfg=-0.0012
+[outer  41] f=0.5263 |zeta|max= 2.037 vg=-0.0007 dW=2.87e-02 mu=2.4e+04 best=0.5775 vfg=-0.0016
+[outer  42] f=0.5557 |zeta|max= 2.218 vg=-0.0054 dW=4.23e-02 mu=3.0e+04 best=0.5775 vfg=-0.0041
+[outer  43] f=0.5402 |zeta|max= 2.249 vg=-0.0049 dW=3.60e-02 mu=3.8e+04 best=0.5775 vfg=-0.0029
+[outer  44] f=0.5696 |zeta|max= 2.214 vg=-0.0038 dW=4.09e-02 mu=4.7e+04 best=0.5775 vfg=-0.0005
+[outer  45] f=0.5422 |zeta|max= 2.155 vg=-0.0076 dW=3.88e-02 mu=5.9e+04 best=0.5775 vfg=-0.0048
+[outer  46] f=0.5256 |zeta|max= 2.224 vg=-0.0025 dW=9.85e-02 mu=7.3e+04 best=0.5775 vfg=-0.0035
+[outer  47] f=0.5250 |zeta|max= 2.216 vg=-0.0018 dW=5.34e-02 mu=9.2e+04 best=0.5775 vfg=-0.0013
+[outer  48] f=0.5372 |zeta|max= 2.243 vg=-0.0015 dW=5.13e-02 mu=1.1e+05 best=0.5775 vfg=-0.0006
+[outer  49] f=0.5518 |zeta|max= 2.266 vg=-0.0080 dW=5.22e-02 mu=1.4e+05 best=0.5775 vfg=-0.0024
+[outer  50] f=0.5522 |zeta|max= 2.269 vg=-0.0040 dW=5.81e-02 mu=1.8e+05 best=0.5775 vfg=-0.0050
+[outer  51] f=0.6184 |zeta|max= 2.226 vg=-0.0094 dW=4.58e-02 mu=2.2e+05 best=0.5775 vfg=-0.0037
+No feasible improvement for 25 iters; stopping.
+>>> curl <= 2 /m: f=0.5775  |zeta|max=1.934  (52 outer, 937s)
+
+saved results/cfrp_cantilever_table3.png
+
+================ Table 3 (no-void cantilever) ================
+case               f (ours)  f (paper)  |z|max ours  |z|max paper
+no constraint         0.452       0.42        10.73          8.04
+curl <= 2 /m          0.577       0.49         1.93          2.00
