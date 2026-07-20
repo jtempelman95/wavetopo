@@ -31,6 +31,11 @@ STYLE = dict(
     tow_pitch=0.13,         # phase-field tow spacing
     tow_n=420,              # tow raster resolution
     field_pctl=99.0,        # colour saturation percentile
+    field_mode="abs",       # abs | re | im | phase | t   (see field_values)
+    field_comp="x",         # component used by re/im/phase/t
+    phase_wt=0.0,           # omega*t for field_mode="t"
+    cmap_signed="RdBu_r",   # diverging, for signed Re/Im/t
+    cmap_phase="twilight",  # cyclic, for phase
     cbar_size="4%",         # colorbar width, as a fraction of the axes
     cbar_pad=0.08,
     dpi=145,
@@ -95,10 +100,50 @@ def load(path):
     return d, tri, (0.0, float(d["trix"].max())), (0.0, float(d["triy"].max()))
 
 
-def field_panel(ax, tri, m, xlim, ylim, title, vmax=None, marks=None):
-    tp = ax.tripcolor(tri, m, cmap=STYLE["cmap_field"], shading="gouraud",
-                      vmax=vmax if vmax is not None
-                      else np.percentile(m, STYLE["field_pctl"]))
+def field_values(d, state, envelope=None, pctl=None):
+    """Resolve STYLE["field_mode"] into (values, cmap, imshow-kwargs, label).
+
+    |u| is only the ENVELOPE of a time-harmonic field; the oscillating
+    wavefronts live in Re/Im and the propagation direction in the phase.  The
+    components are present only if examples/resolve_full_fields.py has been run;
+    if they are absent this falls back to |u| and says which file to fix.
+
+    `envelope` overrides the stored |u| key for files that do not use m0/m1.
+    """
+    mode = STYLE["field_mode"]; comp = STYLE["field_comp"]
+    pctl = STYLE["field_pctl"] if pctl is None else pctl
+    has = f"ur_{comp}{state}" in d.files
+    if mode != "abs" and not has:
+        print(f"   [figlib] no Re/Im components saved -> using |u|. "
+              f"Run: python examples/resolve_full_fields.py")
+        mode = "abs"
+    if mode == "abs":
+        m = d[envelope] if envelope else d[f"m{state}"]
+        return m, STYLE["cmap_field"], dict(vmax=np.percentile(m, pctl)), "$|u|$"
+    ur, ui = d[f"ur_{comp}{state}"], d[f"ui_{comp}{state}"]
+    if mode == "phase":
+        return (np.arctan2(ui, ur), STYLE["cmap_phase"],
+                dict(vmin=-np.pi, vmax=np.pi), f"phase $u_{comp}$")
+    lim = np.percentile(np.abs(np.concatenate([ur, ui])), pctl)
+    kw = dict(vmin=-lim, vmax=lim)
+    if mode == "re":
+        return ur, STYLE["cmap_signed"], kw, f"Re $u_{comp}$"
+    if mode == "im":
+        return ui, STYLE["cmap_signed"], kw, f"Im $u_{comp}$"
+    if mode == "t":
+        wt = STYLE["phase_wt"]
+        return (ur*np.cos(wt) + ui*np.sin(wt), STYLE["cmap_signed"], kw,
+                f"$u_{comp}(\\omega t={wt:.2f})$")
+    raise ValueError(f"field_mode must be abs|re|im|phase|t, got {mode!r}")
+
+
+def field_panel(ax, tri, m, xlim, ylim, title, vmax=None, marks=None,
+                cmap=None, **kw):
+    if not kw:
+        kw = dict(vmax=vmax if vmax is not None
+                  else np.percentile(m, STYLE["field_pctl"]))
+    tp = ax.tripcolor(tri, m, cmap=cmap or STYLE["cmap_field"],
+                      shading="gouraud", **kw)
     if marks:
         marks(ax)
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)

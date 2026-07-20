@@ -66,11 +66,21 @@ circles = F.circles
 focus_marker = F.focus_marker
 
 
+MODE_SUFFIX = ""
+
+
+def _suffix(name):
+    return name if not MODE_SUFFIX else name.replace(".png", MODE_SUFFIX + ".png")
+
+
 def save(fig, results_name, published_name, publish):
     """Write the figure and RETURN it.  Closing is the caller's job: the CLI
     closes to bound memory, an interactive session must not, or the cell renders
     nothing."""
-    F.publish(fig, results_name, published_name, publish, root=ROOT)
+    # a non-|u| rendering is a variant, never a replacement for the paper figure
+    F.publish(fig, _suffix(results_name),
+              published_name if not MODE_SUFFIX else None,
+              publish and not MODE_SUFFIX, root=ROOT)
     return fig
 
 
@@ -80,10 +90,11 @@ def build_lens(publish):
     mk = focus_marker(0.78*xl[1], yl[1]/2, 0.18)
     fig, ax = plt.subplots(2, 2, figsize=(14, 9))
     vmax = np.percentile(d["m1"], FIELD_PCTL)
-    field_panel(ax[0, 0], tri, d["m0"], xl, yl, "straight fibers (baseline)", vmax, mk)
-    field_panel(ax[0, 1], tri, d["m1"], xl, yl,
-                f"orientation-optimized lens: {float(d['gain']):.0f}$\\times$ focus gain",
-                vmax, mk)
+    for A, st, ttl in [(ax[0, 0], 0, "straight fibers (baseline)"),
+                       (ax[0, 1], 1, f"orientation-optimized lens: "
+                                     f"{float(d['gain']):.0f}$\\times$ focus gain")]:
+        v, cm, kw, lab = F.field_values(d, st)
+        field_panel(A, tri, v, xl, yl, f"{ttl}   [{lab}]", marks=mk, cmap=cm, **kw)
     tow_panel(ax[1, 0], d["cent"], d["thopt"], xl, yl, "fiber toolpaths")
     dir_panel(ax[1, 1], d["cent"], d["thopt"], xl, yl, "anisotropy director field")
     F.layout(fig, "Curvilinear-fiber elastic wave lens", y=0.97)
@@ -282,6 +293,17 @@ def main():
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--stale", action="store_true", help="rebuild only stale figures")
+    ap.add_argument("--mode", default="abs",
+                    choices=["abs", "re", "im", "phase", "t"],
+                    help="field representation: |u| (default), Re, Im, phase, "
+                         "or a time snapshot. Non-abs modes need "
+                         "examples/resolve_full_fields.py to have been run, and "
+                         "are written with a _<mode> suffix so they never "
+                         "overwrite the published |u| figures.")
+    ap.add_argument("--comp", default="x", choices=["x", "y"],
+                    help="displacement component used by re/im/phase/t")
+    ap.add_argument("--wt", type=float, default=0.0,
+                    help="omega*t for --mode t")
     ap.add_argument("--no-publish", action="store_true",
                     help="write results/ only, leave docs/paper/figs untouched")
     a = ap.parse_args()
@@ -298,6 +320,12 @@ def main():
             print("\n(nothing rebuilt: pass --all, --stale, or figure names)")
         return
 
+    F.STYLE.update(field_mode=a.mode, field_comp=a.comp, phase_wt=a.wt)
+    if a.mode != "abs":
+        global MODE_SUFFIX
+        MODE_SUFFIX = f"_{a.mode}{a.comp}"
+        print(f"field mode: {a.mode} (u_{a.comp}) -> writing *{MODE_SUFFIX}.png; "
+              f"the published |u| figures are left untouched")
     todo = list(FIGS) if (a.all or a.stale) else a.names
     if a.stale:
         todo = [n for n in todo if status(n)[0] in ("STALE", "MISSING")]
