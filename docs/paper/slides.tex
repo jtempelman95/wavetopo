@@ -9,7 +9,7 @@
 \usepackage{amsthm}
 
 % ---- fonts: same contract as the paper ---------------------------------- %
-% Loaded unconditionally so MiKTeX install-on-demand works; \newtxfalse to skip.
+% Loaded unconditionally so MiKTeX install-on-demand works; \newtxtrue to skip.
 \newif\ifnewtx\newtxtrue
 \ifnewtx
   \usepackage{newtxtext}
@@ -24,18 +24,32 @@
 \usetikzlibrary{arrows.meta,positioning,calc}
 
 \graphicspath{{figs/}}
-\input{results_macros}          % shared with the paper: numbers cannot drift
 
-% ---- notation (mirrors the paper) -------------------------------------- %
-\newcommand{\vth}{\bm{\theta}}
-\newcommand{\vu}{\mathbf{u}}
-\newcommand{\vx}{\mathbf{x}}
-\newcommand{\vU}{\mathsf{U}}
-\newcommand{\vb}{\mathsf{b}}
-\newcommand{\veps}{\bm{\varepsilon}}
-\newcommand{\ii}{\mathrm{i}}
-\newcommand{\T}{^{\mathsf{T}}}
-\newcommand{\HH}{^{\mathsf{H}}}
+% ---- notation --------------------------------------------------------- %
+% NOTE: these are defined with \providecommand+\renewcommand, NOT \newcommand.
+% Short names like \T, \HH, \ii and \Real are defined by some packages/engines
+% (\T is a text accent in several).  With \newcommand a pre-existing definition
+% makes the declaration FAIL while silently keeping the old meaning, and every
+% later use in math mode then raises "Missing $ inserted" far from the cause --
+% a failure that appears on MiKTeX but not on TeX Live, or vice versa.
+% \providecommand+\renewcommand always installs our meaning.
+\makeatletter
+\newcommand{\DefN}[2]{\@ifundefined{\expandafter\@gobble\string#1}{}{%
+    \PackageInfo{notation}{overriding pre-existing \string#1}}%
+  \providecommand#1{}\renewcommand#1{#2}}
+\makeatother
+\DefN{\vth}{\bm{\theta}}
+\DefN{\vu}{\mathbf{u}}
+\DefN{\vx}{\mathbf{x}}
+\DefN{\vU}{\mathsf{U}}
+\DefN{\vb}{\mathsf{b}}
+\DefN{\veps}{\bm{\varepsilon}}
+\DefN{\ii}{\mathrm{i}}
+\DefN{\T}{^{\mathsf{T}}}
+\DefN{\HH}{^{\mathsf{H}}}
+
+% numbers shared with the paper (needs \DefN above)
+\input{results_macros}
 
 \title{In-Plane Orthotropic Elastic Wave Control\\by Fiber-Orientation Design}
 \subtitle{model, adjoint, algorithms, results}
