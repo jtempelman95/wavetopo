@@ -16,10 +16,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
-from topoopt.harmonic import HarmonicCloak
-from topoopt.cfrp_optimizer import MMA
-from topoopt.cfrp_viz import orientation_streamlines
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
+from wavetopo.harmonic import HarmonicCloak
+from wavetopo.cfrp_optimizer import MMA
+from wavetopo.cfrp_viz import orientation_streamlines
 
 
 def nodal_mag(u, mesh):

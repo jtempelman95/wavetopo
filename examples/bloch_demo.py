@@ -13,8 +13,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
-from topoopt.bloch import (BlochProblem, ibz_path_square, directional_path,
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
+from wavetopo.bloch import (BlochProblem, ibz_path_square, directional_path,
                            gap_between_bands)
 
 

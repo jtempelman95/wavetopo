@@ -22,10 +22,10 @@ derivative is analytic and finite-difference checkable.
 
 | Module | Contents | Paper eqs |
 |---|---|---|
-| `topoopt/cfrp.py` | `Material` (Qf, Dm, ρ), `QuadMesh`, element stiffness/mass, **exact Fourier-series precompute** of anisotropic element matrices, **CS-RBF** orientation mapping + analytic spatial derivatives, **wave projection** + adjoint | 3–10, 14–21 |
-| `topoopt/cfrp_problem.py` | `CFRPProblem`: assembly, compliance, full sensitivities, volume / fiber-volume / curl constraints, linear density filter | 2, 31–52 |
-| `topoopt/cfrp_optimizer.py` | bound-constrained **MMA** + **augmented-Lagrangian** outer loop | 22–27 |
-| `topoopt/cfrp_viz.py` | density / orientation-streamline / towpreg / curl figures | Fig 6 |
+| `wavetopo/cfrp.py` | `Material` (Qf, Dm, ρ), `QuadMesh`, element stiffness/mass, **exact Fourier-series precompute** of anisotropic element matrices, **CS-RBF** orientation mapping + analytic spatial derivatives, **wave projection** + adjoint | 3–10, 14–21 |
+| `wavetopo/cfrp_problem.py` | `CFRPProblem`: assembly, compliance, full sensitivities, volume / fiber-volume / curl constraints, linear density filter | 2, 31–52 |
+| `wavetopo/cfrp_optimizer.py` | bound-constrained **MMA** + **augmented-Lagrangian** outer loop | 22–27 |
+| `wavetopo/cfrp_viz.py` | density / orientation-streamline / towpreg / curl figures | Fig 6 |
 | `tests/test_cfrp_grad.py` | finite-difference verification of every gradient | — |
 
 **Pipeline (forward model).**
@@ -135,7 +135,7 @@ $PY examples/cfrp_replot.py results/cfrp_cant_nocurl.npz clean.png
 
 The same two design fields map directly onto a **directional phononic crystal**:
 `z` designs the inclusion topology and `θ` sets the fiber orientation that makes
-a band gap *direction-dependent*. `topoopt/bloch.py` already provides the
+a band gap *direction-dependent*. `wavetopo/bloch.py` already provides the
 Bloch-periodic generalized eigensolver (`K(k)φ = ω²M(k)φ`) reusing the same
 anisotropic assembly; a fiber-aligned cell shows strong directional anisotropy
 in the dispersion (2nd branch 7.1 along the fiber vs 1.9 transverse). The

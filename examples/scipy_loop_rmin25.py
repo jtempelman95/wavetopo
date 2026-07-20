@@ -3,14 +3,14 @@ Run EXACT scipy top88 loop but use dolfinx for the FE solve.
 If this gives clean results: the bug is in cantilever.py's loop structure.
 Uses rmin=1.5 element units = 0.0375 physical (standard Andreassen).
 """
-import sys; sys.path.insert(0, '/home/jrt/topoopt')
+import sys; sys.path.insert(0, '/home/jrt/wavetopo')
 import numpy as np
 import scipy.sparse as sp
 from scipy.spatial import cKDTree
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from topoopt import ElasticityProblem
-from topoopt.filters import ConeFilter
+from wavetopo import ElasticityProblem
+from wavetopo.filters import ConeFilter
 
 nelx, nely = 80, 40
 lx, ly = 2.0, 1.0

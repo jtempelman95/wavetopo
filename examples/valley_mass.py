@@ -13,8 +13,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import QuadMesh, CSRBFMapping, Material
-from topoopt.bloch import BlochProblem
+from wavetopo.cfrp import QuadMesh, CSRBFMapping, Material
+from wavetopo.bloch import BlochProblem
 from examples.valley_hall import honeycomb_density
 from examples.valley_viz import sublattice_support_angles
 

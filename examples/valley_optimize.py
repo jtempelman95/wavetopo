@@ -26,11 +26,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.valley_cell import triangle_cell
-from topoopt.honeycomb_mesh import HoneycombBloch
-from topoopt.scalar import MaterialSH
-from topoopt.cfrp_optimizer import MMA
-from topoopt.bandgap_opt import _softmax, _softmin
+from wavetopo.valley_cell import triangle_cell
+from wavetopo.honeycomb_mesh import HoneycombBloch
+from wavetopo.scalar import MaterialSH
+from wavetopo.cfrp_optimizer import MMA
+from wavetopo.bandgap_opt import _softmax, _softmin
 
 
 def mesh_filter(cents, R):

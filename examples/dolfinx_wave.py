@@ -3,7 +3,7 @@ dolfinx wave-control: fiber-orientation optimization for (1) energy localization
 (2) cloaking, and (3) broadband (multi-frequency) localization, plus the study of
 how anisotropy is what makes orientation design work at all.
 
-Central thesis (see topoopt/dolfinx_wave.py): the anisotropic shear tensor
+Central thesis (see wavetopo/dolfinx_wave.py): the anisotropic shear tensor
 mu(theta) is theta-INDEPENDENT when muL=muT (isotropic), so for an isotropic
 material the fiber orientation is a dead design variable and orientation
 optimization can do nothing.  Every gain reported below is therefore, by
@@ -24,9 +24,9 @@ import matplotlib.tri as mtri
 from mpi4py import MPI
 from dolfinx import mesh as dmesh
 
-from topoopt.dolfinx_wave import WaveControl, cell_filter, support_map
-from topoopt.dolfinx_viz import plot_toolpaths
-from topoopt.cfrp_optimizer import MMA
+from wavetopo.dolfinx_wave import WaveControl, cell_filter, support_map
+from wavetopo.dolfinx_viz import plot_toolpaths
+from wavetopo.cfrp_optimizer import MMA
 
 Lx, Ly = 4.0, 3.0
 FOCUS = (0.78 * Lx, Ly / 2)

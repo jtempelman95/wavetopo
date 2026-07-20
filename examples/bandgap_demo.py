@@ -13,10 +13,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
-from topoopt.bloch import BlochProblem, directional_path, gap_between_bands
-from topoopt.bandgap_opt import BandGapOptimizer
-from topoopt.cfrp_viz import orientation_streamlines
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
+from wavetopo.bloch import BlochProblem, directional_path, gap_between_bands
+from wavetopo.bandgap_opt import BandGapOptimizer
+from wavetopo.cfrp_viz import orientation_streamlines
 
 
 def directional_bands(bp, a, n_bands, n=40):

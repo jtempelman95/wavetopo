@@ -15,9 +15,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import QuadMesh, CSRBFMapping
-from topoopt.cfrp_problem import density_filter
-from topoopt.scalar import MaterialSH, ScalarHarmonic
+from wavetopo.cfrp import QuadMesh, CSRBFMapping
+from wavetopo.cfrp_problem import density_filter
+from wavetopo.scalar import MaterialSH, ScalarHarmonic
 
 
 def load_cell(npz):

@@ -13,8 +13,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import Material, QuadMesh, CSRBFMapping
-from topoopt.bloch import BlochProblem, k_segment
+from wavetopo.cfrp import Material, QuadMesh, CSRBFMapping
+from wavetopo.bloch import BlochProblem, k_segment
 
 
 A_FRAC = [(0.0, 0.0), (0.5, 0.5)]            # A sublattice

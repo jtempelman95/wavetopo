@@ -17,8 +17,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from examples.cfrp_cantilever import build_cantilever, save_npz
-from topoopt.cfrp_optimizer import optimize_cfrp
-from topoopt.cfrp_viz import plot_design
+from wavetopo.cfrp_optimizer import optimize_cfrp
+from wavetopo.cfrp_viz import plot_design
 
 
 def run_case(nely, zeta_all, max_outer):

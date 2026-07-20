@@ -6,8 +6,8 @@ polished 4-panel figures without re-running the optimization.
 import argparse
 import numpy as np
 
-from topoopt.cfrp import QuadMesh
-from topoopt.cfrp_viz import plot_design
+from wavetopo.cfrp import QuadMesh
+from wavetopo.cfrp_viz import plot_design
 
 
 def main():

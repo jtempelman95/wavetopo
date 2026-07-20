@@ -19,9 +19,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import QuadMesh, CSRBFMapping, Material
-from topoopt.cfrp_problem import density_filter
-from topoopt.harmonic import HarmonicValley
+from wavetopo.cfrp import QuadMesh, CSRBFMapping, Material
+from wavetopo.cfrp_problem import density_filter
+from wavetopo.harmonic import HarmonicValley
 
 
 def load_cell(npz):

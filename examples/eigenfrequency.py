@@ -41,9 +41,9 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from topoopt import ConeFilter
-from topoopt.eigenfrequency import EigenfrequencyProblem
-from topoopt.visualize import density_snapshot
+from wavetopo import ConeFilter
+from wavetopo.eigenfrequency import EigenfrequencyProblem
+from wavetopo.visualize import density_snapshot
 
 
 def parse_args() -> argparse.Namespace:

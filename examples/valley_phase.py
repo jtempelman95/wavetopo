@@ -13,9 +13,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.valley_cell import triangle_cell
-from topoopt.honeycomb_mesh import HoneycombBloch
-from topoopt.scalar import MaterialSH
+from wavetopo.valley_cell import triangle_cell
+from wavetopo.honeycomb_mesh import HoneycombBloch
+from wavetopo.scalar import MaterialSH
 
 
 def complete_gap(al, R, muf, h=0.05, nk=17, pair=1):

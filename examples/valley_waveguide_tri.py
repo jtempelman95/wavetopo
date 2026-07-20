@@ -20,7 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.rhombic import _tri_scalar
+from wavetopo.rhombic import _tri_scalar
 
 
 def rect_mesh(Lx, Ly, h):

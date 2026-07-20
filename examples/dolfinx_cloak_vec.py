@@ -17,11 +17,11 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 from dolfinx import fem
 
-from topoopt.dolfinx_mesh import rect_mesh
-from topoopt.dolfinx_elastic import ElasticWave
-from topoopt.dolfinx_wave import cell_filter
-from topoopt.dolfinx_viz import plot_toolpaths
-from topoopt.cfrp_optimizer import MMA
+from wavetopo.dolfinx_mesh import rect_mesh
+from wavetopo.dolfinx_elastic import ElasticWave
+from wavetopo.dolfinx_wave import cell_filter
+from wavetopo.dolfinx_viz import plot_toolpaths
+from wavetopo.cfrp_optimizer import MMA
 
 Lx, Ly = 4.0, 3.0
 CX, CY, R = 2.0, 1.5, 0.42

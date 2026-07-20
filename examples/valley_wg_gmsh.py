@@ -19,8 +19,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.scalar import MaterialSH
-from topoopt.rhombic import _tri_scalar
+from wavetopo.scalar import MaterialSH
+from wavetopo.rhombic import _tri_scalar
 
 
 def rect_mesh(Lx, Ly, h):

@@ -16,9 +16,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.scalar import MaterialSH
-from topoopt.rhombic import _tri_scalar
-from topoopt.valley_cell import triangle_ribbon
+from wavetopo.scalar import MaterialSH
+from wavetopo.rhombic import _tri_scalar
+from wavetopo.valley_cell import triangle_ribbon
 
 
 def assemble_ribbon(m, muf):

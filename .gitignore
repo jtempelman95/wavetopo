@@ -1,10 +1,51 @@
+# ---- python -------------------------------------------------------------
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 *.egg-info/
 dist/
 build/
 .pytest_cache/
+
+# ---- build caches (regenerate; embed absolute paths) --------------------
+.fenics-cache/
+.texcache/
+.mplcache/
+
+# ---- LaTeX intermediates -------------------------------------------------
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# ---- generated figures ---------------------------------------------------
+# results/*.png are rebuilt from results/*_data.npz in seconds:
+#     python examples/make_figures.py --all
+# The .npz DESIGN DATA is tracked, so a fresh clone can regenerate every
+# figure without re-running a single optimization.
+results/*.png
+results/*.gif
+
+# superseded / exploratory runs kept out of the published history
+results/dolfinx_guide_joint_L*_data.npz
+results/flatband_L[0-9].npz
+results/flatband_L[0-9]*.npz
+
+# ---- third-party material -----------------------------------------------
+# The reference paper (Wong, Sanders & Rosen, Composite Structures) is
+# copyrighted by Elsevier and is NOT redistributed here. See the README.
+toolpathtocfrp-comstr2025.pdf
+*.pdf:Zone.Identifier
+
+# ---- editor / tool local state ------------------------------------------
+.claude/
+.vscode/
+.idea/
 *.xdmf
 *.h5
 cantilever_result.png

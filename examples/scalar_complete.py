@@ -13,10 +13,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import QuadMesh, CSRBFMapping
-from topoopt.scalar import MaterialSH, ScalarBloch
-from topoopt.valley_opt import ValleyOptimizer
-from topoopt.bloch import k_segment
+from wavetopo.cfrp import QuadMesh, CSRBFMapping
+from wavetopo.scalar import MaterialSH, ScalarBloch
+from wavetopo.valley_opt import ValleyOptimizer
+from wavetopo.bloch import k_segment
 from examples.valley_hall import A_FRAC, B_FRAC
 from examples.valley_viz import sublattice_support_angles
 

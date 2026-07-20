@@ -7,9 +7,9 @@ Run:  PYTHONPATH=. python -m tests.test_wave_grad
 """
 import numpy as np
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
-from topoopt.harmonic import HarmonicLens, HarmonicCloak
-from topoopt.wave_control import WaveFocus, ramp_sponge
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points, CSRBFMapping
+from wavetopo.harmonic import HarmonicLens, HarmonicCloak
+from wavetopo.wave_control import WaveFocus, ramp_sponge
 
 
 def _plane_load(mesh, obj):

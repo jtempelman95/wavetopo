@@ -1,8 +1,8 @@
 """Finite-difference verification of CFRP objective + constraint gradients."""
 import numpy as np
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points
-from topoopt.cfrp_problem import CFRPProblem
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points
+from wavetopo.cfrp_problem import CFRPProblem
 
 
 def build_tiny():

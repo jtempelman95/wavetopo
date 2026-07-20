@@ -2,13 +2,13 @@
 Compare sensitivity computation between scipy (direct KE) and dolfinx (L2 projection).
 Runs one FE solve at uniform density vf=0.4, computes dc both ways, compares.
 """
-import sys; sys.path.insert(0, '/home/jrt/topoopt')
+import sys; sys.path.insert(0, '/home/jrt/wavetopo')
 import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
 # ── dolfinx solve ────────────────────────────────────────────────────────
-from topoopt import ElasticityProblem
+from wavetopo import ElasticityProblem
 
 nx_arg, ny_arg = 20, 10   # small enough to debug
 lx, ly = 2.0, 1.0

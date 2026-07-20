@@ -13,7 +13,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from topoopt import ElasticityProblem, ConeFilter
+from wavetopo import ElasticityProblem, ConeFilter
 
 
 class TestElasticityProblem:
@@ -148,7 +148,7 @@ class TestConeFilter:
 class TestOCUpdate:
 
     def test_volume_constraint_satisfied(self):
-        from topoopt import SIMPOptimizer
+        from wavetopo import SIMPOptimizer
         vf, n = 0.4, 100
         opt = SIMPOptimizer(n_elem=n, vf=vf, max_iter=5)
 
@@ -159,7 +159,7 @@ class TestOCUpdate:
         assert abs(result.densities.mean() - vf) < 0.02
 
     def test_optimizer_reduces_compliance(self):
-        from topoopt import SIMPOptimizer
+        from wavetopo import SIMPOptimizer
         opt = SIMPOptimizer(n_elem=50, vf=0.5, max_iter=20)
 
         def fem_solve(rho):

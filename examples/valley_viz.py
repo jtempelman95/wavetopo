@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import QuadMesh, CSRBFMapping
+from wavetopo.cfrp import QuadMesh, CSRBFMapping
 from examples.valley_hall import honeycomb_density, A_FRAC, B_FRAC
 
 

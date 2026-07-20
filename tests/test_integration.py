@@ -19,7 +19,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from topoopt import ElasticityProblem, ConeFilter, SIMPOptimizer
+from wavetopo import ElasticityProblem, ConeFilter, SIMPOptimizer
 
 
 def test_cantilever_optimization():

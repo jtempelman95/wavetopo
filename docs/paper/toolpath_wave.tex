@@ -484,6 +484,85 @@ and $\partial J/\partial\theta_\ell$ has the identical form
 fiber orientation in an annular shell around the void is designed. Verified to
 $\sim\!10^{-8}$.
 
+\section{Manufacturability constraints for wave-control toolpaths}
+\label{sec:wavemfg}
+The finite-domain devices of \S11 are, so far, purely academic: the fiber
+orientation is free to vary at whatever rate the optimizer finds useful, with
+no accounting for the fact that a real AFP or MEX head cannot lay a fiber tow
+along an arbitrarily sharp turn, and no accounting for the mounting holes,
+fasteners, or cut-outs that a real part carries. \texttt{wavetopo/wave\_mfg.py}
+folds the two manufacturing constraints already developed for the
+quasi-static problem (\S9) into the harmonic wave solver of \S11, so that
+every wave-control device --- lens, broadband lens, and cloak --- can be
+re-optimized under them without changing the underlying adjoint.
+
+\subsection{True through-holes as a fixed two-phase field}
+A drilled or printed-through hole is not a soft polymer inclusion; it is
+\emph{air}. We therefore reuse the two-phase element interpolation of \S7 with
+a fixed density field $\vz\in\{0,1\}^N$ (the hole geometry is given, not
+designed) and an Ersatz stiffness floor $\varepsilon_v\ll1$ in place of a
+matrix phase:
+\begin{equation}
+  \vK(\vth)=\sum_\ell s_\ell\,\mathbf{k}_f(\theta_\ell),\qquad
+  s_\ell=\varepsilon_v+(1-\varepsilon_v)\,z_\ell^{\,p},\qquad
+  \vM=\sum_\ell z_\ell\rho_f\,\mathbf{m}_\ell,
+  \label{eq:holeK}
+\end{equation}
+i.e.\ the fiber composite is the \emph{only} material phase; the hole
+contributes neither stiffness nor mass. Because \eqref{eq:holeK} is linear in
+$\mathbf{k}_f(\theta_\ell)$, the harmonic adjoint \eqref{eq:harmadj} is
+unchanged except for the constant per-element factor $s_\ell$ multiplying
+$(1+\ii\eta)\,\rmd\mathbf{k}_f/\rmd\theta$ --- the fiber orientation is only
+ever designed (and only ever contributes gradient) where material actually
+exists. The same construction gives a \emph{broadband, multi-hole} cloak: for
+frequencies $\{\omega_i\}$ with reference fields $\vu_{{\rm ref},i}$ (solved
+on the hole-free plate) and observation weights $\vW$, the worst-case
+mismatch objective is the direct analogue of \eqref{eq:softmin},
+\begin{equation}
+  \min_{\vth}\ \softmax_i\bigl(J_i/J_i^0\bigr),\qquad
+  J_i=(\vu_i-\vu_{{\rm ref},i})\HH\vW(\vu_i-\vu_{{\rm ref},i}),\qquad
+  \softmax_\rho(v)=\tfrac1\rho\ln\textstyle\sum_ie^{\rho v_i},
+  \label{eq:softmax_cloak}
+\end{equation}
+normalizing by the uncloaked (straight-fiber) mismatch $J_i^0$ at each
+frequency, with gradient the KS-weighted combination of the per-frequency
+adjoints \eqref{eq:harmadj}, exactly as in \S11.2.
+
+\subsection{Fiber-curvature (curl) limits in the wave problem}
+The orientation field $\theta=\vPhi\vthh$ is the same $C^1$ CS-RBF map used in
+the quasi-static problem, so the curl (fiber-curvature) constraint
+\eqref{eq:curl}--\eqref{eq:curljac} applies unchanged: $\zeta_\ell=\cos
+\theta_\ell(\vPhi_{,x}\vthh)_\ell+\sin\theta_\ell(\vPhi_{,y}\vthh)_\ell$, with
+the local limit $\zeta_\ell^2\le\zeta_{\rm all}^2$ enforced only over solid
+(non-hole) elements, $\{\ell: z_\ell>\tfrac12\}$. We reuse the
+augmented-Lagrangian driver of \S14 verbatim (objective $J$ from
+\S11.1--11.3 or \S16.1 replacing compliance $f$; constraints normalized as
+$g_\ell=\zeta_\ell^2/\zeta_{\rm all}^2-1$ so the penalty scale is
+frequency/objective-independent), with one addition: because a harmonic
+objective's response to $\theta$ is oscillatory (through $\cos,\sin$ in
+$\vD$) rather than monotone as in compliance, the coupled MMA/AL subproblem
+can \emph{overshoot} the curl boundary by a few percent even after the
+penalty $\mu$ saturates at $\mu_{\max}$. We therefore add a cheap bisection
+correction: at each outer iterate that is near-feasible
+($\max_\ell|\zeta_\ell|/\zeta_{\rm all}<1.25$), scale the orientation
+solution toward straight fibers, $\vthh_\kappa=\kappa\vthh$, and bisect
+$\kappa\in(0,1]$ (using only curl evaluations, no re-solve of the wave
+equation) for the largest $\kappa$ with $\max_\ell|\zeta_\ell(\kappa\vthh)|
+\le\zeta_{\rm all}$; because $\zeta(\mathbf 0)=0$, feasibility at $\kappa=0$
+is guaranteed and the bisection always succeeds. The resulting exactly
+feasible design is scored by the true objective and kept if it improves on
+the best feasible iterate so far. This costs $O(40)$ sparse mat-vecs per
+outer iteration (curl only) and no additional wave solves.
+
+\subsection{Verification}
+All adjoints in \texttt{wave\_mfg.py} --- the through-hole-scaled focus
+gradient, the broadband match gradient (sum and soft-max modes), and the
+curl Jacobian --- were verified against central finite differences to
+$\lesssim\!10^{-6}$ (Table~\ref{tab:verify}, rows added in
+\texttt{tests/test\_wave\_mfg.py}); the augmented-Lagrangian driver was
+checked to return a design satisfying the curl limit to within the tolerance
+$\text{tolC}=5\times10^{-3}$ on the problems of \S16.5.
+
 \section{Periodic (Bloch) analysis}
 \subsection{Bloch reduction and the generalized eigenproblem}
 For a wavevector $\mathbf k$ the displacement obeys $\vu(\mathbf x+\mathbf a)=

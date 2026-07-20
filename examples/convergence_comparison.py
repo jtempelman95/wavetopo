@@ -17,7 +17,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt import ElasticityProblem, ConeFilter
+from wavetopo import ElasticityProblem, ConeFilter
 
 # ── Shared problem parameters ────────────────────────────────────────────────
 nelx, nely   = 80, 40

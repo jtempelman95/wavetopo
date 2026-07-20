@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.bloch import berry_curvature
+from wavetopo.bloch import berry_curvature
 from examples.valley_mass import build
 from examples.valley_viz import sublattice_support_angles
 

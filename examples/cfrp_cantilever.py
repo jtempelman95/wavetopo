@@ -22,10 +22,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from topoopt.cfrp import Material, QuadMesh, grid_support_points
-from topoopt.cfrp_problem import CFRPProblem
-from topoopt.cfrp_optimizer import optimize_cfrp
-from topoopt.cfrp_viz import plot_design
+from wavetopo.cfrp import Material, QuadMesh, grid_support_points
+from wavetopo.cfrp_problem import CFRPProblem
+from wavetopo.cfrp_optimizer import optimize_cfrp
+from wavetopo.cfrp_viz import plot_design
 
 
 def save_npz(path, mesh, res):

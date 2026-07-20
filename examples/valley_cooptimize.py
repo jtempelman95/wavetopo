@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 from examples.valley_mass import build, line_bands
 from examples.valley_viz import sublattice_support_angles
-from topoopt.valley_opt import ValleyOptimizer, _straddle
-from topoopt.cfrp_viz import orientation_streamlines
+from wavetopo.valley_opt import ValleyOptimizer, _straddle
+from wavetopo.cfrp_viz import orientation_streamlines
 
 
 def bands_through_K(bp, y, th, kyD, sigma, nev, sp=0.45, n=31):

@@ -3,13 +3,13 @@ Run scipy SIMP and dolfinx cantilever side by side.
 Compare xPhys arrays at each iteration to find where they diverge.
 Uses a small 20x10 mesh for speed.
 """
-import sys; sys.path.insert(0, '/home/jrt/topoopt')
+import sys; sys.path.insert(0, '/home/jrt/wavetopo')
 import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 from scipy.spatial import cKDTree
-from topoopt import ElasticityProblem
-from topoopt.filters import ConeFilter
+from wavetopo import ElasticityProblem
+from wavetopo.filters import ConeFilter
 
 nelx, nely = 20, 10
 lx, ly = 2.0, 1.0

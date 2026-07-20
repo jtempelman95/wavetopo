@@ -37,8 +37,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from topoopt import ElasticityProblem, ConeFilter, OptimizationRecorder
-from topoopt.optimizer import OptimizationResult
+from wavetopo import ElasticityProblem, ConeFilter, OptimizationRecorder
+from wavetopo.optimizer import OptimizationResult
 
 
 def parse_args() -> argparse.Namespace:
