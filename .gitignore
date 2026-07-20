@@ -11,6 +11,13 @@ build/
 .texcache/
 .mplcache/
 
+# ---- LaTeX output --------------------------------------------------------
+# The compiled PDFs are NOT tracked.  They can only be built correctly where
+# newtx is installed; a PDF built without it embeds Times text with Computer
+# Modern maths, which misrepresents the document.  Build locally:
+#     cd docs/paper && pdflatex dolfinx_wave_control.tex   (twice)
+docs/paper/*.pdf
+
 # ---- LaTeX intermediates -------------------------------------------------
 *.aux
 *.log

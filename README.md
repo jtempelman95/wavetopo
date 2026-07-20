@@ -234,3 +234,37 @@ Both use `newtxtext`/`newtxmath`. It is loaded unconditionally so MiKTeX's
 install-on-demand can fetch it; set `\newtxfalse` in the preamble to build with
 default fonts instead. `amssymb` is deliberately **not** loaded alongside
 newtxmath (which supplies those symbols itself and clashes otherwise).
+
+**Compiled PDFs are not tracked.** They can only be built correctly where newtx
+is installed, and a PDF built without it embeds Times text with Computer Modern
+maths — which misrepresents the document. Build them yourself with the commands
+above.
+
+### Checking which fonts your build actually used
+
+```bash
+pdffonts docs/paper/dolfinx_wave_control.pdf | head        # poppler-utils
+# or, with PyMuPDF:
+python -c "import fitz,sys; d=fitz.open(sys.argv[1]); \
+  print(sorted({f[3].split('+')[-1] for p in range(6) for f in d[p].get_fonts()}))" \
+  docs/paper/dolfinx_wave_control.pdf
+```
+
+| what you see | meaning |
+|---|---|
+| `NimbusRomNo9L`/`TeXGyreTermes` **and** `NewTX*`/`zntx*` maths | newtx worked |
+| all `CM*` (Computer Modern) | fallback path — newtx not installed |
+| Times text **but** `CMMI`/`CMSY` maths | **newtxtext loaded, newtxmath did not** — the text font changed and the maths did not |
+
+The third row is the failure mode to watch for: it means only half the pairing
+took effect.
+
+### Notation macros
+
+Notation is declared through `\DefN` (`\providecommand`+`\renewcommand`), not
+`\newcommand`. Short names like `\T`, `\HH`, `\ii` and `\Real` are already
+defined by some packages and engines (`\T` is a text accent in several); with
+`\newcommand` a pre-existing definition makes the declaration fail *while keeping
+the old meaning*, and every later use in maths raises `Missing $ inserted`
+hundreds of lines from the cause. This is why the document could build on TeX
+Live and fail on MiKTeX.
