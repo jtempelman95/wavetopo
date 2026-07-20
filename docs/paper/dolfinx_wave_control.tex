@@ -61,27 +61,19 @@
 \input{results_macros}   % shared with the beamer slides
 
 % ---- fonts -------------------------------------------------------------- %
-% newtx is loaded UNCONDITIONALLY so MiKTeX's install-on-demand can fetch it.
-% (An \IfFileExists guard defeats that: it reports "absent" for a package that
-% has not been installed YET, so the fallback runs and the installer is never
-% triggered -- which is why the document came out in default fonts.)
+% The newtx pairing, loaded plainly and unconditionally.  If it is missing you
+% get an explicit "File newtxtext.sty not found" and can install it -- which is
+% far better than a silent fallback that merely looks like standard LaTeX.
 %
-% Requirements newtx imposes, all satisfied here:
-%   * amsmath and amsthm are loaded BEFORE newtxmath (see the top of the file);
-%     amsthm in particular, or \openbox is defined twice
-%   * amssymb must NOT be loaded with newtxmath -- newtxmath supplies the AMS
-%     symbols itself (\mathbb, \square, \lesssim, \gtrsim are the only ones used)
-%   * \usepackage{times} is obsolete and conflicts -- removed
-%   * bm and mathalfa must come AFTER the math font is selected
-%
-% Set \newtxtrue to build without newtx (default Computer Modern + amssymb).
-\newif\ifnewtx\newtxtrue
-\ifnewtx
-  \usepackage{newtxtext}
-  \usepackage[varg]{newtxmath}
-\else
-  \usepackage{amssymb}
-\fi
+% Constraints this satisfies:
+%   * amsmath and amsthm are loaded BEFORE newtxmath (top of file); amsthm in
+%     particular, or \openbox ends up defined twice
+%   * amssymb is NOT loaded -- newtxmath supplies the AMS symbols itself, and
+%     loading both errors on \square, \lesssim, \gtrsim, \mathbb
+%   * \usepackage{times} is obsolete and would give Times text with Computer
+%     Modern maths -- exactly the half-applied pairing to avoid; removed
+%   * bm and mathalfa must follow the math font
+\usepackage{newtxtext,newtxmath}
 \usepackage{bm}
 \usepackage[scr=rsfso]{mathalfa}
 

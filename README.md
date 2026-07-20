@@ -230,10 +230,23 @@ pdflatex dolfinx_wave_control.tex && pdflatex dolfinx_wave_control.tex
 pdflatex slides.tex && pdflatex slides.tex
 ```
 
-Both use `newtxtext`/`newtxmath`. It is loaded unconditionally so MiKTeX's
-install-on-demand can fetch it; set `\newtxfalse` in the preamble to build with
-default fonts instead. `amssymb` is deliberately **not** loaded alongside
-newtxmath (which supplies those symbols itself and clashes otherwise).
+Both documents load the font pairing plainly:
+
+```latex
+\usepackage{newtxtext,newtxmath}
+```
+
+There is **no conditional and no fallback** — deliberately. A fallback makes a
+missing package look like "the document just renders in standard LaTeX", which
+is indistinguishable from a font that failed to apply. If newtx is absent you
+now get an explicit `File newtxtext.sty not found`, and MiKTeX's
+install-on-demand can act on it.
+
+`amssymb` is deliberately **not** loaded: newtxmath supplies the AMS symbols
+itself and loading both errors on `\square`, `\lesssim`, `\gtrsim`, `\mathbb`.
+`\usepackage{times}` is likewise absent — it changes text to Times but leaves
+maths in Computer Modern, which is the half-applied pairing this setup exists to
+avoid. `amsmath`/`amsthm` precede newtxmath; `bm` and `mathalfa` follow it.
 
 **Compiled PDFs are not tracked.** They can only be built correctly where newtx
 is installed, and a PDF built without it embeds Times text with Computer Modern

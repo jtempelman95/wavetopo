@@ -8,15 +8,20 @@
 \usepackage{amsmath}                      % MUST precede newtxmath
 \usepackage{amsthm}
 
-% ---- fonts: same contract as the paper ---------------------------------- %
-% Loaded unconditionally so MiKTeX install-on-demand works; \newtxtrue to skip.
-\newif\ifnewtx\newtxtrue
-\ifnewtx
-  \usepackage{newtxtext}
-  \usepackage[varg]{newtxmath}
-\else
-  \usepackage{amssymb}
-\fi
+% ---- fonts -------------------------------------------------------------- %
+% The newtx pairing, loaded plainly and unconditionally.  If it is missing you
+% get an explicit "File newtxtext.sty not found" and can install it -- which is
+% far better than a silent fallback that merely looks like standard LaTeX.
+%
+% Constraints this satisfies:
+%   * amsmath and amsthm are loaded BEFORE newtxmath (top of file); amsthm in
+%     particular, or \openbox ends up defined twice
+%   * amssymb is NOT loaded -- newtxmath supplies the AMS symbols itself, and
+%     loading both errors on \square, \lesssim, \gtrsim, \mathbb
+%   * \usepackage{times} is obsolete and would give Times text with Computer
+%     Modern maths -- exactly the half-applied pairing to avoid; removed
+%   * bm and mathalfa must follow the math font
+\usepackage{newtxtext,newtxmath}
 \usepackage{bm}
 \usepackage{booktabs}
 \usepackage{graphicx}
