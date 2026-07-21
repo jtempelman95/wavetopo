@@ -152,25 +152,27 @@ def main():
     tidy(a)
 
     # (e) STATIC ---------------------------------------------------------- #
-    # Plot STRAIN-ENERGY DENSITY, not displacement.  Displacement under an axial
-    # pull is the integral of strain along x -- a smooth ramp (corr with x ~0.98)
-    # that looks the same for a solid block and hides the microstructure.  Strain
-    # energy lights up the load-bearing ligaments and vanishes in the voids, so
-    # it shows how the metamaterial actually carries the load.
-    from matplotlib.colors import LogNorm
+    # Strain-energy density under the axial pull -- NOT displacement, which is
+    # the integral of strain along x and hence a smooth ramp (corr with x ~0.98)
+    # that hides the microstructure.  Node-averaged and gouraud-shaded (flat
+    # per-triangle on 50k elements speckles) on a LINEAR scale clipped at the
+    # 97th percentile (log makes every ligament saturate).  The result is a clean
+    # map of where the structure carries load: bright in the ligaments, dark in
+    # the voids.
     a = ax[1, 0]
-    if "estatic_tri" in d.files:
-        e = d["estatic_tri"]
-        vmax = np.percentile(e, 99.5)
-        tp = a.tripcolor(tri, facecolors=e, cmap="inferno", shading="flat",
-                         norm=LogNorm(vmax=vmax, vmin=vmax / 1e3))
-        clab = "strain-energy density (log)"
+    if "estatic_node" in d.files:
+        e = d["estatic_node"].copy()
+        e *= np.clip(d["zdens_node"], 0.0, 1.0)        # dim the voids
+        vmax = np.percentile(e[e > 0], 97)
+        tp = a.tripcolor(tri, np.minimum(e, vmax), cmap="magma",
+                         shading="gouraud", vmin=0.0, vmax=vmax)
+        clab = "strain-energy density"
     else:
         us = d["ustatic"]
         tp = a.tripcolor(tri, us / us.max(), cmap="viridis", shading="gouraud")
         clab = "$|u|$ (norm.)"
     for xv in (x0, x1):
-        a.axvline(xv, color="c", ls="--", lw=1.0, alpha=0.85)
+        a.axvline(xv, color="c", ls="--", lw=1.1, alpha=0.9)
     a.set_aspect("equal"); a.set_xticks([]); a.set_yticks([])
     kp = float(d["k_eff_co"])
     ks = float(d["k_solid"]) if "k_solid" in d.files else np.nan
@@ -181,6 +183,7 @@ def main():
                 loc="left", color=INK)
     cb = fig.colorbar(tp, ax=a, fraction=0.030, pad=0.03)
     cb.set_label(clab, fontsize=8, color=INK2)
+    cb.set_ticks([])
 
     # (f) energy profile --------------------------------------------------- #
     a = ax[1, 1]
