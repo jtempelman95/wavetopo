@@ -1806,6 +1806,144 @@ driver therefore starts from a deliberately symmetry-broken cell. This is a
 property of the physics, not of the implementation, and any co-design of
 degenerate spectra has to confront it.
 
+\section{Topological valley guiding, and what the mesh must resolve}
+\label{sec:valley}
+The orientation lever of \S\ref{sec:results} steers waves through a homogeneous
+plate; the periodic cell of \S\ref{sec:meta} shapes a dispersion relation. A
+third regime combines them: a \emph{topological} valley-Hall waveguide, in which
+the orientation of a C$_3$ scatterer acts as a tunable Dirac mass and a domain
+wall between mirror-partner orientations guides a kink mode. This section reports
+that device, and --- because the result turns on it --- the discretization
+requirement that makes it meaningful.
+
+\subsection{The crystal and the protected window}
+We use the scalar (antiplane-shear) problem on a triangular lattice
+($\mathbf a_1=a(1,0)$, $\mathbf a_2=a(\tfrac12,\tfrac{\sqrt3}{2})$) with one
+stiff equilateral-triangle rod per cell ($R=0.44a$, $\mu_f/\mu_m=100$). An
+equilateral triangle is C$_{3\mathrm v}$; aligning its mirrors with the lattice's
+gives a symmetry-protected Dirac cone at $K$, and rotating the rod by $\alpha$
+breaks the mirror while preserving C$_3$, opening a valley gap with Dirac mass
+$m\propto\cos(3\alpha)$. Mirror-partner domains ($\alpha$ and $60^\circ-\alpha$,
+here $15^\circ|45^\circ$) carry opposite $m$, hence $|\Delta C_v|=1$, and their
+interface hosts a kink mode.
+
+Three independent calculations, all on \emph{rod-conforming} meshes
+(\S\ref{sec:valley:mesh}), bound where that mode may be claimed as topological.
+The complete bulk gap from the periodic cell
+(\texttt{wavetopo/valley\_cell.py}, converged in Brillouin-zone sampling: the
+band-2 maximum is stable to four decimals and the band-3 minimum moves by $0.019$
+between $169$ and $1681$ $\mathbf k$-points) is
+\begin{equation}
+  \omega\in[\VGAPLO,\ \VGAPHI],\qquad \text{width }\VGAPW .
+  \label{eq:vgap}
+\end{equation}
+The ribbon supercell with a $15^\circ|45^\circ$ wall carries a strongly
+wall-localized branch spanning $\omega\approx6.5$ to $\VKINKHI$. The
+\emph{protected window} is the intersection --- the wall branch lying inside the
+complete gap:
+\begin{equation}
+  \omega\in[\VGAPLO,\ \VKINKHI].
+  \label{eq:vprot}
+\end{equation}
+
+\paragraph{Guiding is broader than protection.} In the finite domain the wall
+guides well over roughly $[7.05,7.85]$: the field hugs the wall and reaches a
+probe at the far end, with wall confinement
+$C=\int_{d<1}|u|^2/\int_{\rm int}|u|^2 = \VWCONF$ (against $\VWCONFB$ below the
+gap). But confinement stays high to $\omega\approx7.85$, well \emph{above} the
+complete gap edge $\VGAPHI$. Fields at $\omega=7.7$ confirm genuine, tightly
+confined transport. It is nonetheless not topological: above $\VGAPHI$ bulk
+states exist and the ribbon carries no wall branch, so what guides there is
+conventional index contrast at the wall, not a gap-traversing kink mode. We
+therefore restrict every protection claim to \eqref{eq:vprot} and report the
+$7.6$--$7.85$ guiding separately as ordinary guiding. Distinguishing the two
+requires the confinement measure: transmission to a probe registers energy that
+arrived by \emph{any} route and reads high in both regimes, differing by only a
+factor $\sim\!3$.
+
+\subsection{Why the mesh must conform to the rods}
+\label{sec:valley:mesh}
+The natural finite-domain discretization --- mesh the rectangle, then assign each
+element to rod or matrix by testing its centroid --- is the staircased
+construction rejected for through-holes in \S\ref{sec:hole} and for the cloaked
+void in \S\ref{sec:cloak}. Here it is not merely inaccurate but
+\emph{disqualifying}, because the Dirac mass $m\propto\cos(3\alpha)$ \emph{is}
+the C$_3$ symmetry breaking of the scatterer: a staircase that perturbs the rod's
+threefold symmetry by an amount comparable to the intended mass perturbs the gap
+itself.
+
+The perturbation is not small. Painting rods onto a plain mesh at $h=0.09$ leaves
+the \emph{mean} rod area correct to $0.09\%$ --- staircase errors average out over
+$293$ rods, so a bulk fiber-fraction check does not detect the problem --- while
+giving each individual rod a random area error and displacing its effective
+centre by up to $\VRODOFF\%$ of $R$. Cutting the rods into the geometry instead
+reproduces every rod exactly: per-rod area $0.251487$ with standard deviation
+$2.2\times10^{-16}$ and centroid offset $3\times10^{-16}$.
+
+Table~\ref{tab:vconv} shows the consequence. Sweeping wall transmission over
+frequency at three resolutions, the conforming meshes agree to a factor
+$\VCONVC$ and peak inside the gap \eqref{eq:vgap} at every resolution. The
+painted meshes spread by a factor $\VCONVP$, and at the coarsest resolution their
+peak falls at $\omega=8.0$, outside the gap altogether --- no guided band at all.
+Painted meshes do converge toward the conforming answer, but slowly: at $h=0.06$
+they are still a factor $\sim\!4$ low. The conforming construction is converged
+at $h=0.12$, where the painted one is not converged at half that spacing.
+
+\begin{table}[h]
+\centering
+\caption{Mesh-convergence of the guided band. $\bar T$ is the mean transmission
+over the complete gap \eqref{eq:vgap}; $\omega_{\rm peak}$ is where transmission
+is largest.}
+\label{tab:vconv}
+\begin{tabular}{llccc}
+\toprule
+mesh & $h$ & $\bar T$ (in gap) & $\omega_{\rm peak}$ & in gap? \\
+\midrule
+conforming & 0.12 & $1.97\times10^{-1}$ & 7.267 & yes \\
+conforming & 0.09 & $3.71\times10^{-1}$ & 7.200 & yes \\
+conforming & 0.06 & $2.99\times10^{-1}$ & 7.133 & yes \\
+\midrule
+painted    & 0.12 & $1.34\times10^{-4}$ & 8.000 & \textbf{no} \\
+painted    & 0.09 & $1.38\times10^{-2}$ & 7.467 & yes \\
+painted    & 0.06 & $7.88\times10^{-2}$ & 7.533 & yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\textwidth]{figs/valley_convergence.png}
+\caption{(a) Wall transmission vs frequency for rod-conforming (blue, solid) and
+centroid-painted (orange, dashed) meshes at three resolutions. Green shading is
+the protected window \eqref{eq:vprot}; grey is the remainder of the complete gap
+\eqref{eq:vgap}. The conforming curves collapse; the painted curves scatter over
+orders of magnitude. (b) Wall confinement $C$, the measure that separates a bound
+kink mode from bulk transport. $C$ stays high above the gap edge, which is why
+guiding there is reported as conventional rather than protected.}
+\label{fig:vconv}
+\end{figure}
+
+\subsection{Robustness to wall defects}
+Within the protected window we damage the wall and re-measure. At
+$\omega=\VROMEGA$ on a conforming mesh, transmission falls from $\VRPRIS$
+(pristine) to $\VRVAC\%$ of that value for a removed rod and $\VRDIS\%$ for a
+cluster of rods rotated by $\pm12^\circ$, while all three remain more than three
+orders of magnitude above the out-of-band floor (pristine contrast $\VRCON\times$).
+
+Two qualifications keep this honest. First, this is degradation, not immunity: a
+vacancy costs a factor $\sim\!5$. Valley-Hall protection suppresses
+\emph{inter-valley} backscattering, and a vacancy is a sharp defect that supplies
+exactly the large momentum transfer the mechanism does not forbid; the correct
+claim is that the mode survives damage that would extinguish a resonant defect
+line, not that it is immune. Second, a defect test is only meaningful if the
+pristine transmission is well clear of the floor --- otherwise all three
+configurations report noise and ``survives damage'' is vacuous. The driver
+therefore refuses to run unless the pristine in-band/out-of-band contrast exceeds
+a threshold. An earlier version of this study, on a painted mesh and at a
+frequency read off a painted sweep, returned $4.2\times10^{-6}$,
+$4.4\times10^{-6}$ and $1.2\times10^{-5}$ for the three configurations: all at
+the deep-gap floor, and no conclusion about protection follows from them.
+
 \section{Verification and reproducibility}
 Every sensitivity is derived by the discrete adjoint \eqref{eq:adj} and verified
 against central finite differences to a relative error $\sim\!10^{-6}$ on random
