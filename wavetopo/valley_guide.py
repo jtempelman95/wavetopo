@@ -382,6 +382,43 @@ def wall_side_fn(poly):
     return side
 
 
+def dist_to_polyline(pts, poly):
+    """Perpendicular distance from each point to a polyline (vectorized)."""
+    pts = np.atleast_2d(np.asarray(pts, float))
+    poly = np.asarray(poly, float)
+    d = np.full(pts.shape[0], np.inf)
+    for k in range(len(poly) - 1):
+        p0, seg = poly[k], poly[k + 1] - poly[k]
+        t = np.clip((pts - p0) @ seg / (seg @ seg), 0.0, 1.0)
+        d = np.minimum(d, np.hypot(*(pts - (p0 + t[:, None] * seg)).T))
+    return d
+
+
+def wall_confinement(npx, tris, u, poly, *, width=1.0, margin=2.5,
+                     Lx=None, Ly=None):
+    r"""Fraction of interior field energy lying within ``width`` of the wall,
+
+        C = \int_{d<width} |u|^2 dA  /  \int_{interior} |u|^2 dA .
+
+    This is the discriminator that transmission to a probe cannot supply.  A
+    probe at the far end of the wall registers energy that arrived by *any*
+    route, so it reads high both for a confined kink mode inside the bulk gap
+    and for ordinary bulk propagation above it.  Only the confinement separates
+    them: a guided edge mode keeps C near 1, delocalized bulk transport does
+    not.  The sponge region is excluded via ``margin`` so the absorbing layer
+    does not distort the normalization.
+    """
+    w = nodal_areas(npx, tris)
+    e = w * np.abs(u) ** 2
+    interior = np.ones(npx.shape[0], bool)
+    if Lx is not None and Ly is not None:
+        interior = ((npx[:, 0] > margin) & (npx[:, 0] < Lx - margin)
+                    & (npx[:, 1] > margin) & (npx[:, 1] < Ly - margin))
+    near = dist_to_polyline(npx, poly) < width
+    tot = e[interior].sum()
+    return float(e[interior & near].sum() / tot) if tot > 0 else np.nan
+
+
 def quadratic_sponge(npx, Lx, Ly, *, margin=1.8, strength=25.0):
     """Mass-proportional absorbing layer ramping quadratically into all four
     boundaries (nodal coefficient; multiplied by the lumped mass in ``assemble``)."""
@@ -444,13 +481,35 @@ def assemble(npx, tris, z, *, muf, omega, eta, sponge,
     return D, K, M
 
 
+def nodal_areas(npx, tris):
+    """Lumped nodal areas: each triangle donates a third of its area to each of
+    its vertices.  ``sum(nodal_areas) == total domain area``."""
+    X = npx[tris]
+    a = 0.5 * np.abs((X[:, 1, 0] - X[:, 0, 0]) * (X[:, 2, 1] - X[:, 0, 1])
+                     - (X[:, 2, 0] - X[:, 0, 0]) * (X[:, 1, 1] - X[:, 0, 1]))
+    w = np.zeros(npx.shape[0])
+    np.add.at(w, tris.ravel(), np.repeat(a / 3.0, 3))
+    return w
+
+
 def solve_transmission(npx, tris, z, *, muf, omega, eta, sponge, src, probe,
-                       **kw):
-    """Point-drive at node ``src``; return ``(u, T)`` with ``T = sum |u|^2`` over
-    the boolean node mask ``probe``."""
+                       weights=None, **kw):
+    r"""Point-drive at node ``src``; return ``(u, T)`` with
+
+        T = \int_probe |u|^2 dA  ~  sum_i w_i |u_i|^2 ,   w = nodal areas.
+
+    The originals returned the bare nodal sum ``sum |u|^2``, which weights each
+    node equally and therefore scales with local mesh density.  That is harmless
+    when comparing frequencies on one fixed mesh -- the use it was written for --
+    but it is exactly wrong for the mesh-convergence and conforming-vs-painted
+    comparisons this module exists to support, where the meshes differ.  Pass
+    ``weights`` to reuse a precomputed :func:`nodal_areas` across a sweep.
+    """
+    if weights is None:
+        weights = nodal_areas(npx, tris)
     D, _, _ = assemble(npx, tris, z, muf=muf, omega=omega, eta=eta,
                        sponge=sponge, **kw)
     F = np.zeros(npx.shape[0], complex)
     F[src] = 1.0
     u = spla.spsolve(D.tocsc(), F)
-    return u, float(np.sum(np.abs(u[probe]) ** 2))
+    return u, float(np.sum(weights[probe] * np.abs(u[probe]) ** 2))
