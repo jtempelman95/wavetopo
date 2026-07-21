@@ -176,6 +176,55 @@ class MultiFunctionalOptimizer:
             dJ_dy = dJ_dy.copy(); dJ_dy[self.passive] = 0.0
         return J, self.P.T @ (dproj*dJ_dy), dJ_dt, info
 
+    def components(self, z, th):
+        r"""Raw objective/constraint values and their SEPARATE gradients.
+
+        ``evaluate`` scalarizes stiffness and gap into one J with weights and
+        normalizers.  That is the wrong interface for a constrained solve --
+        "maximize C_bulk subject to gap >= g" needs the two gradients apart, and
+        needs no normalizers at all (the treacherous ``gap_ref``, inferred from a
+        seed whose gap is badly closed, has no role here).  Everything below is
+        already computed inside evaluate(); this returns it unmixed, at the cost
+        of one eigen-solve pass, exactly as before.
+        """
+        b, bp = self.band, self.bp
+        y, dproj = self._apply(z, with_grad=True)
+        bp.assemble(y, th)
+
+        H = Homogenizer(bp)
+        C, _ = H.solve()
+        Cb = Homogenizer.bulk(C)
+        gz_C, gth_C = H.dC_d(self.Wb)
+
+        wl, wu, gzl, gzu, gthl, gthu = [], [], [], [], [], []
+        for (kx, ky) in self.kset:
+            w, dz_, dt_ = bp.eigen_sensitivity(kx, ky, self.n_bands)
+            gzl.append(dz_[b]); gzu.append(dz_[b + 1])
+            gthl.append(dt_[b]); gthu.append(dt_[b + 1])
+            wl.append(w[b]); wu.append(w[b + 1])
+        wl, wu = np.array(wl), np.array(wu)
+        top_l, w_top = _softmax(wl, self.rho_ks)
+        bot_u, w_bot = _softmin(wu, self.rho_ks)
+        gap = bot_u - top_l
+        dgap_z = (w_bot @ np.array(gzu)) - (w_top @ np.array(gzl))
+        dgap_t = (w_bot @ np.array(gthu)) - (w_top @ np.array(gthl))
+
+        A, sumA = bp.mesh.A, bp.mesh.A.sum()
+        vol = (A @ y) / sumA
+
+        def to_z(g):
+            g = np.asarray(g, float)
+            if self.passive is not None:
+                g = g.copy(); g[self.passive] = 0.0
+            return self.P.T @ (dproj * g)
+
+        return dict(C=float(Cb), gap=float(gap), vol=float(vol),
+                    dC_dz=to_z(gz_C), dC_dth=np.asarray(gth_C, float),
+                    dgap_dz=to_z(dgap_z), dgap_dth=np.asarray(dgap_t, float),
+                    dvol_dz=to_z(A / sumA),
+                    dvol_dth=np.zeros_like(np.asarray(gth_C, float)),
+                    sharpness=self.sharpness(y), y=y)
+
     # ---- driver -------------------------------------------------------- #
     def run(self, z0, th0, *, max_iter=100, move=0.08, verbose=True):
         N, M = self.bp.mesh.N, self.bp.M
