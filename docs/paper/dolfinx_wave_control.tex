@@ -1726,80 +1726,115 @@ $C^H_{22}$ exactly; and both gradients match central differences to
 $\sim\!10^{-6}$ (density) and $10^{-8}$--$10^{-11}$ (orientation).
 
 \subsection{The experiment: does the toolpath buy anything?}
-We minimize
-\begin{equation}
-  J=-w_K\frac{C_{\rm bulk}}{C_{\rm ref}}
-    -w_g\frac{\text{gap}}{\text{gap}_{\rm ref}}
-    +c_v(\bar z-v^\star)^2 ,
-  \label{eq:mfobj}
-\end{equation}
-with the complete gap between bands $b$ and $b+1$ aggregated by KS
-\eqref{eq:ks} over the $\mathbf k$-set, and sweep the weight ratio $w_K/w_g$ to
-trace a trade-off front. The comparison that matters is run twice from an
+\label{sec:multifunc:experiment}
+We compare the two design freedoms on the stiffness--gap trade-off, run from an
 \emph{identical} start with an \emph{identical} budget:
 \begin{itemize}\itemsep0pt
   \item \textbf{co-design} --- density $z$ \emph{and} orientation $\theta$ free;
-  \item \textbf{geometry-only} --- $\theta$ frozen at the straight-fiber baseline.
+  \item \textbf{geometry-only} --- $\theta$ frozen at the straight-fiber baseline,
+        only $z$ designed.
 \end{itemize}
-If the co-design front lies strictly outside the geometry-only front, the
-toolpath is supplying something the geometry cannot.
+If the co-design front lies outside the geometry-only front, the toolpath is
+supplying something the geometry cannot.
+
+\paragraph{How the front is traced matters, and an earlier version got it wrong.}
+A first version of this study scalarized stiffness and gap into one weighted
+objective \eqref{eq:mfobj} and swept the weight ratio. That construction has
+three defects that all push the same way. First, it is indexed by a weight, not
+by an engineering quantity. Second, it requires normalizers $C_{\rm ref}$ and
+$\text{gap}_{\rm ref}$, and the latter, inferred from a seed cell whose gap is
+badly \emph{closed} ($\approx-3.4$), makes the gap term numerically deaf once the
+gap opens. Third, and most consequential here, each weight was optimized as an
+independent cold start, so the \emph{geometry-only} baseline was systematically
+under-converged: the sweep reported geometry reaching \emph{no} complete gap at
+$C_{\rm bulk}=8.1$, which is simply false. We therefore solve the constrained
+problem directly,
+\begin{equation}
+  \max_{z,\theta}\ C_{\rm bulk}(z,\theta)\quad
+  \text{s.t.}\quad \text{gap}(z,\theta)\ge g_\star,\ \ \bar z=v^\star,
+  \label{eq:mfconstr}
+\end{equation}
+by the augmented Lagrangian of \S\ref{sec:al}, and trace the front by tightening
+$g_\star$ with warm starts along the branch (\texttt{examples/multifunc\_front.py}).
+The constraint level $g_\star$ is the engineering variable; no normalizer enters;
+and continuation keeps both fronts on a single, comparably-converged branch. The
+separate gradients $\partial C_{\rm bulk}/\partial(z,\theta)$ and
+$\partial\,\text{gap}/\partial(z,\theta)$ are finite-difference verified to
+$\le\!8\times10^{-6}$.
+
+\subsection{Result: co-design does \emph{not} improve the trade-off}
+\label{sec:multifunc:result}
+With both design freedoms optimized properly, the co-design advantage reported by
+the scalarized sweep disappears. At matched complete gap, geometry alone is as
+stiff as co-design or stiffer (Table~\ref{tab:multifunc},
+Figure~\ref{fig:multifunc}): geometry-only carries $+22\%$, $+23\%$ and $+7\%$
+more homogenized stiffness at gaps of $0.15$, $0.30$ and $0.45$ respectively. The
+earlier ``$\MFSTIFFGAIN\%$ more stiffness and $\MFGAPX\times$ the gap'' was an
+artifact of comparing a converged co-design against an under-converged
+geometry-only baseline: the constrained solve finds a geometry-only cell that is
+\emph{both} stiffer ($C_{\rm bulk}=9.5$) \emph{and} more gapped (complete gap
+$+0.46$) than the co-design point that number was built on ($C_{\rm bulk}=8.1$,
+gap $+0.48$), so the old baseline was strictly dominated.
 
 \begin{table}[h]
 \centering\small
-\caption{Co-design versus geometry-only at matched homogenized stiffness. The
-geometry-only gap is interpolated onto the co-design front's stiffness values.
-A positive gap means a \emph{complete} gap is open over the whole Brillouin-zone
-path.}
+\caption{Co-design versus geometry-only on the constrained stiffness--gap front,
+at matched complete gap, equal volume ($\bar z=0.5$) and equal budget. Higher
+$C_{\rm bulk}$ is better. Geometry alone matches or beats co-design at every
+shared gap; the one thing orientation adds is a wider \emph{achievable} gap.}
 \label{tab:multifunc}
 \begin{tabular}{cccc}
 \toprule
-$C_{\rm bulk}$ & co-design gap & geometry-only gap & advantage\\
+complete gap & co-design $C_{\rm bulk}$ & geometry-only $C_{\rm bulk}$ & stiffer by\\
 \midrule
-$8.14$  & $\mathbf{+0.477}$ & $-0.259$ & $+0.736$\\
-$12.29$ & $-0.022$ & $-0.643$ & $+0.621$\\
-$16.93$ & $-0.491$ & $-1.040$ & $+0.549$\\
+$0.15$ & $8.30$ & $\mathbf{10.12}$ & geom.\ $+22\%$\\
+$0.30$ & $8.50$ & $\mathbf{10.41}$ & geom.\ $+23\%$\\
+$0.45$ & $8.88$ & $\mathbf{9.52}$  & geom.\ $+7\%$\\
+$0.60$ & reached & \emph{not reached} & co-design only\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Result}
-The co-design front dominates at \emph{every} stiffness sampled, by
-$+\MFADVA$ to $+\MFADVC$ in gap (Table~\ref{tab:multifunc},
-Figure~\ref{fig:multifunc}). Comparing the best design of each kind that actually
-opens a complete gap: co-design reaches $C_{\rm bulk}=\MFCCO$ with a gap of
-$\MFGCO$, against $\MFCGE$ and $\MFGGE$ for geometry alone --- $\MFSTIFFGAIN\%$
-more stiffness \emph{and} $\MFGAPX\times$ the gap, from the same starting cell and
-the same number of iterations. The convergence history shows the two objectives
-rising \emph{together} rather than trading off: the gap crosses zero near
-iteration~12 while the stiffness climbs monotonically.
+\paragraph{What orientation \emph{does} buy: a wider achievable gap.}
+The single robust benefit of the toolpath is at the edge of feasibility. Pushing
+the gap constraint upward, co-design opens a complete gap of $0.60$ at fixed
+volume while geometry alone becomes infeasible there: the fiber anisotropy
+extends the maximum openable gap. This is a genuine but narrow role ---
+orientation does not improve the interior trade-off, it extends its \emph{range}
+--- and it is consistent with the mechanism: the anisotropic $\mathbf D_f(\theta)$
+can push apart bands that an isotropic geometry, at fixed volume, cannot separate
+further.
 
-The gap can also be labelled by the symmetry of the modes bounding it. Measuring
+\paragraph{A caution on ``stiffness''.}
+$C_{\rm bulk}$ is the homogenized cell modulus, the quantity optimized. It is not
+the same as the axial stiffness $k_{\rm eff}$ of the finite panel measured in
+\S\ref{sec:multifunc:finite}, and the two should not be read interchangeably; the
+finite panel retains only $\sim\!10\%$ of a solid panel's axial stiffness at this
+volume fraction, so ``stiff'' here means stiff \emph{relative to other gapped
+cells at equal volume}, not stiff in absolute terms.
+
+The gap polarity result is independent of the trade-off and unchanged. Measuring
 the inversion parity $P=\langle\bm\phi,\mathcal I\bm\phi\rangle$ at $\Gamma$ gives
 $P=\MFPARLO$ for the lower gap edge (an even, dilatation-like mode) against the
-odd acoustic pair at $P=-1$, so the gap is opened beneath an even mode --- the
+odd acoustic pair at $P=-1$, so the gap opens beneath an even mode --- the
 \emph{polarity} of the gap, not merely its width.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.99\textwidth]{figs/multifunc.png}
-\caption{Multi-functional metamaterial. Top left: the stiffness/gap trade-off,
-co-design (blue) against geometry-only (grey); the shaded region is where a
-complete gap is open. Top middle and right: the co-designed cell and its fiber
-orientation. Bottom: the band structure with the complete gap shaded, the
-convergence of both objectives, and the inversion parity of the modes at
-$\Gamma$ that fixes the gap's polarity.}
+\includegraphics[width=0.99\textwidth]{figs/multifunc_finite.png}
+\caption{Stiffness--gap co-design and its finite-panel test. (d) is the decisive
+panel: the constrained stiffness--gap fronts of co-design (blue) and
+geometry-only (orange), at matched volume and budget. Geometry alone lies on or
+above the co-design front over the shared gap range; orientation's only edge is a
+wider achievable gap. Remaining panels: the designed cell and its Bloch bands
+(a--c), the static load response (e), the energy decay through the finite panel
+(f), the insertion loss against number of periods with a flat pass-band control
+(g), and the panel's transmission spectrum (h).}
 \label{fig:multifunc}
 \end{figure}
 
-\paragraph{Two honest qualifications.} First, the optimized orientation fields are
-only moderately non-uniform (standard deviation $\approx\MFTHSTD^\circ$ for the
-reported design). The lever here is therefore largely a \emph{rotation of the
-anisotropy axis} relative to the geometry, not the elaborate spatial steering the
-wave-control problems of \S\ref{sec:results} exhibit. That is a weaker mechanism
-than curvilinear steering --- but a single extra continuous field still buys
-$+0.55$ to $+0.74$ in gap at fixed stiffness, which geometry alone does not
-reach at any weighting we tried. Second, a \emph{uniform} cell has four-fold
-degenerate modes at $\Gamma$, where the simple-eigenvalue derivative
+\paragraph{A caveat on the gradients near symmetry.} A \emph{uniform} cell has
+four-fold degenerate modes at $\Gamma$, where the simple-eigenvalue derivative
 \eqref{eq:eigsens} does not hold: gradients there disagree with finite
 differences by $30$--$1000\%$, against $\sim\!10^{-6}$ at a generic design. The
 driver therefore starts from a deliberately symmetry-broken cell. This is a

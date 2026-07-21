@@ -45,10 +45,19 @@ def tidy(ax):
 
 
 def load_pareto(dirpath):
-    rows = [json.load(open(f))
-            for f in sorted(glob.glob(os.path.join(dirpath, "*.json")))]
-    co = sorted([r for r in rows if r["mode"] == "co"], key=lambda r: r["gap"])
-    ge = sorted([r for r in rows if r["mode"] == "geom"], key=lambda r: r["gap"])
+    """Read the constrained-continuation fronts (examples/multifunc_front.py),
+    which write one JSON list per mode: {mode}.json = [{target, C, gap, vol}...].
+    Falls back to the older one-dict-per-file schema if present."""
+    co, ge = [], []
+    for mode, bucket in (("co", co), ("geom", ge)):
+        f = os.path.join(dirpath, f"{mode}.json")
+        if os.path.exists(f):
+            bucket.extend(json.load(open(f)))
+    if not co and not ge:                         # legacy: one dict per file
+        for f in sorted(glob.glob(os.path.join(dirpath, "*.json"))):
+            r = json.load(open(f))
+            (co if r["mode"] == "co" else ge).append(r)
+    co.sort(key=lambda r: r["gap"]); ge.sort(key=lambda r: r["gap"])
     return co, ge
 
 
@@ -56,7 +65,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/multifunc_finite_data.npz")
     ap.add_argument("--periods", default="results/multifunc_periods.npz")
-    ap.add_argument("--pareto", default="results/pareto")
+    ap.add_argument("--pareto", default="results/front_conv")
     ap.add_argument("--seedC", type=float, default=6.969)
     ap.add_argument("--out", default="results/multifunc_finite.png")
     args = ap.parse_args()
@@ -112,26 +121,33 @@ def main():
     a = ax[0, 3]
     have_pareto = os.path.isdir(args.pareto) and glob.glob(
         os.path.join(args.pareto, "*.json"))
+    def _key(r):
+        return r["C_bulk"] if "C_bulk" in r else r["C"]
+
     if have_pareto:
         co, ge = load_pareto(args.pareto)
         if co:
-            a.plot([r["gap"] for r in co], [r["C_bulk"] for r in co], "-o",
+            a.plot([r["gap"] for r in co], [_key(r) for r in co], "-o",
                    color=C_CO, lw=2.2, ms=6, label=r"co-design $z+\theta$")
         if ge:
-            a.plot([r["gap"] for r in ge], [r["C_bulk"] for r in ge], "--s",
+            a.plot([r["gap"] for r in ge], [_key(r) for r in ge], "--s",
                    color=C_GE, lw=1.9, ms=5.5, label=r"geometry only $z$")
-        a.axhline(args.seedC, color=INK2, lw=1.1, ls="-.", alpha=0.8)
-        a.text(0.99, args.seedC, "seed stiffness (no gap) ", fontsize=7.5,
-               color=INK2, va="bottom", ha="right",
-               transform=a.get_yaxis_transform())
-        a.legend(fontsize=8, frameon=False, labelcolor=INK2, loc="lower left")
+        # annotate the achievable-gap ceiling: the one place orientation helps
+        if co and ge:
+            gmax_ge = max(r["gap"] for r in ge)
+            gmax_co = max(r["gap"] for r in co)
+            if gmax_co > gmax_ge + 0.02:
+                a.axvspan(gmax_ge, gmax_co, color=C_CO, alpha=0.10, lw=0)
+                a.text(0.5 * (gmax_ge + gmax_co), a.get_ylim()[0], "co only",
+                       fontsize=7.5, color=C_CO, ha="center", va="bottom")
+        a.legend(fontsize=8, frameon=False, labelcolor=INK2, loc="upper left")
     else:
-        a.text(0.5, 0.5, "run examples/multifunc_pareto.py", ha="center",
+        a.text(0.5, 0.5, "run examples/multifunc_front.py", ha="center",
                va="center", fontsize=9, color=INK2, transform=a.transAxes)
     a.set_xlabel("complete band gap", color=INK, fontsize=9.5)
     a.set_ylabel(r"homogenized stiffness $C_{\rm bulk}$", color=INK,
                  fontsize=9.5)
-    a.set_title("(d) at matched gap, does orientation\nbuy stiffness?",
+    a.set_title("(d) stiffness--gap front:\ngeometry matches/beats co-design",
                 fontsize=10, loc="left", color=INK)
     tidy(a)
 
