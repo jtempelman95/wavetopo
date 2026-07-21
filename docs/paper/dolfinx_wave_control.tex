@@ -1806,6 +1806,113 @@ driver therefore starts from a deliberately symmetry-broken cell. This is a
 property of the physics, not of the implementation, and any co-design of
 degenerate spectra has to confront it.
 
+\subsection{From an infinite crystal to a part: the truncated panel}
+\label{sec:multifunc:finite}
+Everything above is an infinite-medium statement. The homogenized stiffness
+$C_H$ comes from a cell problem with periodic boundary conditions and the
+complete gap from a Bloch analysis that assumes the crystal repeats forever. A
+part has neither property: it is a finite tile of the cell, with free edges, a
+specific number of periods, and no Bloch condition anywhere. Whether a handful of
+periods of such a panel actually stops a wave is a separate question from whether
+the infinite crystal has a gap, and it is the one a designer is asking.
+
+We tile the co-designed cell into an $N_x\times N_y$ panel, flank it in $x$ with
+solid buffers of the same composite, leave the top and bottom edges free, and
+test the resulting structure directly (\texttt{examples/multifunc\_finite.py}).
+Both tests use the \emph{same} assembled stiffness, so the static and dynamic
+results cannot disagree about what the panel is. Clamping the left buffer and
+pulling the right one gives the axial stiffness of the truncated part,
+$k_{\rm eff}=\FPKCO$, measured on the geometry rather than inferred from $C_H$.
+
+\paragraph{Insertion loss, not transmission.}
+The dynamic measurement reports
+$\mathrm{IL}(\omega)=T_{\rm solid}(\omega)/T_{\rm panel}(\omega)$ against an
+identical \emph{solid} panel --- same source, sponge, buffers and mesh --- so
+source coupling, buffer reflection and sponge absorption, common to both runs,
+divide out and what remains is what the crystal does. On the $6\times4$ panel the
+in-gap insertion loss is $\FPILMEAN\times$ (peak $\FPILPEAK\times$).
+
+\paragraph{How many periods?}
+Inside the gap the field is evanescent, so isolation through $N_x$ periods should
+grow geometrically. It does: $1.4,\,2.7,\,4.1,\,11.0,\,54.6,\,303,\,\FPILTEN$ for
+$N_x=1,\dots,10$, a straight line on a log axis giving $\kappa a=\FPKAPPA$ per
+cell, or $\FPDEC$ decades of isolation per period. The control matters more than
+the number: repeating the sweep at a \emph{pass-band} frequency gives
+$2.3,\,4.1,\,2.3,\,1.4,\,5.8,\,4.0,\,6.6$ --- flat, with no systematic growth. The
+attenuation is therefore the gap and not broadband loss, which a single-frequency
+measurement could not have established.
+
+\paragraph{A measurement that was resonant, not transport.}
+Our first version of this experiment sponged only the $x$-ends. Two artifacts
+followed: energy travelled \emph{around} the crystal along the free top and
+bottom edges, and the two buffer/crystal interfaces formed a Fabry--P\'erot
+cavity. The single-panel figure it produced ($2.1\times$) looked merely
+disappointing rather than wrong. What exposed it was the period sweep, which came
+out \emph{non-monotonic} ($0.6,\,0.4,\,1.4,\,2.3,\,7.7,\,3.4,\,5.4$) --- impossible
+for evanescent decay, which must fall monotonically with thickness. A four-sided
+sponge and a full-height plane-wave drive changed the answer by a factor
+$\sim\!25$. We record this because the failure is invisible in the quantity
+usually reported: a single transmission number at one thickness cannot distinguish
+a stop band from a cavity, and only the monotonicity check does.
+
+\paragraph{Comparing designs: a trap in the obvious metric.}
+Raw insertion loss is \emph{not} comparable between designs. The geometry-only
+panel transmits $\FPBROAD\times$ less than the co-designed one at \emph{every}
+frequency, inside and outside the gap alike --- bulk impedance, not a band gap ---
+so on raw IL it appears to beat the co-design by an order of magnitude. Judged
+against each design's \emph{own} gap, at matched volume ($0.499$ vs $0.501$):
+
+\begin{table}[h]
+\centering
+\caption{Co-design against geometry alone, at matched volume. Contrast is the
+mean transmission outside each design's own gap divided by the mean inside it.}
+\label{tab:fpanel}
+\begin{tabular}{lcccc}
+\toprule
+ & complete gap & in-own-gap contrast & $C_{\rm bulk}$ & panel $k_{\rm eff}$\\
+\midrule
+co-design ($z$ and $\theta$) & $\FPGAPCO$ & $\FPCONCO\times$ & $\FPCCO$ & $\FPKCO$\\
+geometry only ($z$)          & $\FPGAPGE$ & $\FPCONGE\times$ & $\FPCGE$ & $\FPKGE$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Co-design gives twice the gap width and a modestly higher in-gap contrast at
+equal volume and slightly higher stiffness --- a real but bounded advantage, and
+specifically \emph{not} the order of magnitude the naive comparison suggests.
+
+\paragraph{A normalization that must not be left to default.}
+One implementation detail silently destroys the result. The objective normalizes
+both terms, $J=-w_C C_{\rm bulk}/C_{\rm ref}-w_g\,\text{gap}/\text{gap}_{\rm ref}$,
+and if the normalizers are inferred from the first evaluation then
+$\text{gap}_{\rm ref}=|\text{gap}_0|$, taken at a seed cell whose gap is badly
+\emph{closed} ($\approx3.4$ here). Once the gap opens, improving it from $+0.17$
+to $+0.48$ moves $J$ by only $-0.09$ while stiffness rising from $12$ to $16.6$
+moves it by $-0.66$: the gap term goes numerically deaf exactly when it begins to
+matter, and a run left to default converged to $C_{\rm bulk}=16.6$ with a gap of
+$+0.012$ --- no usable stop band. A second, related failure is a volume penalty
+left at a value chosen for a differently-scaled objective: the volume drifted to
+$0.61$, every strong late iterate was rejected by the feasibility test, and the
+returned ``best feasible'' design was a weak early one. Both lessons generalize to
+any multi-objective topology optimization with auto-scaled terms: a normalizer
+taken where an objective is far from feasible encodes the wrong scale for the
+regime that matters, and penalty weights must be rescaled whenever the objective is.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\textwidth]{figs/multifunc_finite.png}
+\caption{Co-designed stiff and band-gapped metamaterial verified on a finite
+truncated panel. (a--c) the designed cell, its fiber orientation, and its Bloch
+bands with the complete gap shaded. (d) insertion loss of the $6$-period panel,
+each design normalized by its own out-of-gap level so bulk impedance cannot
+masquerade as gap performance. (e) $y$-averaged energy along the panel: a
+straight line on a log axis inside the gap, flat in the pass band and for the
+solid reference. (f,g) the panel driven inside the gap and in the pass band, dB
+relative to each case's own peak. (h) isolation against number of periods, with
+the flat pass-band control that establishes the decay is the gap.}
+\label{fig:fpanel}
+\end{figure}
+
 \section{Topological valley guiding, and what the mesh must resolve}
 \label{sec:valley}
 The orientation lever of \S\ref{sec:results} steers waves through a homogeneous
