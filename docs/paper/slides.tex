@@ -9,19 +9,19 @@
 \usepackage{amsthm}
 
 % ---- fonts -------------------------------------------------------------- %
-% The newtx pairing, loaded plainly and unconditionally.  If it is missing you
-% get an explicit "File newtxtext.sty not found" and can install it -- which is
-% far better than a silent fallback that merely looks like standard LaTeX.
+% Times TEXT, Computer Modern MATHS.
+%   newtxtext  -> Times-family text
+%   newtxmath  -> NOT loaded, so mathematics stays Computer Modern
+% Because newtxmath is absent, amssymb IS required again: it supplies \square,
+% \lesssim, \gtrsim and \mathbb, which newtxmath would otherwise have provided.
+% (Loading amssymb *together with* newtxmath is the error to avoid; with
+% newtxmath gone it is not only safe but necessary.)
 %
-% Constraints this satisfies:
-%   * amsmath and amsthm are loaded BEFORE newtxmath (top of file); amsthm in
-%     particular, or \openbox ends up defined twice
-%   * amssymb is NOT loaded -- newtxmath supplies the AMS symbols itself, and
-%     loading both errors on \square, \lesssim, \gtrsim, \mathbb
-%   * \usepackage{times} is obsolete and would give Times text with Computer
-%     Modern maths -- exactly the half-applied pairing to avoid; removed
-%   * bm and mathalfa must follow the math font
-\usepackage{newtxtext,newtxmath}
+% To put mathematics back in the Times-matched face, add newtxmath and drop
+% amssymb:
+%     \usepackage{newtxtext,newtxmath}     % and delete the amssymb line
+\usepackage{newtxtext}
+\usepackage{amssymb}
 \usepackage{bm}
 \usepackage{booktabs}
 \usepackage{graphicx}

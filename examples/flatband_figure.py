@@ -7,7 +7,10 @@
    (projected) density and the actual fiber toolpath orientation.
 Runs in the base numpy/scipy env; no re-optimization."""
 import numpy as np, matplotlib; matplotlib.use("Agg")
+from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
+
+from wavetopo import figlib as F
 from scipy.interpolate import griddata
 from wavetopo.cfrp import Material, QuadMesh, CSRBFMapping
 from wavetopo.bloch import BlochProblem, ibz_path_square
@@ -115,8 +118,7 @@ ax[1, 2].set_title("convergence"); ax[1, 2].set_xlabel("iter"); ax[1, 2].legend(
 fig.suptitle("Flat-band + band-gap metamaterial: co-optimized topology and fiber "
              "toolpath, with as-manufactured validation", y=1.0, fontsize=14)
 plt.tight_layout()
-fig.savefig("results/flatband_demo.png", dpi=140, bbox_inches="tight")
-fig.savefig("docs/paper/figs/flatband.png", dpi=140, bbox_inches="tight")
+F.save_pair(fig, "results/flatband_demo.png", "docs/paper/figs/flatband.png")
 np.savez("results/flatband_manuf.npz", bands_v=bands_v, theta_hat=theta_hat,
          z_manuf=z_manuf, w_v=w_v, gu_v=gu_v, gd_v=gd_v)
 print("saved flatband figure (periodic tows + as-manufactured validation)")

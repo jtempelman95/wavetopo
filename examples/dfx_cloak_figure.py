@@ -12,6 +12,7 @@ drawn on a much finer grid, with the toolpaths given a matching zoomed inset.
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 
@@ -83,6 +84,5 @@ a_.grid(alpha=0.3); a_.set_box_aspect(0.72)
 F.layout(fig, "dolfinx in-plane orthotropic elastic cloak of a CONFORMING "
               "traction-free void: orientation designed only inside the shell",
          y=0.98)
-fig.savefig("results/dolfinx_cloak_conforming_vec.png", dpi=145, bbox_inches="tight")
-fig.savefig("docs/paper/figs/dfx_cloak_conf.png", dpi=145, bbox_inches="tight")
+F.save_pair(fig, "results/dolfinx_cloak_conforming_vec.png", "docs/paper/figs/dfx_cloak_conf.png")
 print(f"saved cloak figure (director zoomed to r<{Z:.2f} about ({CX},{CY}), n=42)")

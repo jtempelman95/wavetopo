@@ -20,7 +20,10 @@ import os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
+
+from wavetopo import figlib as F
 
 from wavetopo.dolfinx_viz import plot_director_field
 
@@ -139,6 +142,5 @@ F.grid(alpha=0.3, axis="x")
 
 fig.suptitle("Multi-functional metamaterial: stiff AND gapped, by co-designing "
              "geometry with toolpath", y=0.98, fontsize=13)
-fig.savefig("results/multifunc.png", dpi=140, bbox_inches="tight")
-fig.savefig("docs/paper/figs/multifunc.png", dpi=140, bbox_inches="tight")
+F.save_pair(fig, "results/multifunc.png", "docs/paper/figs/multifunc.png")
 print("\nsaved results/multifunc.png and docs/paper/figs/multifunc.png")

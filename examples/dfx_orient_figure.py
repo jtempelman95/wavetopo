@@ -15,7 +15,10 @@ import time
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
+
+from wavetopo import figlib as F
 
 from wavetopo.dolfinx_viz import plot_director_field
 
@@ -94,6 +97,5 @@ cb = fig.colorbar(lc, ax=list(ax), fraction=0.02, pad=0.01,
 cb.ax.set_yticklabels(["0", r"$\pi/2$", r"$\pi$"])
 fig.suptitle("Anisotropy orientation (fiber director) maps -- the raw design "
              "field, before toolpath delineation", y=1.02, fontsize=13)
-fig.savefig("results/dfx_orient.png", dpi=140, bbox_inches="tight")
-fig.savefig("docs/paper/figs/dfx_orient.png", dpi=140, bbox_inches="tight")
+F.save_pair(fig, "results/dfx_orient.png", "docs/paper/figs/dfx_orient.png")
 print("saved results/dfx_orient.png and docs/paper/figs/dfx_orient.png")

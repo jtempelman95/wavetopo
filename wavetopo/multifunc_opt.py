@@ -52,7 +52,8 @@ class MultiFunctionalOptimizer:
     def __init__(self, bp: BlochProblem, *, band, n_bands, R, kset,
                  w_stiff=1.0, w_gap=1.0, w_pol=0.0, pol_target=None,
                  rho_ks=15.0, v_target=0.5, c_vol=80.0, period=None,
-                 passive=None, C_ref=None, gap_ref=None):
+                 passive=None, C_ref=None, gap_ref=None,
+                 beta0=1.0, beta_max=16.0, eta=0.5):
         self.bp = bp
         self.band = band                 # gap sits between `band` and `band+1`
         self.n_bands = n_bands
@@ -66,6 +67,11 @@ class MultiFunctionalOptimizer:
         self.C_ref = C_ref               # normalisers, set on first evaluation
         self.gap_ref = gap_ref
         self.Wb = Homogenizer.bulk_weights()
+        # threshold projection: without it the optimum sits at intermediate grey
+        # and the "geometry" is diffuse rather than a manufacturable two-phase
+        # cell.  beta is raised by continuation (set_beta) so early iterations
+        # stay smooth and gradients remain informative.
+        self.beta, self.beta_max, self.eta = beta0, beta_max, eta
         self._inv = self._inversion_map()
 
     # ---- inversion permutation on the reduced (periodic) node set ----- #
@@ -88,16 +94,33 @@ class MultiFunctionalOptimizer:
         den = np.vdot(v, v).real
         return float(num/max(den, 1e-30))
 
-    def _apply(self, z):
-        y = self.P @ z
+    def _proj(self, x):
+        b, e = self.beta, self.eta
+        num = np.tanh(b*e) + np.tanh(b*(x - e))
+        return num/(np.tanh(b*e) + np.tanh(b*(1 - e)))
+
+    def _dproj(self, x):
+        b, e = self.beta, self.eta
+        return b/np.cosh(b*(x - e))**2/(np.tanh(b*e) + np.tanh(b*(1 - e)))
+
+    def _apply(self, z, with_grad=False):
+        xf = self.P @ z
+        y = self._proj(xf)
+        dy = self._dproj(xf)
         if self.passive is not None:
             y = y.copy(); y[self.passive] = 1.0
-        return y
+            dy = dy.copy(); dy[self.passive] = 0.0
+        return (y, dy) if with_grad else y
+
+    def sharpness(self, y):
+        """0 = fully grey, 1 = perfectly binary.  Reported so a 'clean geometry'
+        claim is measured rather than asserted."""
+        return float(1.0 - 4.0*np.mean(y*(1.0 - y)))
 
     # ---- one full evaluation ------------------------------------------ #
     def evaluate(self, z, th, want_grad=True):
         b, bp = self.band, self.bp
-        y = self._apply(z)
+        y, dproj = self._apply(z, with_grad=True)
         bp.assemble(y, th)
 
         # ---------- static: homogenised stiffness ---------------------- #
@@ -136,7 +159,8 @@ class MultiFunctionalOptimizer:
              + self.c_vol*(vol - self.v_target)**2)
 
         info = dict(C_bulk=Cb, C=C, gap=gap, vol=vol,
-                    parity=par, w_gamma=wg,
+                    parity=par, w_gamma=wg, beta=self.beta,
+                    sharpness=self.sharpness(y),
                     band_lo=wl.min(), band_hi=wu.max())
         if not want_grad:
             return J, info
@@ -150,7 +174,7 @@ class MultiFunctionalOptimizer:
         dJ_dy = dJ_dy + self.c_vol*2*(vol - self.v_target)*(A/sumA)
         if self.passive is not None:
             dJ_dy = dJ_dy.copy(); dJ_dy[self.passive] = 0.0
-        return J, self.P.T @ dJ_dy, dJ_dt, info
+        return J, self.P.T @ (dproj*dJ_dy), dJ_dt, info
 
     # ---- driver -------------------------------------------------------- #
     def run(self, z0, th0, *, max_iter=100, move=0.08, verbose=True):
@@ -161,6 +185,11 @@ class MultiFunctionalOptimizer:
         z, th = np.array(z0, float), np.array(th0, float)
         best = dict(score=np.inf); hist = []
         for it in range(max_iter):
+            # continuation: hold beta low while the topology forms, then sharpen
+            frac = it/max(max_iter - 1, 1)
+            if frac > 0.25:
+                g = (frac - 0.25)/0.75
+                self.beta = min(self.beta_max, 1.0*(self.beta_max**g))
             J, dz, dt, info = self.evaluate(z, th)
             hist.append(dict(C=info['C_bulk'], gap=info['gap'], vol=info['vol'], J=J))
             feasible = abs(info['vol'] - self.v_target) < 0.03
@@ -168,8 +197,8 @@ class MultiFunctionalOptimizer:
                 best = dict(score=J, z=z.copy(), th=th.copy(), info=dict(info))
             if verbose and (it % 10 == 0 or it == max_iter-1):
                 print(f"[{it:3d}] C_bulk={info['C_bulk']:8.3f} gap={info['gap']:+.4f} "
-                      f"vol={info['vol']:.3f} J={J:+.4f} move={mma.move:.3f}",
-                      flush=True)
+                      f"vol={info['vol']:.3f} beta={self.beta:5.2f} "
+                      f"sharp={info['sharpness']:.2f} J={J:+.4f}", flush=True)
             W = np.concatenate([z, th])
             Wn = mma.update(W, np.concatenate([dz, dt]), f=J)
             z, th = Wn[:N], Wn[N:]

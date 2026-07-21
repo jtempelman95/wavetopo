@@ -13,6 +13,7 @@ director panels get a proportionally larger share -- which is where the detail i
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
+from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 
@@ -89,6 +90,5 @@ cb.ax.set_yticklabels(["0", r"$\pi/2$", r"$\pi$"])
 F.layout(fig, "Channelling elastic energy along a curved corridor around a "
               "through-hole joint (localised aperture source, leakage penalised)",
          y=0.97)
-fig.savefig("results/dolfinx_guide_joint.png", dpi=145, bbox_inches="tight")
-fig.savefig("docs/paper/figs/dfx_guide_joint.png", dpi=145, bbox_inches="tight")
+F.save_pair(fig, "results/dolfinx_guide_joint.png", "docs/paper/figs/dfx_guide_joint.png")
 print("saved guide figure as a 2x2 (director n=52, tow pitch 0.11)")

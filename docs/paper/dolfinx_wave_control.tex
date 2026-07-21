@@ -61,19 +61,19 @@
 \input{results_macros}   % shared with the beamer slides
 
 % ---- fonts -------------------------------------------------------------- %
-% The newtx pairing, loaded plainly and unconditionally.  If it is missing you
-% get an explicit "File newtxtext.sty not found" and can install it -- which is
-% far better than a silent fallback that merely looks like standard LaTeX.
+% Times TEXT, Computer Modern MATHS.
+%   newtxtext  -> Times-family text
+%   newtxmath  -> NOT loaded, so mathematics stays Computer Modern
+% Because newtxmath is absent, amssymb IS required again: it supplies \square,
+% \lesssim, \gtrsim and \mathbb, which newtxmath would otherwise have provided.
+% (Loading amssymb *together with* newtxmath is the error to avoid; with
+% newtxmath gone it is not only safe but necessary.)
 %
-% Constraints this satisfies:
-%   * amsmath and amsthm are loaded BEFORE newtxmath (top of file); amsthm in
-%     particular, or \openbox ends up defined twice
-%   * amssymb is NOT loaded -- newtxmath supplies the AMS symbols itself, and
-%     loading both errors on \square, \lesssim, \gtrsim, \mathbb
-%   * \usepackage{times} is obsolete and would give Times text with Computer
-%     Modern maths -- exactly the half-applied pairing to avoid; removed
-%   * bm and mathalfa must follow the math font
-\usepackage{newtxtext,newtxmath}
+% To put mathematics back in the Times-matched face, add newtxmath and drop
+% amssymb:
+%     \usepackage{newtxtext,newtxmath}     % and delete the amssymb line
+\usepackage{newtxtext}
+\usepackage{amssymb}
 \usepackage{bm}
 \usepackage[scr=rsfso]{mathalfa}
 
@@ -1680,6 +1680,131 @@ the coarse cell can only smear. Bottom: the as-manufactured tows at the
 corresponding pitch $d$, exactly cell-periodic and masked to the solid.}
 \label{fig:sweep}
 \end{figure}
+
+\section{Multi-functional cells: stiffness and bands together}
+\label{sec:multifunc}
+A metamaterial panel usually has to carry load \emph{and} manage vibration. Those
+requirements pull against each other: material placed to stiffen the cell is not
+generally placed to open a band gap. This section asks whether the second design
+field --- the toolpath --- buys anything that geometry alone cannot, by scoring
+one cell on a static and a dynamic objective simultaneously.
+
+\subsection{Homogenized stiffness on the Bloch cell}
+The static half is standard cell-problem homogenization, posed on the
+\emph{same} periodic cell as \eqref{eq:bloch}. For each unit macroscopic strain
+$\bm\varepsilon^{(i)}\in\{(1,0,0),(0,1,0),(0,0,1)\}$ solve
+\begin{equation}
+  \mathbf K_{\rm per}\,\bm\chi^{(i)}=\mathbf f^{(i)},\qquad
+  \mathbf f^{(i)}=\sum_e\mathbf k_e\,\bm\chi^{0,(i)}_e ,
+  \label{eq:cellprob}
+\end{equation}
+with $\bm\chi^{0,(i)}$ the nodal field realizing that uniform strain, and form
+\begin{equation}
+  C^H_{ij}=\frac{1}{|Y|}\sum_e
+  \bigl(\bm\chi^{0,(i)}-\bm\chi^{(i)}\bigr)_e^{\!\mathsf T}
+  \mathbf k_e
+  \bigl(\bm\chi^{0,(j)}-\bm\chi^{(j)}\bigr)_e .
+  \label{eq:CH}
+\end{equation}
+Periodicity is imposed with the \emph{same} operator the dynamic problem uses,
+$\mathbf T(\mathbf 0)$ of \eqref{eq:bloch} --- at $\mathbf k=\mathbf 0$ the Bloch
+reduction is exactly the real periodic constraint --- so the static and dynamic
+analyses cannot disagree about what the cell is. The functional we maximize is
+the plane-stress bulk modulus $C_{\rm bulk}=\tfrac14(C^H_{11}+C^H_{22}+2C^H_{12})$.
+The sensitivity is self-adjoint and costs no extra solve,
+\begin{equation}
+  \frac{\partial C^H_{ij}}{\partial p}=\frac{1}{|Y|}\sum_e
+  \bigl(\bm\chi^{0,(i)}-\bm\chi^{(i)}\bigr)_e^{\!\mathsf T}
+  \frac{\partial\mathbf k_e}{\partial p}
+  \bigl(\bm\chi^{0,(j)}-\bm\chi^{(j)}\bigr)_e,
+  \qquad p\in\{z_e,\hat\theta_i\}.
+\end{equation}
+Verification: a full-density cell at $\theta=0$ returns $C^H=\mathbf Q_f$ to a
+relative error of $2.2\times10^{-14}$ (homogenizing a uniform medium must return
+that medium); rotating the fibers by $90^\circ$ exchanges $C^H_{11}$ and
+$C^H_{22}$ exactly; and both gradients match central differences to
+$\sim\!10^{-6}$ (density) and $10^{-8}$--$10^{-11}$ (orientation).
+
+\subsection{The experiment: does the toolpath buy anything?}
+We minimize
+\begin{equation}
+  J=-w_K\frac{C_{\rm bulk}}{C_{\rm ref}}
+    -w_g\frac{\text{gap}}{\text{gap}_{\rm ref}}
+    +c_v(\bar z-v^\star)^2 ,
+  \label{eq:mfobj}
+\end{equation}
+with the complete gap between bands $b$ and $b+1$ aggregated by KS
+\eqref{eq:ks} over the $\mathbf k$-set, and sweep the weight ratio $w_K/w_g$ to
+trace a trade-off front. The comparison that matters is run twice from an
+\emph{identical} start with an \emph{identical} budget:
+\begin{itemize}\itemsep0pt
+  \item \textbf{co-design} --- density $z$ \emph{and} orientation $\theta$ free;
+  \item \textbf{geometry-only} --- $\theta$ frozen at the straight-fiber baseline.
+\end{itemize}
+If the co-design front lies strictly outside the geometry-only front, the
+toolpath is supplying something the geometry cannot.
+
+\begin{table}[h]
+\centering\small
+\caption{Co-design versus geometry-only at matched homogenized stiffness. The
+geometry-only gap is interpolated onto the co-design front's stiffness values.
+A positive gap means a \emph{complete} gap is open over the whole Brillouin-zone
+path.}
+\label{tab:multifunc}
+\begin{tabular}{cccc}
+\toprule
+$C_{\rm bulk}$ & co-design gap & geometry-only gap & advantage\\
+\midrule
+$8.14$  & $\mathbf{+0.477}$ & $-0.259$ & $+0.736$\\
+$12.29$ & $-0.022$ & $-0.643$ & $+0.621$\\
+$16.93$ & $-0.491$ & $-1.040$ & $+0.549$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Result}
+The co-design front dominates at \emph{every} stiffness sampled, by
+$+\MFADVA$ to $+\MFADVC$ in gap (Table~\ref{tab:multifunc},
+Figure~\ref{fig:multifunc}). Comparing the best design of each kind that actually
+opens a complete gap: co-design reaches $C_{\rm bulk}=\MFCCO$ with a gap of
+$\MFGCO$, against $\MFCGE$ and $\MFGGE$ for geometry alone --- $\MFSTIFFGAIN\%$
+more stiffness \emph{and} $\MFGAPX\times$ the gap, from the same starting cell and
+the same number of iterations. The convergence history shows the two objectives
+rising \emph{together} rather than trading off: the gap crosses zero near
+iteration~12 while the stiffness climbs monotonically.
+
+The gap can also be labelled by the symmetry of the modes bounding it. Measuring
+the inversion parity $P=\langle\bm\phi,\mathcal I\bm\phi\rangle$ at $\Gamma$ gives
+$P=\MFPARLO$ for the lower gap edge (an even, dilatation-like mode) against the
+odd acoustic pair at $P=-1$, so the gap is opened beneath an even mode --- the
+\emph{polarity} of the gap, not merely its width.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\textwidth]{figs/multifunc.png}
+\caption{Multi-functional metamaterial. Top left: the stiffness/gap trade-off,
+co-design (blue) against geometry-only (grey); the shaded region is where a
+complete gap is open. Top middle and right: the co-designed cell and its fiber
+orientation. Bottom: the band structure with the complete gap shaded, the
+convergence of both objectives, and the inversion parity of the modes at
+$\Gamma$ that fixes the gap's polarity.}
+\label{fig:multifunc}
+\end{figure}
+
+\paragraph{Two honest qualifications.} First, the optimized orientation fields are
+only moderately non-uniform (standard deviation $\approx\MFTHSTD^\circ$ for the
+reported design). The lever here is therefore largely a \emph{rotation of the
+anisotropy axis} relative to the geometry, not the elaborate spatial steering the
+wave-control problems of \S\ref{sec:results} exhibit. That is a weaker mechanism
+than curvilinear steering --- but a single extra continuous field still buys
+$+0.55$ to $+0.74$ in gap at fixed stiffness, which geometry alone does not
+reach at any weighting we tried. Second, a \emph{uniform} cell has four-fold
+degenerate modes at $\Gamma$, where the simple-eigenvalue derivative
+\eqref{eq:eigsens} does not hold: gradients there disagree with finite
+differences by $30$--$1000\%$, against $\sim\!10^{-6}$ at a generic design. The
+driver therefore starts from a deliberately symmetry-broken cell. This is a
+property of the physics, not of the implementation, and any co-design of
+degenerate spectra has to confront it.
 
 \section{Verification and reproducibility}
 Every sensitivity is derived by the discrete adjoint \eqref{eq:adj} and verified

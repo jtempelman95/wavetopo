@@ -73,10 +73,12 @@ def _suffix(name):
     return name if not MODE_SUFFIX else name.replace(".png", MODE_SUFFIX + ".png")
 
 
-def save(fig, results_name, published_name, publish):
+def save(fig, results_name, published_name, publish, label_panels=True):
     """Write the figure and RETURN it.  Closing is the caller's job: the CLI
     closes to bound memory, an interactive session must not, or the cell renders
     nothing."""
+    if label_panels:
+        F.panel_labels(fig)        # (a) (b) (c) ... skipping colorbar axes
     # a non-|u| rendering is a variant, never a replacement for the paper figure
     F.publish(fig, _suffix(results_name),
               published_name if not MODE_SUFFIX else None,
@@ -287,6 +289,7 @@ def status(name):
 
 def main():
     matplotlib.use("Agg")          # batch driver: no display, bounded memory
+    F.journal()                    # publication typography, applied before any figure
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("names", nargs="*", help=f"any of: {', '.join(FIGS)}")
