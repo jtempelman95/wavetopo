@@ -47,8 +47,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--conv", default="results/valley_band_convergence.npz")
     ap.add_argument("--conf", default="results/valley_confinement.npz")
-    ap.add_argument("--gap", type=float, nargs=2, default=[7.009, 7.538],
-                    help="bulk complete gap from the conforming unit cell")
+    ap.add_argument("--gap", type=float, nargs=2, default=[7.014, 7.567],
+                    help="bulk complete gap from the conforming unit cell "
+                         "(41x41 BZ sampling, converged)")
+    ap.add_argument("--kink", type=float, nargs=2, default=[7.014, 7.27],
+                    help="topologically protected window: the ribbon's "
+                         "wall-localized branch INSIDE the complete gap")
     ap.add_argument("--out", default="results/valley_convergence.png")
     args = ap.parse_args()
 
@@ -61,9 +65,13 @@ def main():
     axes = np.atleast_1d(axes)
 
     ax = axes[0]
-    ax.axvspan(*args.gap, color="#8a8a85", alpha=0.14, lw=0, zorder=0)
-    ax.text(np.mean(args.gap), ax.get_ylim()[1], "bulk gap", ha="center",
-            va="bottom", fontsize=8.5, color=INK2)
+    ax.axvspan(*args.gap, color="#8a8a85", alpha=0.12, lw=0, zorder=0)
+    ax.axvspan(*args.kink, color="#1baf7a", alpha=0.16, lw=0, zorder=0)
+    ax.text(np.mean(args.kink), 0.965, "protected", ha="center", va="top",
+            fontsize=8.5, color=INK2, transform=ax.get_xaxis_transform())
+    ax.text(np.mean([args.kink[1], args.gap[1]]), 0.965, "gap only",
+            ha="center", va="top", fontsize=8.5, color=INK2,
+            transform=ax.get_xaxis_transform())
     for meth, col in (("conforming", C_CONF), ("painted", C_PAINT)):
         for h, st in STYLE.items():
             key = f"{meth}_h{h:g}"
@@ -84,7 +92,14 @@ def main():
     if have_conf:
         c = np.load(args.conf)
         ax2 = axes[1]
-        ax2.axvspan(*args.gap, color="#8a8a85", alpha=0.14, lw=0, zorder=0)
+        ax2.axvspan(*args.gap, color="#8a8a85", alpha=0.12, lw=0, zorder=0)
+        ax2.axvspan(*args.kink, color="#1baf7a", alpha=0.16, lw=0, zorder=0)
+        ax2.text(np.mean(args.kink), 0.30, "protected", ha="center",
+                 va="center", fontsize=8.5, color=INK2, rotation=90,
+                 transform=ax2.get_xaxis_transform())
+        ax2.text(7.72, 0.30, "guided, not protected", ha="center", va="center",
+                 fontsize=8.5, color=INK2, rotation=90,
+                 transform=ax2.get_xaxis_transform())
         ax2.plot(c["omega"], c["C"], color=C_CONF, lw=2.2, marker="s", ms=3.8)
         ax2.axhline(0.5, color=INK2, lw=1.0, ls=":", zorder=1)
         ax2.text(c["omega"].min(), 0.52, "half the interior energy",
