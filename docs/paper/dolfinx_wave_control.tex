@@ -1865,7 +1865,29 @@ $\mathrm{IL}(\omega)=T_{\rm solid}(\omega)/T_{\rm panel}(\omega)$ against an
 identical \emph{solid} panel --- same source, sponge, buffers and mesh --- so
 source coupling, buffer reflection and sponge absorption, common to both runs,
 divide out and what remains is what the crystal does. On the $6\times4$ panel the
-in-gap insertion loss is $\FPILMEAN\times$ (peak $\FPILPEAK\times$).
+in-gap insertion loss of the as-designed cell is $\FPILMEAN\times$ (peak
+$\FPILPEAK\times$); the manufacturable value is smaller and is reported below.
+
+\paragraph{As-designed versus as-built.}
+The panel above is simulated from the raw density field: a graded
+solid-isotropic-material-with-penalization state on the structured orthotropic
+grid of the harmonic solver, about a fifth of it intermediate (``gray'')
+material with no manufacturable meaning. As in the flat-band study
+(\S\ref{sec:meta}), the honest test is the \emph{as-built} cell --- the density
+projected to a crisp two-phase topology at fixed volume, re-tiled and
+re-simulated. The complete gap survives the projection almost intact
+($\FPABGAP$ against $\FPABGAPD$ as-designed, $\FPABPCT\%$ of the width), so the
+gap is a property of the manufacturable part and not of the gray intermediate
+densities; but it shifts up in frequency by $\sim\!0.35$, and the panel's in-gap
+insertion loss falls to $\FPABIL\times$. The as-designed $\FPILMEAN\times$ is
+therefore optimistic: $\FPABIL\times$ is the figure a fabricated part would meet.
+One caveat remains even for the as-built number: it is measured on the structured
+orthotropic grid, whose two-phase interface is staircased rather than conforming.
+Because both phases are solid (stiff fiber against soft matrix, not material
+against a traction-free void), the staircase is a material interface and does not
+scatter the way a cut void rim does (\S\ref{sec:hole}); a fully conforming
+orthotropic mesh would refine $\FPABIL\times$ but, the projection test indicates,
+not overturn it.
 
 \paragraph{How many periods?}
 Inside the gap the field is evanescent, so isolation through $N_x$ periods should
