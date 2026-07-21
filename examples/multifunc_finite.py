@@ -156,7 +156,19 @@ def static_stiffness(mesh, mat, z, th, penal=3.0):
     u = np.zeros(mesh.ndof)
     u[free] = spla.spsolve(K[free][:, free].tocsc(), F[free])
     dx = float(np.mean(u[2 * right]))
-    return dict(k_eff=1.0 / dx if dx > 0 else np.nan, u=u, dx=dx)
+
+    # Per-element strain-energy density  e_i = (1/2) u_i^T k_i u_i / A_i.
+    # This -- NOT the displacement magnitude -- is what reveals the geometry: the
+    # displacement under an axial pull is the integral of strain along x, so it
+    # is a smooth ramp (corr with x ~ 0.98) that looks identical for a solid
+    # block and washes out all microstructure.  Strain energy concentrates in the
+    # load-bearing ligaments and vanishes in the voids.
+    w = np.asarray(z, float) ** penal
+    kel = (w[:, None, None] * hv.fs.kf(np.asarray(th))
+           + (1.0 - w)[:, None, None] * hv.fs.km[None])
+    ue = u[mesh.edof]                                   # (N, 8)
+    edens = 0.5 * np.einsum('ei,eij,ej->e', ue, kel, ue) / mesh.A
+    return dict(k_eff=1.0 / dx if dx > 0 else np.nan, u=u, dx=dx, edens=edens)
 
 
 # ------------------------------------------------------------------ #

@@ -152,21 +152,35 @@ def main():
     tidy(a)
 
     # (e) STATIC ---------------------------------------------------------- #
+    # Plot STRAIN-ENERGY DENSITY, not displacement.  Displacement under an axial
+    # pull is the integral of strain along x -- a smooth ramp (corr with x ~0.98)
+    # that looks the same for a solid block and hides the microstructure.  Strain
+    # energy lights up the load-bearing ligaments and vanishes in the voids, so
+    # it shows how the metamaterial actually carries the load.
+    from matplotlib.colors import LogNorm
     a = ax[1, 0]
-    us = d["ustatic"]
-    tp = a.tripcolor(tri, us / us.max(), cmap="viridis", shading="gouraud")
+    if "estatic_tri" in d.files:
+        e = d["estatic_tri"]
+        vmax = np.percentile(e, 99.5)
+        tp = a.tripcolor(tri, facecolors=e, cmap="inferno", shading="flat",
+                         norm=LogNorm(vmax=vmax, vmin=vmax / 1e3))
+        clab = "strain-energy density (log)"
+    else:
+        us = d["ustatic"]
+        tp = a.tripcolor(tri, us / us.max(), cmap="viridis", shading="gouraud")
+        clab = "$|u|$ (norm.)"
     for xv in (x0, x1):
-        a.axvline(xv, color="w", ls="--", lw=1.0, alpha=0.85)
+        a.axvline(xv, color="c", ls="--", lw=1.0, alpha=0.85)
     a.set_aspect("equal"); a.set_xticks([]); a.set_yticks([])
     kp = float(d["k_eff_co"])
     ks = float(d["k_solid"]) if "k_solid" in d.files else np.nan
     sub = f"$k_{{eff}}$={kp:.2f}"
     if np.isfinite(ks):
-        sub += f"  ({100*kp/ks:.0f}% of solid {ks:.2f})"
-    a.set_title(f"(e) STATIC: clamp left, pull right\n{sub}", fontsize=10,
+        sub += f"  ({100*kp/ks:.0f}% of solid)"
+    a.set_title(f"(e) STATIC load: strain energy\n{sub}", fontsize=10,
                 loc="left", color=INK)
     cb = fig.colorbar(tp, ax=a, fraction=0.030, pad=0.03)
-    cb.set_label("$|u|$ (norm.)", fontsize=8, color=INK2)
+    cb.set_label(clab, fontsize=8, color=INK2)
 
     # (f) energy profile --------------------------------------------------- #
     a = ax[1, 1]
