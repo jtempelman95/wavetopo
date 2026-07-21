@@ -44,6 +44,7 @@ SOURCES = {
     "cloak":      "results/dolfinx_cloak_conforming_data.npz",
     "cloak_curl": "results/dolfinx_cloak_curl_data.npz",
     "guide":      "results/dolfinx_guide_joint_data.npz",
+    "multifunc":  "results/multifunc_finite_data.npz",
 }
 
 D, T, X, Y = {}, {}, {}, {}       # data, triangulation, xlim, ylim
@@ -854,3 +855,132 @@ else:
         anim.save(out, writer="pillow", fps=GIF_FPS)
         print("wrote", out)
         plt.close(fig)
+
+
+# %% [markdown]
+# ## 13 — Multi-functional metamaterial: finite truncated panel
+#
+# The co-design optimizes a *periodic* cell (homogenized stiffness + Bloch gap).
+# This panel is the part you would build: a finite `Nx x Ny` tile of that cell
+# between solid buffers, free top and bottom edges, no Bloch condition anywhere.
+#
+# **Insertion loss**, not raw transmission: `IL = T_solid / T_panel` against an
+# identical solid panel (same source, sponge, buffers, mesh), so source coupling
+# and fixturing divide out. Raw `T` is *not* comparable between designs — the
+# geometry-only panel transmits ~9x less at every frequency, in and out of gap
+# alike, so on raw IL it outranks the co-design for reasons unrelated to any gap.
+# Panel (d) therefore divides each curve by its own out-of-own-gap median.
+
+# %%
+# ------------------------------- KNOBS -------------------------------------
+FIGSIZE      = (19.5, 8.0)
+DBFLOOR      = -45.0          # dB floor for the field panels
+PROF_KEYS    = [("msolid", "#52514e", ":",  "solid reference"),
+                ("mpass",  "#eb6834", "--", "pass band"),
+                ("mgap",   "#2a78d6", "-",  "in the gap")]
+CMAP_FIELD, CMAP_DENS, CMAP_TH = "magma", "bone_r", "twilight"
+GAPC, GAP_ALPHA = "#1baf7a", 0.18
+CO_COLOR, GE_COLOR, INK2 = "#2a78d6", "#eb6834", "#52514e"
+EDGE_COLOR, EDGE_LW = "c", 1.0
+SUP_Y, SUP_FS = 0.99, 12.5
+OUT, OUT_PAPER = "multifunc_finite.png", "multifunc_finite.png"
+# ---------------------------------------------------------------------------
+d, tri, xl, yl = (D["multifunc"], T["multifunc"], X["multifunc"],
+                  Y["multifunc"])
+n = int(d["cell_n"]); Nx, Ny = int(d["Nx"]), int(d["Ny"])
+lo, hi = float(d["gap_lo"]), float(d["gap_hi"])
+glo, ghi = float(d["ge_gap_lo"]), float(d["ge_gap_hi"])
+w, ILco, ILge = d["omega"], d["IL_co"], d["IL_ge"]
+nelx, nely = int(d["nelx"]), int(d["nely"])
+x0 = float(d["nbuf"])/n; x1 = x0 + Nx
+ing = (w > lo) & (w < hi)
+
+fig, ax = plt.subplots(2, 4, figsize=FIGSIZE)
+
+im = ax[0, 0].imshow(d["cell_y"].reshape(n, n), origin="lower", cmap=CMAP_DENS,
+                     vmin=0, vmax=1)
+ax[0, 0].set_title(f"(a) co-designed cell  $C_{{bulk}}$="
+                   f"{float(d['C_bulk_co']):.2f}", fontsize=10, loc="left")
+ax[0, 0].set_xticks([]); ax[0, 0].set_yticks([]); cbar(ax[0, 0], im)
+
+th = d["cell_th"].reshape(n, n)
+im = ax[0, 1].imshow(np.rad2deg(th), origin="lower", cmap=CMAP_TH,
+                     vmin=-90, vmax=90)
+sK = max(n//13, 1); yy, xx = np.mgrid[0:n:sK, 0:n:sK]
+ax[0, 1].quiver(xx, yy, np.cos(th[::sK, ::sK]), np.sin(th[::sK, ::sK]),
+                color="k", pivot="mid", headwidth=0, headlength=0,
+                headaxislength=0, scale=24, width=0.007)
+ax[0, 1].set_title(r"(b) fiber orientation $\theta$", fontsize=10, loc="left")
+ax[0, 1].set_xticks([]); ax[0, 1].set_yticks([]); cbar(ax[0, 1], im)
+
+B = d["bands"]
+ax[0, 2].axhspan(lo, hi, color=GAPC, alpha=GAP_ALPHA, lw=0)
+for j in range(B.shape[1]):
+    ax[0, 2].plot(B[:, j], color=CO_COLOR, lw=1.5)
+ax[0, 2].set_xlim(0, B.shape[0]-1); ax[0, 2].set_xticks([])
+ax[0, 2].set_ylabel(r"$\omega$")
+ax[0, 2].set_title(f"(c) Bloch bands — complete gap {hi-lo:+.3f}", fontsize=10,
+                   loc="left")
+cbar(ax[0, 2])
+
+a = ax[0, 3]
+bco = np.median(ILco[~ing]); bge = np.median(ILge[(w < glo) | (w > ghi)])
+a.axvspan(lo, hi, color=GAPC, alpha=GAP_ALPHA, lw=0)
+a.axvspan(glo, ghi, color=GE_COLOR, alpha=0.10, lw=0)
+a.axhline(1.0, color=INK2, lw=1.0, ls=":")
+a.semilogy(w, ILco/bco, color=CO_COLOR, lw=2.1, marker="o", ms=3.2,
+           label=f"co-design (gap {float(d['gap_co']):.2f})")
+a.semilogy(w, ILge/bge, color=GE_COLOR, lw=1.7, ls="--", marker="s", ms=3.0,
+           label=f"geometry only (gap {float(d['gap_ge']):.2f})")
+a.set_xlabel(r"$\omega$"); a.set_ylabel("isolation / own broadband level")
+a.set_title("(d) gap contribution, normalized", fontsize=10, loc="left")
+a.legend(fontsize=7.5, frameon=False, loc="lower right"); a.grid(alpha=0.3)
+cbar(a)
+
+xs_ = np.linspace(0, float(d["Lx"]), nelx+1)
+a = ax[1, 0]
+for key, col, ls, lab in PROF_KEYS:
+    prof = (d[key].reshape(nely+1, nelx+1)**2).mean(axis=0)
+    a.semilogy(xs_, prof/prof.max(), color=col, ls=ls, lw=2.0, label=lab)
+a.axvspan(x0, x1, color=GAPC, alpha=0.13, lw=0)
+a.set_xlabel("x  (cells)"); a.set_ylabel(r"$\langle|u|^2\rangle_y$ (norm.)")
+a.set_title("(e) energy profile — shaded = crystal", fontsize=10, loc="left")
+a.legend(fontsize=8, frameon=False, loc="lower left"); a.grid(alpha=0.3)
+cbar(a)
+
+for col, (key, lab) in enumerate(
+        [("mgap",  f"(f) driven IN the gap  $\\omega$={float(d['w_gap']):.3f}"),
+         ("mpass", f"(g) driven in pass band  $\\omega$={float(d['w_pass']):.3f}")]):
+    v = d[key]; vdb = 20*np.log10(np.maximum(v, 1e-14)/v.max())
+    a = ax[1, col+1]
+    tp = a.tripcolor(tri, np.clip(vdb, DBFLOOR, 0.0), cmap=CMAP_FIELD,
+                     shading="gouraud", vmin=DBFLOOR, vmax=0.0)
+    for xv in (x0, x1):
+        a.axvline(xv, color=EDGE_COLOR, ls="--", lw=EDGE_LW, alpha=0.85)
+    a.set_aspect("equal"); a.set_xlim(*xl); a.set_ylim(*yl)
+    a.set_xticks([]); a.set_yticks([])
+    a.set_title(lab, fontsize=10, loc="left"); cbar(a, tp)
+
+a = ax[1, 3]
+try:
+    pz = np.load("results/multifunc_periods.npz")
+    a.semilogy(pz["Nx"], pz["IL_gap"], color=CO_COLOR, lw=2.2, marker="o", ms=5,
+               label="in the gap")
+    a.semilogy(pz["Nx"], pz["IL_pass"], color=INK2, lw=1.6, ls="--", marker="s",
+               ms=4, label="pass-band control")
+    a.set_title(f"(h) isolation vs periods — $\\kappa a$="
+                f"{float(pz['kappa_a']):.2f}/cell", fontsize=10, loc="left")
+    a.legend(fontsize=8, frameon=False, loc="upper left")
+except FileNotFoundError:
+    print("   (run examples/multifunc_periods.py for panel h)")
+a.set_xlabel("number of periods $N_x$"); a.set_ylabel("insertion loss")
+a.grid(alpha=0.3); cbar(a)
+
+fig.suptitle("Co-designed stiff + band-gap metamaterial on a finite "
+             f"{Nx}$\\times${Ny}-cell truncated panel:  in-gap insertion loss "
+             f"{ILco[ing].mean():.0f}$\\times$,  static $k_{{eff}}$="
+             f"{float(d['k_eff_co']):.2f}", y=SUP_Y, fontsize=SUP_FS)
+fig.subplots_adjust(left=0.04, right=0.97, top=0.90, bottom=0.08,
+                    wspace=0.32, hspace=0.30)
+save_fig(fig, OUT, OUT_PAPER)
+plt.show()
