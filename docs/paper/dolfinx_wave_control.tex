@@ -1590,6 +1590,16 @@ Figure~\ref{fig:flatband}, top right) --- confirming the slow-wave mode and its
 complete gap are properties of the manufacturable part, not of the intermediate
 SIMP densities.
 
+\paragraph{A caveat on the isolating gaps.} The flat band itself is a
+\emph{bandwidth} --- a max minus a min of one band over the $\mathbf k$-sample ---
+and is insensitive to sampling density, so the flattening is robust. Its
+\emph{isolating gaps}, by contrast, are computed by the same discrete-$\mathbf k$
+aggregation that, in the multi-functional band-gap study
+(\S\ref{sec:multifunc}), reported complete gaps that closed under dense
+resampling. The gap widths quoted here should therefore be read as sampled
+values pending a dense-$\mathbf k$ re-evaluation; the flattening claim, which does
+not depend on the gap, stands regardless.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/flatband.png}
@@ -1681,293 +1691,79 @@ corresponding pitch $d$, exactly cell-periodic and masked to the solid.}
 \label{fig:sweep}
 \end{figure}
 
-\section{Multi-functional cells: stiffness and bands together}
+\section{Multi-functional design: focusing and stiffness in one fiber layout}
 \label{sec:multifunc}
-A metamaterial panel usually has to carry load \emph{and} manage vibration. Those
-requirements pull against each other: material placed to stiffen the cell is not
-generally placed to open a band gap. This section asks whether the second design
-field --- the toolpath --- buys anything that geometry alone cannot, by scoring
-one cell on a static and a dynamic objective simultaneously.
+A structural panel often has to do two jobs at once: carry a mechanical load, and
+manage an elastic wave. This section poses both on a single finite part and asks
+whether one fiber layout can serve both --- a genuine multi-functional co-design,
+on a finite domain, with \emph{no band gap} anywhere.
 
-\subsection{Homogenized stiffness on the Bloch cell}
-The static half is standard cell-problem homogenization, posed on the
-\emph{same} periodic cell as \eqref{eq:bloch}. For each unit macroscopic strain
-$\bm\varepsilon^{(i)}\in\{(1,0,0),(0,1,0),(0,0,1)\}$ solve
-\begin{equation}
-  \mathbf K_{\rm per}\,\bm\chi^{(i)}=\mathbf f^{(i)},\qquad
-  \mathbf f^{(i)}=\sum_e\mathbf k_e\,\bm\chi^{0,(i)}_e ,
-  \label{eq:cellprob}
-\end{equation}
-with $\bm\chi^{0,(i)}$ the nodal field realizing that uniform strain, and form
-\begin{equation}
-  C^H_{ij}=\frac{1}{|Y|}\sum_e
-  \bigl(\bm\chi^{0,(i)}-\bm\chi^{(i)}\bigr)_e^{\!\mathsf T}
-  \mathbf k_e
-  \bigl(\bm\chi^{0,(j)}-\bm\chi^{(j)}\bigr)_e .
-  \label{eq:CH}
-\end{equation}
-Periodicity is imposed with the \emph{same} operator the dynamic problem uses,
-$\mathbf T(\mathbf 0)$ of \eqref{eq:bloch} --- at $\mathbf k=\mathbf 0$ the Bloch
-reduction is exactly the real periodic constraint --- so the static and dynamic
-analyses cannot disagree about what the cell is. The functional we maximize is
-the plane-stress bulk modulus $C_{\rm bulk}=\tfrac14(C^H_{11}+C^H_{22}+2C^H_{12})$.
-The sensitivity is self-adjoint and costs no extra solve,
-\begin{equation}
-  \frac{\partial C^H_{ij}}{\partial p}=\frac{1}{|Y|}\sum_e
-  \bigl(\bm\chi^{0,(i)}-\bm\chi^{(i)}\bigr)_e^{\!\mathsf T}
-  \frac{\partial\mathbf k_e}{\partial p}
-  \bigl(\bm\chi^{0,(j)}-\bm\chi^{(j)}\bigr)_e,
-  \qquad p\in\{z_e,\hat\theta_i\}.
-\end{equation}
-Verification: a full-density cell at $\theta=0$ returns $C^H=\mathbf Q_f$ to a
-relative error of $2.2\times10^{-14}$ (homogenizing a uniform medium must return
-that medium); rotating the fibers by $90^\circ$ exchanges $C^H_{11}$ and
-$C^H_{22}$ exactly; and both gradients match central differences to
-$\sim\!10^{-6}$ (density) and $10^{-8}$--$10^{-11}$ (orientation).
+\paragraph{Why not the periodic band-gap route.}
+The natural first attempt is a periodic cell co-designed for homogenized
+stiffness and a complete phononic band gap. We pursued that and report its
+failure plainly, because it is instructive. The complete gap was aggregated over
+a discrete $\mathbf k$-sample during optimization; the optimizer drove the gap
+open \emph{at the sampled points} while the bands crossed \emph{between} them, so
+the ``gaps'' were artifacts of sparse $\mathbf k$-sampling. Re-evaluating the
+optimized cells on a dense $11\times11$ Brillouin-zone grid, the reported gaps of
+$+0.21$, $+0.39$ and $+0.55$ became $-0.20$, $-0.09$ and $+0.08$ --- essentially
+closed --- and straightening the fibers \emph{widened} the true gap in every
+case, so the orientation was gaming the coarse metric rather than opening a gap.
+A band-gap claim is only as good as its $\mathbf k$-convergence, and this one did
+not survive it. We therefore move the multi-functional demonstration to a finite
+domain, where the objectives are integrals over the part rather than extrema over
+a Brillouin zone and no such sampling gap exists.
 
-\subsection{The experiment: does the toolpath buy anything?}
-\label{sec:multifunc:experiment}
-We compare the two design freedoms on the stiffness--gap trade-off, run from an
-\emph{identical} start with an \emph{identical} budget:
+\subsection{Two objectives on one solid plate}
+On the $4\times3$ solid orthotropic plate of \S\ref{sec:results}, driven at
+$\omega=40$ by the left-edge plane wave, the fiber orientation $\theta(\vx)$ is
+scored on
 \begin{itemize}\itemsep0pt
-  \item \textbf{co-design} --- density $z$ \emph{and} orientation $\theta$ free;
-  \item \textbf{geometry-only} --- $\theta$ frozen at the straight-fiber baseline,
-        only $z$ designed.
+  \item \textbf{dynamic:} the focus gain $G=E_{\rm foc}(\theta)/E_{\rm foc}(0)$,
+        the focus-region energy relative to straight fibers (the lens objective
+        of \S\ref{sec:results}, adjoint FD-verified to $\FLFDFOC$ digits);
+  \item \textbf{static:} the cantilever compliance $c=\mathbf{F}_s\T\vu_s$ with
+        $\mathbf{K}(\theta)\vu_s=\mathbf{F}_s$ --- the left edge clamped, a transverse load on
+        the right edge. Compliance is self-adjoint, $\partial c/\partial\theta=
+        -\vu_s\T(\partial\mathbf{K}/\partial\theta)\vu_s$, FD-verified to $\FLFDC$.
 \end{itemize}
-If the co-design front lies outside the geometry-only front, the toolpath is
-supplying something the geometry cannot.
+Both are functions of the same $\theta$ on the same plate. The tension is real:
+the converging-lens layout that bends the wave toward the target is not the
+load-aligned layout that resists bending.
 
-\paragraph{How the front is traced matters, and an earlier version got it wrong.}
-A first version of this study scalarized stiffness and gap into one weighted
-objective \eqref{eq:mfobj} and swept the weight ratio. That construction has
-three defects that all push the same way. First, it is indexed by a weight, not
-by an engineering quantity. Second, it requires normalizers $C_{\rm ref}$ and
-$\text{gap}_{\rm ref}$, and the latter, inferred from a seed cell whose gap is
-badly \emph{closed} ($\approx-3.4$), makes the gap term numerically deaf once the
-gap opens. Third, and most consequential here, each weight was optimized as an
-independent cold start, so the \emph{geometry-only} baseline was systematically
-under-converged: the sweep reported geometry reaching \emph{no} complete gap at
-$C_{\rm bulk}=8.1$, which is simply false. We therefore solve the constrained
-problem directly,
-\begin{equation}
-  \max_{z,\theta}\ C_{\rm bulk}(z,\theta)\quad
-  \text{s.t.}\quad \text{gap}(z,\theta)\ge g_\star,\ \ \bar z=v^\star,
-  \label{eq:mfconstr}
-\end{equation}
-by the augmented Lagrangian of \S\ref{sec:al}, and trace the front by tightening
-$g_\star$ with warm starts along the branch (\texttt{examples/multifunc\_front.py}).
-The constraint level $g_\star$ is the engineering variable; no normalizer enters;
-and continuation keeps both fronts on a single, comparably-converged branch. The
-separate gradients $\partial C_{\rm bulk}/\partial(z,\theta)$ and
-$\partial\,\text{gap}/\partial(z,\theta)$ are finite-difference verified to
-$\le\!8\times10^{-6}$.
+\subsection{Result: one layout, both functions}
+Three designs from an identical straight-fiber start make the point
+(Figure~\ref{fig:multifunc}). The \emph{focus-only} lens reaches a focus gain of
+$\FLFOCONLY\times$ but drops the panel stiffness to $\FLFOSTIFF\times$ that of
+straight fibers --- steering the wave costs $\FLFOCOST\%$ of the structural
+stiffness. Constraining the compliance to the straight-fiber level and
+maximizing focus (augmented Lagrangian on the single compliance constraint,
+ as in \S\ref{sec:curl}) gives the
+\emph{co-design}: a focus gain of $\FLCOFOC\times$ at $\FLCOSTIFF\times$ the
+straight-fiber stiffness --- essentially all of the stiffness \emph{and} a large
+fraction of the focusing, from one fiber field.
 
-\subsection{Result: co-design does \emph{not} improve the trade-off}
-\label{sec:multifunc:result}
-With both design freedoms optimized properly, the co-design advantage reported by
-the scalarized sweep disappears. At matched complete gap, geometry alone is as
-stiff as co-design or stiffer (Table~\ref{tab:multifunc},
-Figure~\ref{fig:multifunc}): geometry-only carries $+22\%$, $+23\%$ and $+7\%$
-more homogenized stiffness at gaps of $0.15$, $0.30$ and $0.45$ respectively. The
-earlier ``$\MFSTIFFGAIN\%$ more stiffness and $\MFGAPX\times$ the gap'' was an
-artifact of comparing a converged co-design against an under-converged
-geometry-only baseline: the constrained solve finds a geometry-only cell that is
-\emph{both} stiffer ($C_{\rm bulk}=9.5$) \emph{and} more gapped (complete gap
-$+0.46$) than the co-design point that number was built on ($C_{\rm bulk}=8.1$,
-gap $+0.48$), so the old baseline was strictly dominated.
-
-\begin{table}[h]
-\centering\small
-\caption{Co-design versus geometry-only on the constrained stiffness--gap front,
-at matched complete gap, equal volume ($\bar z=0.5$) and equal budget. Higher
-$C_{\rm bulk}$ is better. Geometry alone matches or beats co-design at every
-shared gap; the one thing orientation adds is a wider \emph{achievable} gap.}
-\label{tab:multifunc}
-\begin{tabular}{cccc}
-\toprule
-complete gap & co-design $C_{\rm bulk}$ & geometry-only $C_{\rm bulk}$ & stiffer by\\
-\midrule
-$0.15$ & $8.30$ & $\mathbf{10.12}$ & geom.\ $+22\%$\\
-$0.30$ & $8.50$ & $\mathbf{10.41}$ & geom.\ $+23\%$\\
-$0.45$ & $8.88$ & $\mathbf{9.52}$  & geom.\ $+7\%$\\
-$0.60$ & reached & \emph{not reached} & co-design only\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{What orientation \emph{does} buy: a wider achievable gap.}
-The single robust benefit of the toolpath is at the edge of feasibility. Pushing
-the gap constraint upward, co-design opens a complete gap of $0.60$ at fixed
-volume while geometry alone becomes infeasible there: the fiber anisotropy
-extends the maximum openable gap. This is a genuine but narrow role ---
-orientation does not improve the interior trade-off, it extends its \emph{range}
---- and it is consistent with the mechanism: the anisotropic $\mathbf D_f(\theta)$
-can push apart bands that an isotropic geometry, at fixed volume, cannot separate
-further.
-
-\paragraph{A caution on ``stiffness''.}
-$C_{\rm bulk}$ is the homogenized cell modulus, the quantity optimized. It is not
-the same as the axial stiffness $k_{\rm eff}$ of the finite panel measured in
-\S\ref{sec:multifunc:finite}, and the two should not be read interchangeably; the
-finite panel retains only $\sim\!10\%$ of a solid panel's axial stiffness at this
-volume fraction, so ``stiff'' here means stiff \emph{relative to other gapped
-cells at equal volume}, not stiff in absolute terms.
-
-The gap polarity result is independent of the trade-off and unchanged. Measuring
-the inversion parity $P=\langle\bm\phi,\mathcal I\bm\phi\rangle$ at $\Gamma$ gives
-$P=\MFPARLO$ for the lower gap edge (an even, dilatation-like mode) against the
-odd acoustic pair at $P=-1$, so the gap opens beneath an even mode --- the
-\emph{polarity} of the gap, not merely its width.
+Sweeping the compliance limit traces the focus--stiffness front
+(Figure~\ref{fig:multifunc}, lower right): focus gain rises from $\FLCOFOC\times$
+at full stiffness, through $\FLKNEE\times$ at a $20\%$ compliance allowance, to
+the focus-only endpoint, saturating once the stiffness constraint is loose enough
+to stop binding. The designer reads an operating point off this curve rather than
+choosing between the two functions. Unlike the periodic band-gap result, every
+point here is an integral over the finite part and carries no $\mathbf k$-sampling
+caveat.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.99\textwidth]{figs/multifunc_finite.png}
-\caption{Stiffness--gap co-design and its finite-panel test. (d) is the decisive
-panel: the constrained stiffness--gap fronts of co-design (blue) and
-geometry-only (orange), at matched volume and budget. Geometry alone lies on or
-above the co-design front over the shared gap range; orientation's only edge is a
-wider achievable gap. Remaining panels: the designed cell and its Bloch bands
-(a--c), the static load response (e), the energy decay through the finite panel
-(f), the insertion loss against number of periods with a flat pass-band control
-(g), and the panel's transmission spectrum (h).}
+\includegraphics[width=0.99\textwidth]{figs/wave_lens_stiff.png}
+\caption{One fiber layout, two functions. Top: wave-field magnitude for straight
+fibers (no focusing), the focus-only lens ($\FLFOCONLY\times$ focus but
+$\FLFOSTIFF\times$ stiffness), and the co-design ($\FLCOFOC\times$ focus at
+$\FLCOSTIFF\times$ stiffness). Bottom left and middle: the fiber directors of the
+focus-only and co-design layouts. Bottom right: the focus--stiffness trade-off
+front swept over the compliance limit, with the straight and focus-only designs
+marked; the vertical line is the straight-fiber stiffness. Only the fiber
+orientation is designed; the plate is solid and homogeneous.}
 \label{fig:multifunc}
-\end{figure}
-
-\paragraph{A caveat on the gradients near symmetry.} A \emph{uniform} cell has
-four-fold degenerate modes at $\Gamma$, where the simple-eigenvalue derivative
-\eqref{eq:eigsens} does not hold: gradients there disagree with finite
-differences by $30$--$1000\%$, against $\sim\!10^{-6}$ at a generic design. The
-driver therefore starts from a deliberately symmetry-broken cell. This is a
-property of the physics, not of the implementation, and any co-design of
-degenerate spectra has to confront it.
-
-\subsection{From an infinite crystal to a part: the truncated panel}
-\label{sec:multifunc:finite}
-Everything above is an infinite-medium statement. The homogenized stiffness
-$C_H$ comes from a cell problem with periodic boundary conditions and the
-complete gap from a Bloch analysis that assumes the crystal repeats forever. A
-part has neither property: it is a finite tile of the cell, with free edges, a
-specific number of periods, and no Bloch condition anywhere. Whether a handful of
-periods of such a panel actually stops a wave is a separate question from whether
-the infinite crystal has a gap, and it is the one a designer is asking.
-
-We tile the co-designed cell into an $N_x\times N_y$ panel, flank it in $x$ with
-solid buffers of the same composite, leave the top and bottom edges free, and
-test the resulting structure directly (\texttt{examples/multifunc\_finite.py}).
-Both tests use the \emph{same} assembled stiffness, so the static and dynamic
-results cannot disagree about what the panel is. Clamping the left buffer and
-pulling the right one gives the axial stiffness of the truncated part,
-$k_{\rm eff}=\FPKCO$, measured on the geometry rather than inferred from $C_H$.
-
-\paragraph{Insertion loss, not transmission.}
-The dynamic measurement reports
-$\mathrm{IL}(\omega)=T_{\rm solid}(\omega)/T_{\rm panel}(\omega)$ against an
-identical \emph{solid} panel --- same source, sponge, buffers and mesh --- so
-source coupling, buffer reflection and sponge absorption, common to both runs,
-divide out and what remains is what the crystal does. On the $6\times4$ panel the
-in-gap insertion loss of the as-designed cell is $\FPILMEAN\times$ (peak
-$\FPILPEAK\times$); the manufacturable value is smaller and is reported below.
-
-\paragraph{As-designed versus as-built.}
-The panel above is simulated from the raw density field: a graded
-solid-isotropic-material-with-penalization state on the structured orthotropic
-grid of the harmonic solver, about a fifth of it intermediate (``gray'')
-material with no manufacturable meaning. As in the flat-band study
-(\S\ref{sec:meta}), the honest test is the \emph{as-built} cell --- the density
-projected to a crisp two-phase topology at fixed volume, re-tiled and
-re-simulated. The complete gap survives the projection almost intact
-($\FPABGAP$ against $\FPABGAPD$ as-designed, $\FPABPCT\%$ of the width), so the
-gap is a property of the manufacturable part and not of the gray intermediate
-densities; but it shifts up in frequency by $\sim\!0.35$, and the panel's in-gap
-insertion loss falls to $\FPABIL\times$. The as-designed $\FPILMEAN\times$ is
-therefore optimistic: $\FPABIL\times$ is the figure a fabricated part would meet.
-One caveat remains even for the as-built number: it is measured on the structured
-orthotropic grid, whose two-phase interface is staircased rather than conforming.
-Because both phases are solid (stiff fiber against soft matrix, not material
-against a traction-free void), the staircase is a material interface and does not
-scatter the way a cut void rim does (\S\ref{sec:hole}); a fully conforming
-orthotropic mesh would refine $\FPABIL\times$ but, the projection test indicates,
-not overturn it.
-
-\paragraph{How many periods?}
-Inside the gap the field is evanescent, so isolation through $N_x$ periods should
-grow geometrically. It does: $1.4,\,2.7,\,4.1,\,11.0,\,54.6,\,303,\,\FPILTEN$ for
-$N_x=1,\dots,10$, a straight line on a log axis giving $\kappa a=\FPKAPPA$ per
-cell, or $\FPDEC$ decades of isolation per period. The control matters more than
-the number: repeating the sweep at a \emph{pass-band} frequency gives
-$2.3,\,4.1,\,2.3,\,1.4,\,5.8,\,4.0,\,6.6$ --- flat, with no systematic growth. The
-attenuation is therefore the gap and not broadband loss, which a single-frequency
-measurement could not have established.
-
-\paragraph{A measurement that was resonant, not transport.}
-Our first version of this experiment sponged only the $x$-ends. Two artifacts
-followed: energy travelled \emph{around} the crystal along the free top and
-bottom edges, and the two buffer/crystal interfaces formed a Fabry--P\'erot
-cavity. The single-panel figure it produced ($2.1\times$) looked merely
-disappointing rather than wrong. What exposed it was the period sweep, which came
-out \emph{non-monotonic} ($0.6,\,0.4,\,1.4,\,2.3,\,7.7,\,3.4,\,5.4$) --- impossible
-for evanescent decay, which must fall monotonically with thickness. A four-sided
-sponge and a full-height plane-wave drive changed the answer by a factor
-$\sim\!25$. We record this because the failure is invisible in the quantity
-usually reported: a single transmission number at one thickness cannot distinguish
-a stop band from a cavity, and only the monotonicity check does.
-
-\paragraph{Comparing designs: a trap in the obvious metric.}
-Raw insertion loss is \emph{not} comparable between designs. The geometry-only
-panel transmits $\FPBROAD\times$ less than the co-designed one at \emph{every}
-frequency, inside and outside the gap alike --- bulk impedance, not a band gap ---
-so on raw IL it appears to beat the co-design by an order of magnitude. Judged
-against each design's \emph{own} gap, at matched volume ($0.499$ vs $0.501$):
-
-\begin{table}[h]
-\centering
-\caption{Co-design against geometry alone, at matched volume. Contrast is the
-mean transmission outside each design's own gap divided by the mean inside it.}
-\label{tab:fpanel}
-\begin{tabular}{lcccc}
-\toprule
- & complete gap & in-own-gap contrast & $C_{\rm bulk}$ & panel $k_{\rm eff}$\\
-\midrule
-co-design ($z$ and $\theta$) & $\FPGAPCO$ & $\FPCONCO\times$ & $\FPCCO$ & $\FPKCO$\\
-geometry only ($z$)          & $\FPGAPGE$ & $\FPCONGE\times$ & $\FPCGE$ & $\FPKGE$\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Co-design gives twice the gap width and a modestly higher in-gap contrast at
-equal volume and slightly higher stiffness --- a real but bounded advantage, and
-specifically \emph{not} the order of magnitude the naive comparison suggests.
-
-\paragraph{A normalization that must not be left to default.}
-One implementation detail silently destroys the result. The objective normalizes
-both terms, $J=-w_C C_{\rm bulk}/C_{\rm ref}-w_g\,\text{gap}/\text{gap}_{\rm ref}$,
-and if the normalizers are inferred from the first evaluation then
-$\text{gap}_{\rm ref}=|\text{gap}_0|$, taken at a seed cell whose gap is badly
-\emph{closed} ($\approx3.4$ here). Once the gap opens, improving it from $+0.17$
-to $+0.48$ moves $J$ by only $-0.09$ while stiffness rising from $12$ to $16.6$
-moves it by $-0.66$: the gap term goes numerically deaf exactly when it begins to
-matter, and a run left to default converged to $C_{\rm bulk}=16.6$ with a gap of
-$+0.012$ --- no usable stop band. A second, related failure is a volume penalty
-left at a value chosen for a differently-scaled objective: the volume drifted to
-$0.61$, every strong late iterate was rejected by the feasibility test, and the
-returned ``best feasible'' design was a weak early one. Both lessons generalize to
-any multi-objective topology optimization with auto-scaled terms: a normalizer
-taken where an objective is far from feasible encodes the wrong scale for the
-regime that matters, and penalty weights must be rescaled whenever the objective is.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.99\textwidth]{figs/multifunc_finite.png}
-\caption{Co-designed stiff and band-gapped metamaterial verified on a finite
-truncated panel. (a--c) the designed cell, its fiber orientation, and its Bloch
-bands with the complete gap shaded. (d) insertion loss of the $6$-period panel,
-each design normalized by its own out-of-gap level so bulk impedance cannot
-masquerade as gap performance. (e) $y$-averaged energy along the panel: a
-straight line on a log axis inside the gap, flat in the pass band and for the
-solid reference. (f,g) the panel driven inside the gap and in the pass band, dB
-relative to each case's own peak. (h) isolation against number of periods, with
-the flat pass-band control that establishes the decay is the gap.}
-\label{fig:fpanel}
 \end{figure}
 
 \section{Topological valley guiding, and what the mesh must resolve}

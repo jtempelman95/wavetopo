@@ -46,9 +46,6 @@
 \DefN{\FBGUV}{+0.41}
 \DefN{\FBGDV}{+0.67}
 % multi-functional metamaterial (examples/multifunc_demo.py) -- co-design sweep
-\DefN{\MFSTIFFGAIN}{61} % percent stiffness advantage at equal gap-open status
-\DefN{\MFGAPX}{19}      % gap ratio
-\DefN{\MFPARLO}{+0.84}  % parity of the lower gap-edge mode at Gamma
 
 % ---- topological valley guiding (examples/valley_*.py) ----------------- %
 % bulk complete gap, conforming cell, 41x41 BZ sampling (converged)
@@ -70,22 +67,13 @@
 \DefN{\VRDIS}{38}         % orientation disorder, % of pristine
 \DefN{\VRCON}{5400}       % pristine in-band / out-of-band contrast
 % ---- finite truncated panel (examples/multifunc_finite.py) ------------- %
-\DefN{\FPGAPCO}{0.632}    % co-design complete gap
-\DefN{\FPGAPGE}{0.319}    % geometry-only complete gap
-\DefN{\FPCCO}{4.80}       % co-design C_bulk
-\DefN{\FPCGE}{4.27}       % geometry-only C_bulk
-\DefN{\FPKCO}{6.29}       % co-design panel static k_eff
-\DefN{\FPKGE}{6.12}       % geometry-only panel static k_eff
-\DefN{\FPILMEAN}{50}      % 6-period in-gap insertion loss, mean
-\DefN{\FPILPEAK}{55}      % ... peak
-\DefN{\FPKAPPA}{0.42}     % kappa*a per cell
-\DefN{\FPDEC}{0.35}       % decades of isolation per cell
-\DefN{\FPILTEN}{2158}      % insertion loss at 10 periods
-\DefN{\FPCONCO}{5.37}     % in-own-gap contrast, co-design
-\DefN{\FPCONGE}{4.46}     % in-own-gap contrast, geometry-only
-\DefN{\FPBROAD}{9.0}      % geometry-only broadband transmission deficit
 % ---- finite-panel as-built (crisp two-phase) check --------------------- %
-\DefN{\FPABGAP}{0.669}   % as-built complete gap
-\DefN{\FPABGAPD}{0.692}  % as-designed complete gap it is compared to
-\DefN{\FPABPCT}{97}      % as-built gap as % of as-designed width
-\DefN{\FPABIL}{32}       % as-built in-gap insertion loss
+% ---- focus + stiffness multifunctional plate (wave_lens_stiff.py) ------ %
+\DefN{\FLFOCONLY}{46}    % focus-only lens focus gain
+\DefN{\FLFOSTIFF}{0.73}  % focus-only stiffness (fraction of straight)
+\DefN{\FLFOCOST}{27}     % focus-only stiffness COST, %
+\DefN{\FLCOFOC}{22}      % co-design focus gain at full stiffness
+\DefN{\FLCOSTIFF}{1.02}  % co-design stiffness (fraction of straight)
+\DefN{\FLKNEE}{35}       % focus at +20% compliance (mid-front)
+\DefN{\FLFDFOC}{6}       % focus-adjoint FD digits
+\DefN{\FLFDC}{2.9\times10^{-7}} % compliance-adjoint FD error
