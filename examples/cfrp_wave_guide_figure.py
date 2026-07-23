@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 
-from examples.cfrp_wave_guide import setup, dist_polyline, TUBE_HALF, CORRIDOR, HOLES
+from examples.cfrp_wave_guide import setup, corridor_coords, TUBE_HALF, CORRIDOR, HOLES
 
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#d8d7d2"
 
@@ -35,10 +35,10 @@ def main():
     args = ap.parse_args()
 
     d = np.load(args.data)
-    mesh, mat, P, wsig = setup(args.h, args.omega, 0.02, 0.4)
+    mesh, mat, P, wsig, interior = setup(args.h, args.omega, 0.006, 0.5)
     tri = mtri.Triangulation(mesh.npx[:, 0], mesh.npx[:, 1], mesh.tris)
     xs, ys = mesh.npx[:, 0], mesh.npx[:, 1]
-    tube = dist_polyline(mesh.npx, CORRIDOR) < TUBE_HALF
+    tube = corridor_coords(mesh.npx, CORRIDOR)[0] < TUBE_HALF
 
     y, th = d["y"], d["th"]
     u_str = P.dynamic(np.full(mesh.tris.shape[0], d["vol"]),
