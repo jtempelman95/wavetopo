@@ -120,7 +120,9 @@ def main():
     ap.add_argument("--rmin", type=float, default=0.11)
     ap.add_argument("--rbf-spc", dest="rbf_spc", type=float, default=0.30)
     ap.add_argument("--cvol", type=float, default=200.0)
-    ap.add_argument("--betamax", type=float, default=8.0)
+    ap.add_argument("--betamax", type=float, default=32.0)
+    ap.add_argument("--deta", type=float, default=0.12,
+                    help="robust erode/dilate threshold offset (0 disables)")
     ap.add_argument("--w-grey", dest="w_grey", type=float, default=0.0,
                     help="penalty on z(1-z) to push the topology binary")
     ap.add_argument("--out", default="results/cfrp_wave_guide")
@@ -157,48 +159,75 @@ def main():
     print(f"baseline: interior energy norm={Enorm:.3e}  compliance={c0:.3e}",
           flush=True)
 
+    def phys_J(y, th):
+        """Coupled physics objective and its gradients on a PROJECTED density y.
+        J_phys = -w_dyn E/E0 + w_stat c/c0 (minimized)."""
+        E, uE, dEy, dEth = P.dynamic(y, th)
+        c, uc, dcy, dcth = P.static(y, th)
+        Jp = -a.w_dyn * (E / E0) + a.w_stat * (c / c0)
+        dJy = -a.w_dyn * dEy / E0 + a.w_stat * dcy / c0
+        dJth = -a.w_dyn * dEth / E0 + a.w_stat * dcth / c0
+        return Jp, dJy, dJth, (E / E0, c / c0)
+
+    # Robust erode / intermediate / dilate thresholds (Wang, Lazarov & Sigmund
+    # 2011): a grey design fails under erosion (blurred members vanish) and under
+    # dilation (gaps close), so optimizing the WORST case forces black-and-white,
+    # length-scale-controlled members -- and it attacks the wave-prefers-grey
+    # problem directly, since a graded-index design also degrades under erode /
+    # dilate.  Worst case via KS-softmax; volume + grey penalties on intermediate.
+    etas = [0.5 + a.deta, 0.5, 0.5 - a.deta]        # eroded, intermediate, dilated
+    rho_ks = 12.0
+    stage = max(a.iters // 8, 1)                    # beta doubling schedule
+
     mma = MMA(np.concatenate([np.zeros(nt), np.full(Mth, -np.pi / 2)]),
               np.concatenate([np.ones(nt), np.full(Mth, np.pi / 2)]),
               move=0.06, adapt=True)
     best = dict(J=np.inf); hist = []
     t0 = time.time()
     for it in range(a.iters):
-        beta = 1.0 if it < a.iters * 0.2 else min(
-            a.betamax, a.betamax ** ((it - a.iters * 0.2) / (a.iters * 0.8)))
+        beta = min(a.betamax, 2.0 ** (it // stage))
         yf = Filt @ z
-        y = project(yf, beta); dpr = dproject(yf, beta)
         th = rbf.Phi @ thh
-        E, uE, dEz, dEth = P.dynamic(y, th)
-        c, uc, dcz, dcth = P.static(y, th)
-        vol = float((A @ y) / Asum)
-        J = -a.w_dyn * (E / E0) + a.w_stat * (c / c0) + a.cvol * (vol - a.vol)**2
-        # z serves BOTH objectives.  The two-phase (fiber/matrix) model keeps
-        # void regions as PRESENT soft matrix, so the wave gradient dEz is no
-        # longer the singular high-frequency noise it was under fiber-vs-void
-        # SIMP -- coupling z to the wave now yields a clean, meaningful topology.
-        # grey-suppression: penalize sum A*y(1-y) so z is driven binary despite
-        # the wave objective's preference for graded intermediate densities.
-        grey = float((A @ (y * (1 - y))) / Asum)
-        J = J + a.w_grey * grey
-        gy = (-a.w_dyn * dEz / E0 + a.w_stat * dcz / c0
-              + a.cvol * 2 * (vol - a.vol) * (A / Asum)
-              + a.w_grey * (1 - 2 * y) * (A / Asum))
-        dz = Filt.T @ (dpr * gy)
-        dth = rbf.Phi.T @ (-a.w_dyn * dEth / E0 + a.w_stat * dcth / c0)
-        hist.append(dict(E=E / E0, c=c / c0, vol=vol, J=J))
-        if abs(vol - a.vol) < 0.03 and beta > 2.0 and J < best['J']:
-            best = dict(J=J, z=z.copy(), thh=thh.copy(), y=y.copy(), th=th.copy(),
-                        E=E / E0, c=c / c0, vol=vol)
+        Js, dJys, dJths, infos = [], [], [], []
+        for eta in etas:
+            y = project(yf, beta, eta); dpr = dproject(yf, beta, eta)
+            Jp, dJy, dJth, info = phys_J(y, th)
+            Js.append(Jp); dJys.append(dpr * dJy); dJths.append(dJth)
+            infos.append(info)
+        Js = np.array(Js)
+        m = Js.max()                                    # KS soft-max (worst case)
+        wk = np.exp(rho_ks * (Js - m)); wk /= wk.sum()
+        Jrob = float(m + np.log(np.sum(np.exp(rho_ks * (Js - m)))) / rho_ks)
+
+        # penalties on the INTERMEDIATE design (eta=0.5, index 1)
+        y_i = project(yf, beta, 0.5); dpr_i = dproject(yf, beta, 0.5)
+        vol = float((A @ y_i) / Asum)
+        grey = float((A @ (y_i * (1 - y_i))) / Asum)
+        Mnd = float((A @ (4 * y_i * (1 - y_i))) / Asum)     # non-discreteness
+        J = Jrob + a.cvol * (vol - a.vol) ** 2 + a.w_grey * grey
+
+        dJy_tot = sum(wk[k] * dJys[k] for k in range(3))
+        dJy_tot = dJy_tot + dpr_i * (a.cvol * 2 * (vol - a.vol) * (A / Asum)
+                                     + a.w_grey * (1 - 2 * y_i) * (A / Asum))
+        dz = Filt.T @ dJy_tot
+        dth = rbf.Phi.T @ sum(wk[k] * dJths[k] for k in range(3))
+
+        E_i, c_i = infos[1]
+        hist.append(dict(E=E_i, c=c_i, vol=vol, Mnd=Mnd, J=J))
+        if abs(vol - a.vol) < 0.03 and beta >= 4.0 and J < best['J']:
+            best = dict(J=J, z=z.copy(), thh=thh.copy(), y=y_i.copy(),
+                        th=th.copy(), E=E_i, c=c_i, vol=vol, Mnd=Mnd)
         if it % 15 == 0 or it == a.iters - 1:
-            print(f"[{it:3d}] beta={beta:4.1f} E/E0={E/E0:7.2f} c/c0={c/c0:6.3f} "
-                  f"vol={vol:.3f} J={J:+.3f}", flush=True)
+            print(f"[{it:3d}] beta={beta:5.1f} E/E0={E_i:7.2f} c/c0={c_i:6.3f} "
+                  f"vol={vol:.3f} Mnd={Mnd:.3f} J={J:+.3f}", flush=True)
         W = mma.update(np.concatenate([z, thh]), np.concatenate([dz, dth]), f=J)
         z, thh = W[:nt], W[nt:]
     r = best if np.isfinite(best['J']) else dict(
-        z=z, y=project(Filt @ z, a.betamax), th=rbf.Phi @ thh,
-        E=E / E0, c=c / c0, vol=vol)
+        z=z, y=project(Filt @ z, a.betamax, 0.5), th=rbf.Phi @ thh,
+        E=E_i, c=c_i, vol=vol, Mnd=Mnd)
     print(f"optimized in {time.time()-t0:.0f}s: E/E0={r['E']:.1f}x  "
-          f"c/c0={r['c']:.3f}x  vol={r['vol']:.3f}", flush=True)
+          f"c/c0={r['c']:.3f}x  vol={r['vol']:.3f}  Mnd={r['Mnd']:.3f} "
+          f"(0=binary)", flush=True)
 
     np.savez(a.out + ".npz", trix=mesh.npx[:, 0], triy=mesh.npx[:, 1],
              tris=mesh.tris, cx=mesh.cx, cy=mesh.cy, z=r['z'], y=r['y'],
