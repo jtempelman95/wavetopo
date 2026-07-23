@@ -121,6 +121,8 @@ def main():
     ap.add_argument("--rbf-spc", dest="rbf_spc", type=float, default=0.30)
     ap.add_argument("--cvol", type=float, default=200.0)
     ap.add_argument("--betamax", type=float, default=8.0)
+    ap.add_argument("--w-grey", dest="w_grey", type=float, default=0.0,
+                    help="penalty on z(1-z) to push the topology binary")
     ap.add_argument("--out", default="results/cfrp_wave_guide")
     a = ap.parse_args()
 
@@ -170,8 +172,17 @@ def main():
         c, uc, dcz, dcth = P.static(y, th)
         vol = float((A @ y) / Asum)
         J = -a.w_dyn * (E / E0) + a.w_stat * (c / c0) + a.cvol * (vol - a.vol)**2
+        # z serves BOTH objectives.  The two-phase (fiber/matrix) model keeps
+        # void regions as PRESENT soft matrix, so the wave gradient dEz is no
+        # longer the singular high-frequency noise it was under fiber-vs-void
+        # SIMP -- coupling z to the wave now yields a clean, meaningful topology.
+        # grey-suppression: penalize sum A*y(1-y) so z is driven binary despite
+        # the wave objective's preference for graded intermediate densities.
+        grey = float((A @ (y * (1 - y))) / Asum)
+        J = J + a.w_grey * grey
         gy = (-a.w_dyn * dEz / E0 + a.w_stat * dcz / c0
-              + a.cvol * 2 * (vol - a.vol) * (A / Asum))
+              + a.cvol * 2 * (vol - a.vol) * (A / Asum)
+              + a.w_grey * (1 - 2 * y) * (A / Asum))
         dz = Filt.T @ (dpr * gy)
         dth = rbf.Phi.T @ (-a.w_dyn * dEth / E0 + a.w_stat * dcth / c0)
         hist.append(dict(E=E / E0, c=c / c0, vol=vol, J=J))

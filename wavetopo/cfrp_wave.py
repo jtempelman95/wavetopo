@@ -264,26 +264,33 @@ class CFRPWavePlate:
         self.fixed = np.unique(np.asarray(fixed, int))
         self._sfree = np.setdiff1d(np.arange(self.mesh.ndof), self.fixed)
 
-    def _s(self, z):
-        return self.eps + (1.0 - self.eps) * np.asarray(z, float) ** self.penal
+    # Two-phase interpolation: z=1 stiff fiber, z=0 soft matrix (PRESENT, not
+    # air).  This is essential for the dynamic problem -- a SIMP fiber-vs-void
+    # model gives void elements vanishing stiffness AND mass, so the dynamic
+    # matrix goes near-singular there and the harmonic response resonates/blows
+    # up.  With a matrix phase the wave propagates everywhere (slower in matrix,
+    # guided by fiber) and the topology stays a well-posed fiber/matrix layout.
+    def _w(self, z):
+        return np.asarray(z, float) ** self.penal            # fiber fraction
 
-    def _ds(self, z):
-        z = np.asarray(z, float)
-        return (1.0 - self.eps) * self.penal * z ** (self.penal - 1.0)
+    def _dw(self, z):
+        return self.penal * np.asarray(z, float) ** (self.penal - 1.0)
 
     # ---- assemble ------------------------------------------------------- #
     def _assemble(self, z, theta):
-        s = self._s(z)
+        w = self._w(z)
         kf = self.fs.kf(theta)
-        K = self.fs._scatter(s[:, None, None] * kf)
-        rho = (1e-6 + np.asarray(z, float) * (1 - 1e-6)) * self.mat.rho_f
+        kel = w[:, None, None] * kf + (1.0 - w)[:, None, None] * self.fs.km
+        K = self.fs._scatter(kel)
+        z = np.asarray(z, float)
+        rho = z * self.mat.rho_f + (1.0 - z) * self.mat.rho_m
         M = self.fs._scatter(rho[:, None, None] * self.fs.Me0)
-        return K, M, s, kf
+        return K, M, w, kf
 
     # ---- dynamic: path energy + gradient -------------------------------- #
     def dynamic(self, z, theta, want_grad=True):
         m = self.mesh
-        K, M, s, kf = self._assemble(z, theta)
+        K, M, w, kf = self._assemble(z, theta)
         D = ((1 + 1j * self.eta) * K - self.omega**2 * M
              + 1j * self.omega * self.C).tocsc()
         u = np.zeros(m.ndof, complex)
@@ -299,21 +306,23 @@ class CFRPWavePlate:
         uE = u[m.edof]; lamE = lam[m.edof]
         dkf = self.fs.dkf(theta)
         fac = (1 + 1j * self.eta)
-        # dE/dtheta = -2 Re( lam_e^H s (1+i eta) dkf u_e )
-        dth = -2.0 * (s * fac * np.einsum('ep,epq,eq->e',
+        # dE/dtheta = -2 Re( lam_e^H (1+i eta) w dkf u_e )
+        dth = -2.0 * (w * fac * np.einsum('ep,epq,eq->e',
                                           np.conj(lamE), dkf, uE)).real
-        # dE/dz through K (s'(z) kf) and M (-omega^2 rho'(z))
-        eK = np.einsum('ep,epq,eq->e', np.conj(lamE), kf, uE) * fac
+        # two-phase dD/dz = (1+i eta) w'(z)(kf-km) - omega^2 (rho_f-rho_m) Me0
+        eK = np.einsum('ep,epq,eq->e', np.conj(lamE), kf - self.fs.km, uE) * fac
         eM = np.einsum('ep,epq,eq->e', np.conj(lamE), self.fs.Me0, uE)
-        dz = -2.0 * (self._ds(z) * eK
-                     - self.omega**2 * (1 - 1e-6) * self.mat.rho_f * eM).real
+        dz = -2.0 * (self._dw(z) * eK
+                     - self.omega**2 * (self.mat.rho_f - self.mat.rho_m)
+                     * eM).real
         return E, u, dz, dth
 
     # ---- static: compliance + gradient ---------------------------------- #
     def static(self, z, theta, want_grad=True):
         m = self.mesh
-        s = self._s(z); kf = self.fs.kf(theta)
-        K = self.fs._scatter(s[:, None, None] * kf).tocsc()
+        w = self._w(z); kf = self.fs.kf(theta)
+        kel = w[:, None, None] * kf + (1.0 - w)[:, None, None] * self.fs.km
+        K = self.fs._scatter(kel).tocsc()
         u = np.zeros(m.ndof)
         fr = self._sfree
         u[fr] = sp.linalg.spsolve(K[fr][:, fr], self.Fs[fr])
@@ -322,9 +331,9 @@ class CFRPWavePlate:
             return c, u
         uE = u[m.edof]
         dkf = self.fs.dkf(theta)
-        # self-adjoint: dc/dp = -u^T dK/dp u
-        dth = -(s * np.einsum('ep,epq,eq->e', uE, dkf, uE))
-        dz = -(self._ds(z) * np.einsum('ep,epq,eq->e', uE, kf, uE))
+        # self-adjoint: dc/dp = -u^T dK/dp u;  dK/dz = w'(z)(kf-km), dK/dth = w dkf
+        dth = -(w * np.einsum('ep,epq,eq->e', uE, dkf, uE))
+        dz = -(self._dw(z) * np.einsum('ep,epq,eq->e', uE, kf - self.fs.km, uE))
         return c, u, dz, dth
 
     def volume(self, z):
