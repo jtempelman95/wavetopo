@@ -29,13 +29,15 @@ def confinement(mesh, P, u, tube):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="results/cfrp_wave_guide.npz")
-    ap.add_argument("--h", type=float, default=0.07)
-    ap.add_argument("--omega", type=float, default=9.0)
+    ap.add_argument("--h", type=float, default=0.06)
     ap.add_argument("--out", default="results/cfrp_wave_guide.png")
     args = ap.parse_args()
 
     d = np.load(args.data)
-    mesh, mat, P, wsig, interior = setup(args.h, args.omega, 0.006, 0.5)
+    # render the field at the SAME omega/eta the design was optimized at, so the
+    # reported confinement is the as-optimized value, not a lower-damping proxy.
+    omega = float(d["omega"]); eta = float(d["eta"])
+    mesh, mat, P, wsig, interior = setup(args.h, omega, eta, 0.5)
     tri = mtri.Triangulation(mesh.npx[:, 0], mesh.npx[:, 1], mesh.tris)
     xs, ys = mesh.npx[:, 0], mesh.npx[:, 1]
     tube = corridor_coords(mesh.npx, CORRIDOR)[0] < TUBE_HALF

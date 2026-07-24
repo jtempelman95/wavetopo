@@ -9,6 +9,18 @@
 \usepackage{xcolor}
 \usepackage{mathtools}
 \usepackage{float}
+% ---- float placement: prevent the back-half float backlog ------------- %
+% With bare [h] a wide figure that will not fit "here" is deferred, and the
+% deferred floats pile up at the end (figs 6-15 landed on pp.40-48).  Loosen
+% the fraction limits and raise the per-page counters so LaTeX can place a
+% float at the top/bottom of a nearby page instead of hoarding it.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{tikz}
@@ -110,12 +122,22 @@ scattering reduction. We then extend the same constitutive model to \emph{period
 media, co-designing topology and toolpath on a Bloch cell so a chosen band is
 flattened and isolated by complete gaps on both sides, and validating the design by
 re-simulating the \emph{as-manufactured} cell --- cropped topology plus delineated,
-exactly cell-periodic fiber tows. The complete algorithmic specification is given:
+exactly cell-periodic fiber tows. Finally we pose the most manufacturing-constrained
+problem: on a mesh conforming to two prescribed through-holes, we co-design the panel
+\emph{topology} and the fiber \emph{toolpath} to route wave energy along a curved
+corridor threading between the holes while stiffening the part. Wave guiding and
+stiffness make opposite demands --- guiding needs a slow core, stiffness a fast one
+--- which we resolve with a \emph{step-index elastic waveguide}, a soft-matrix (slow)
+core inside a stiff-fiber (fast) cladding, reaching $0.85$ corridor confinement and
+$0.82\times$ the baseline compliance at half volume as a single connected,
+black-and-white topology. The complete algorithmic specification is given:
 the operator inventory, both composed gradient chains, pseudocode for both
-pipelines, and a data-flow diagram. We are explicit about scope: the wave-control
-results are computed in \texttt{dolfinx}, while the band-structure results come
-from an independent \texttt{numpy}/\texttt{scipy} Q4 code that shares the physics
-and the design machinery but none of the assembly or linear algebra.
+pipelines, and a data-flow diagram. We are explicit about scope: the free-space
+wave-control results are computed in \texttt{dolfinx}, while the periodic
+band-structure and the hole-conforming co-design results come from independent
+\texttt{numpy}/\texttt{scipy} codes (a Q4 Bloch cell and a constant-strain-triangle
+conforming plate) that share the physics and the design machinery but none of the
+assembly or linear algebra.
 \end{abstract}
 
 \tableofcontents
@@ -169,6 +191,19 @@ the same orthotropic model on a periodic Bloch cell, with \emph{topology} (densi
 and \emph{toolpath} (orientation) optimized \emph{together} --- via eigenvalue
 sensitivities and KS aggregation --- to flatten a chosen band and isolate it by a
 gap, neither design field alone sufficing.
+\item \textbf{Co-designed topology and toolpath on a hole-conforming finite part}
+(\S\ref{sec:codesign}): a manufacturable elastic waveguide that routes a wave along a
+prescribed corridor between two through-holes while stiffening the panel, at half
+volume, as a single connected black-and-white topology. It contributes (i) a
+conforming constant-strain-triangle vector element carrying the exact five-term
+$\mathbf D_f(\theta)$ decomposition (Appendix~\ref{app:fourier}), the missing piece
+that puts in-plane elasticity on the same hole-conforming meshes previously reserved
+for scalar problems; (ii) a two-phase (fiber/matrix, not fiber/void) interpolation
+that keeps the harmonic operator well-posed where a SIMP void would make it singular;
+and (iii) the \emph{step-index elastic waveguide} mechanism --- a soft-matrix
+(slow) core inside a stiff-fiber (fast) cladding --- that resolves the standing
+tension between wave confinement, which needs a slow core, and stiffness, which needs
+a fast one.
 \item \textbf{An exactly cell-periodic toolpath construction}
 (Appendix~\ref{app:perphase}): on a periodic cell the phase field cannot be pinned,
 so we split it into a Fourier-space Helmholtz projection \eqref{eq:fftphase} plus
@@ -190,8 +225,10 @@ Everything is traceable to the code: each equation names its implementing functi
 we keep the distinction explicit throughout: the wave-control results
 (\S\ref{sec:results}--\S\ref{sec:hole}) are computed in
 \texttt{dolfinx}/\texttt{FEniCSx} with \texttt{PETSc} and UFL-generated adjoints,
-whereas the periodic band-structure results (\S\ref{sec:meta}) come from a separate,
-self-contained \texttt{numpy}/\texttt{scipy} Q4 implementation that uses no
+whereas the periodic band-structure results (\S\ref{sec:meta}) and the
+hole-conforming co-design (\S\ref{sec:codesign}) come from separate, self-contained
+\texttt{numpy}/\texttt{scipy} implementations --- a Q4 Bloch cell and a
+constant-strain-triangle conforming plate respectively --- that use no
 \texttt{dolfinx} at all (Remark~\ref{rem:solvers}). They share the constitutive
 model and the design machinery, not the assembly or the linear algebra.
 
@@ -323,7 +360,7 @@ reused for every cell, and the design lattice supports the periodic filter
 meshing would buy nothing on that problem, because there the geometry \emph{is}
 the density field: there is no prescribed boundary to conform to.
 
-\begin{table}[h]
+\begin{table}[!htbp]
 \centering\small
 \caption{Discrete spaces, element types and meshes. $\mathcal T_h$ denotes the
 cell complex. The wave-control column applies to
@@ -1056,7 +1093,7 @@ mirror symmetry about $y=L_y/2$ (\S\ref{sec:rbf}); the field and toolpaths are
 correspondingly symmetric. The material is homogeneous everywhere --- only the
 fiber \emph{direction} varies.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_lens.png}
 \caption{\texttt{dolfinx} in-plane orthotropic wave lens. Top left: straight-fiber
@@ -1082,7 +1119,7 @@ manufacturability--performance trade-off of the reference work: enforcing a
 finite minimum turning radius costs focusing authority but yields toolpaths a
 continuous-fiber printer can actually follow. Both designs remain mirror-symmetric.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_lens_curl.png}
 \caption{Fiber-curvature (curl) constraint on the wave lens. Top row:
@@ -1111,7 +1148,7 @@ dim straight-fiber baseline, so the meaningful measure of the null is its
 signed objective changed --- the physics, adjoint, parametrization and toolpath
 pipeline are identical to the single-focus lens.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_lens_multi.png}
 \caption{Multi-target beam shaping. The objective maximizes energy in the two
@@ -1171,7 +1208,7 @@ instead of a conforming cut, the same problem gives markedly less cloaking,
 because a staircased rim scatters on its own account and a large part of what the
 soft-void design cancels is an artefact of the mesh rather than the void.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_cloak_conf.png}
 \caption{\texttt{dolfinx} in-plane orthotropic elastic cloak of a \emph{conforming}
@@ -1199,7 +1236,7 @@ the cloak field winds the principal axis around the void so the far field is
 restored. This is the raw quantity the optimizer designs, before any toolpath
 delineation (\texttt{plot\_director\_field}, Table~\ref{tab:codemap}).
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_orient.png}
 \caption{Anisotropy orientation (fiber director) vector maps: each segment is the
@@ -1256,7 +1293,7 @@ no tighter than the holes --- a directly printable layout. Note that the
 constrained design is \emph{feasible}, not merely penalized: the reported
 $|\zeta|_{\max}$ lies below $\zeta_{\rm all}$ rather than near it from above.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_lens_hole.png}
 \caption{Wave lens with two prescribed circular through-holes (white). Top row:
@@ -1291,7 +1328,7 @@ larger terminal $\mu$) would be required to certify feasibility. The toolpaths a
 director map wrap the two holes differently, exactly as the differing local
 geometry demands --- the design is genuinely solved anew, not mirrored.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_lens_hole_asym.png}
 \caption{Wave lens with two \emph{asymmetric} through-holes (no symmetry imposed).
@@ -1391,7 +1428,7 @@ collapses by more than an order of magnitude while confinement also falls, since
 suppressed field is not a guided one. The intermediate value dominates the whole
 sweep on every metric simultaneously.
 
-\begin{table}[h]
+\begin{table}[!htbp]
 \centering\small
 \caption{Effect of the leakage penalty $\lambda_{\rm out}$ on the joint-routing
 design (all other parameters fixed). Exit gain and guard ratio are relative to the
@@ -1413,7 +1450,7 @@ $5.0$  & $29\times$  & $0.29$ & $99\times$   & $86\%$\\
 \end{tabular}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \IfFileExists{figs/dfx_guide_joint.png}
   {\includegraphics[width=0.99\textwidth]{figs/dfx_guide_joint.png}}
@@ -1462,7 +1499,7 @@ and sharper, manufacturability--performance trade-off of the cloak --- the curl
 penalty buys a large curvature reduction at little cloaking cost, but the last
 increment down to the exact hole radius is unaffordable.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_cloak_curl.png}
 \caption{Fiber-curvature (curl) penalty on the elastic cloak, with the void
@@ -1600,7 +1637,7 @@ resampling. The gap widths quoted here should therefore be read as sampled
 values pending a dense-$\mathbf k$ re-evaluation; the flattening claim, which does
 not depend on the gap, stands regardless.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/flatband.png}
 \caption{Flat-band $+$ band-gap metamaterial by co-optimized topology and fiber
@@ -1675,7 +1712,7 @@ unchanged by manufacturing ($w_1=0.55\to0.55$, gaps $+0.53/+0.67\to+0.59/+0.57$)
 Finer toolpath spacing is therefore not a cosmetic refinement: at $d=1/6$ the
 manufactured part does not have the property the design was optimized for.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \IfFileExists{figs/flatband_sweep.png}
   {\includegraphics[width=0.99\textwidth]{figs/flatband_sweep.png}}
@@ -1752,7 +1789,7 @@ choosing between the two functions. Unlike the periodic band-gap result, every
 point here is an integral over the finite part and carries no $\mathbf k$-sampling
 caveat.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/wave_lens_stiff.png}
 \caption{One fiber layout, two functions. Top: wave-field magnitude for straight
@@ -1765,6 +1802,250 @@ marked; the vertical line is the straight-fiber stiffness. Only the fiber
 orientation is designed; the plate is solid and homogeneous.}
 \label{fig:multifunc}
 \end{figure}
+
+\section{Co-designed topology and toolpath: a manufacturable elastic waveguide}
+\label{sec:codesign}
+The multi-functional result of \S\ref{sec:multifunc} designs the fiber orientation
+alone, on a solid homogeneous plate. Manufacturing a real composite panel adds two
+freedoms that the orientation-only picture omits. First, the part carries
+\emph{prescribed through-holes} --- bolt holes, fastener passages, access cut-outs
+--- whose rims are traction-free boundaries the wave scatters from. Second, the
+\emph{topology itself is a design variable}: material may be removed to save weight,
+subject to a volume budget, so the density field $z(\vx)$ joins the orientation
+$\theta(\vx)$ as an unknown. This section poses the hardest version of the
+multi-functional problem with both freedoms present: co-design the topology
+\emph{and} the toolpath, on a mesh conforming to two asymmetric through-holes, to
+route wave energy along a curved corridor that threads \emph{between} the holes and
+delivers it to the far edge, while keeping the panel stiff. Two design fields, two
+objectives, one shared operator $\mathbf K(z,\theta)$.
+
+\subsection{A conforming vector element: the missing discretization}
+\label{sec:codesign:cst}
+Every in-plane (vector) result in this paper so far lives on a structured quad grid;
+every result on a hole-conforming \texttt{gmsh} triangulation is scalar antiplane
+(\S\ref{sec:spaces}). The present problem needs \emph{both at once} --- vector
+elasticity on a mesh that conforms to holes --- so we add the element that was
+missing: a constant-strain-triangle (CST) plane-stress element carrying the same
+rotated orthotropic fiber stiffness $\mathbf D_f(\theta)$ as the quad elements. It
+reuses, unchanged, the exact five-term Fourier decomposition of
+Appendix~\ref{app:fourier}: with $\mathbf B$ the $3\times6$ CST strain-displacement
+matrix and $A$ the triangle area,
+\begin{equation}
+  \mathbf k_f(\theta)=\sum_{s=0}^{4} c_s(\theta)\,\underbrace{A\,\mathbf B\T
+    \mathbf C_s\,\mathbf B}_{\text{5 fixed }6\times6\text{ matrices}},\qquad
+  \mathbf c(\theta)=\bigl[1,\ \cos2\theta,\ \sin2\theta,\ \cos4\theta,\ \sin4\theta\bigr],
+  \label{eq:cstfourier}
+\end{equation}
+so element rotation is five precomputed matrices weighted by trigonometric scalars,
+and $\partial\mathbf k_f/\partial\theta$ costs only the derivative of
+$\mathbf c(\theta)$. The mesh is built by cutting the disks from the rectangle in the
+OCC kernel, giving \emph{exactly} circular, traction-free rims (a natural boundary
+condition), with the mesh graded finer toward each rim --- never a soft-density
+staircase, for the scattering reasons argued in \S\ref{sec:valley:mesh}. The Fourier
+fit is exact to $8.5\times10^{-16}$, and all four adjoints
+(dynamic and static, each w.r.t.\ $z$ and $\theta$) pass the finite-difference check
+to $\lesssim10^{-6}$.
+
+\subsection{Two design fields, two phases, one operator}
+\label{sec:codesign:model}
+The density $z$ is cone-filtered for a minimum length scale and then
+Heaviside-projected (the $\tanh$ map of \S\ref{sec:curl} with $\beta$-continuation)
+to a crisp topology; the orientation $\theta$ is a smooth CS-RBF field for
+manufacturable tows.
+
+\paragraph{Fiber against matrix, not fiber against void.}
+The single most important modelling choice is what $z\!=\!0$ \emph{means}. A standard
+SIMP topology interpolates between solid and \emph{void}, driving both the stiffness
+and the mass of an element to zero. That is fatal for a \emph{dynamic} problem. The
+harmonic operator is
+\begin{equation}
+  \mathbf D=(1+\ii\eta)\mathbf K(z,\theta)-\omega^2\mathbf M(z)
+             +\ii\omega\,\mathbf C_{\rm sponge},
+  \label{eq:Dharm}
+\end{equation}
+and in a void element both $\mathbf K$ and $\mathbf M$ vanish, so the local balance
+$(1+\ii\eta)\mathbf K-\omega^2\mathbf M$ degenerates to $\mathbf 0$ on those degrees
+of freedom: the element contributes a near-null row, $\mathbf D$ becomes
+ill-conditioned, and the harmonic response develops spurious near-resonances. In
+practice the path energy $E/E_0$ blew up to $\sim\!10^{9}$ --- a numerical artifact,
+not a design. We therefore use a \emph{two-phase} interpolation between stiff fiber
+($z\!=\!1$) and a \emph{soft but present matrix} ($z\!=\!0$),
+\begin{equation}
+  \mathbf k_e = w(z)\,\mathbf k_f(\theta)+\bigl(1-w(z)\bigr)\mathbf k_m,\qquad
+  w(z)=z^{p},\qquad
+  \rho_e = z\,\rho_f+(1-z)\,\rho_m,
+  \label{eq:twophase}
+\end{equation}
+with matrix modulus $E_m=2.6$ and $p=3$. Now $\mathbf K$ and $\mathbf M$ stay bounded
+and positive everywhere, the wave propagates through the \emph{whole} part (more
+slowly in the matrix), and the topology remains a well-posed fiber/matrix layout
+rather than a solid/air one. This is the same distinction the paper draws for holes
+--- a real second phase, not a numerical hole --- carried into the density field.
+
+\paragraph{The coupled objective.}
+A single signed nodal weight $w(\vx)$ carries both wave goals, exactly as in the
+multi-target lens (\S\ref{sec:multi}): $+$ inside the corridor tube, with a
+\emph{delivery ramp} $0.15\!\to\!1$ that rises with arc length so the optimizer is
+paid to carry energy \emph{to the far end} rather than pile it at the source, and
+$-w_{\rm leak}$ over the rest of the interior. With $\mathbf W=\operatorname{diag}(w)$,
+\begin{equation}
+  E=\vu\HH\mathbf W\vu\quad(\text{maximize}),\qquad
+  c=\mathbf F_s\T\vu_s,\ \ \mathbf K\vu_s=\mathbf F_s\quad(\text{minimize}),
+\end{equation}
+\begin{equation}
+  \min_{z,\theta}\;
+  J = w_{\rm stat}\,\frac{c}{c_0}\;-\;w_{\rm dyn}\,\frac{E}{E_0}
+      \;+\;c_{\rm vol}\,(V(z)-V^\star)^2 .
+  \label{eq:codesignobj}
+\end{equation}
+The dynamic sensitivity uses the complex-symmetric adjoint of \S\ref{sec:adj}
+($\overline{\mathbf D}\bm\lambda=\mathbf W\vu$, one triangular solve reused from the
+factorization of $\mathbf D$); the static sensitivity is self-adjoint. Because the
+two phases share the element, the density sensitivity carries a mass term the
+single-phase SIMP one lacks,
+\begin{equation}
+  \frac{\partial\mathbf D}{\partial z}
+    =(1+\ii\eta)\,w'(z)\,\bigl(\mathbf k_f-\mathbf k_m\bigr)
+     -\omega^2\,(\rho_f-\rho_m)\,\mathbf M_e^{0},
+  \label{eq:dDdz}
+\end{equation}
+so removing fiber both softens \emph{and} lightens the element, and the adjoint sees
+both effects.
+
+\subsection{Two silent failures, and the physics that fixes them}
+\label{sec:codesign:fail}
+Co-designing $z$ and $\theta$ na\"ively fails in two ways that each return
+healthy-looking headline numbers, so both are worth stating.
+
+\paragraph{Failure 1: a disconnected topology.}
+The obvious scheme lets both objectives push both fields --- in particular, feeds
+$\partial E/\partial z$ into the density. But $\partial E/\partial z$ is the
+sensitivity of a \emph{standing wave}: it oscillates in sign on the scale of a half
+wavelength. Cone-filtered and Heaviside-projected, that oscillation freezes into a
+lattice of disconnected material islands --- we measured twelve connected components,
+nearly half the solid mass floating free of any load path. Such a ``design'' cannot
+be built and has no structural meaning.
+
+The fix is the model separation of the reference CFRP work, which we state as a
+principle: \emph{give each design field the objective it can satisfy by
+construction.} The density $z$ is driven by \emph{compliance alone}. A
+minimum-compliance topology must connect the load to the support --- a disconnected
+structure has infinite compliance --- so connectivity is enforced by the physics of
+the objective, not by any auxiliary penalty. The orientation $\theta$ is driven by
+the \emph{wave alone}. The two couple only through the shared operator
+$\mathbf K(z,\theta)$: $\theta$ tailors the wave on whatever connected medium $z$
+provides, and $z$ stiffens whatever anisotropy $\theta$ has laid down. Concretely the
+two gradients are kept disjoint,
+\begin{equation}
+  \frac{\partial J}{\partial z}=w_{\rm stat}\,\frac{\partial (c/c_0)}{\partial z}
+    +c_{\rm vol}\,\partial_z(V-V^\star)^2,\qquad
+  \frac{\partial J}{\partial\theta}=-\,w_{\rm dyn}\,\frac{\partial (E/E_0)}{\partial\theta},
+  \label{eq:disjoint}
+\end{equation}
+and the disconnection vanishes: the converged topology is a single connected
+component.
+
+\paragraph{Failure 2: no confinement --- the wave--stiffness tension.}
+Decoupling $z$ from the wave exposes a genuine physical obstruction. On a connected,
+\emph{stiff} topology, the orientation alone will not confine the wave to the
+corridor, and this is not a bug --- it is a tension we had been fighting all along.
+An elastic wave is guided by \emph{total internal reflection}, which requires the
+guiding core to be \emph{slower} than its surroundings, exactly as an optical
+step-index fiber needs a high-index (optically slow) core. The in-plane phase speed
+scales as
+\begin{equation}
+  c_{\rm ph}\sim\sqrt{\text{stiffness}/\text{density}},
+\end{equation}
+so a \emph{slow} core is a \emph{soft} core. Structural stiffness wants the opposite:
+a \emph{stiff, fast} core to carry the bending load. The two requirements point in
+opposite directions, which is why a single homogeneous "make it stiff and make it
+guide'' objective on one field cannot win.
+
+The resolution is a step-index \emph{elastic} waveguide that gives each requirement
+its own region. Along the corridor we fix a passive layout: a thin
+\emph{soft-matrix core} ($z\!=\!0$, slow) that guides the wave by total internal
+reflection, wrapped in a \emph{stiff-fiber cladding} ($z\!=\!1$, fast) that both
+confines the wave and carries the structural load. The wave is then trapped by the
+very material that stiffens the panel, and the tension is resolved rather than
+fought. The passive tube (matrix core, fiber cladding) is seeded from the corridor
+geometry; everywhere outside it, $z$ and $\theta$ are free.
+
+\paragraph{Crispness by robust erode/dilate.}
+To make the free topology black-and-white, connected, and length-scale-controlled, the
+compliance is evaluated on the three-field robust formulation of Wang, Lazarov \&
+Sigmund: the projected density is thresholded at an eroded, an intermediate, and a
+dilated level, $\eta\in\{0.5+\Delta,\,0.5,\,0.5-\Delta\}$, and $z$ is driven by the
+\emph{worst-case} compliance over the three via a Kreisselmeier--Steinhauser softmax.
+A design that is stiff even when uniformly over- or under-etched cannot have hairline
+members or one-element bridges. The measure of non-discreteness
+$M_{\rm nd}=\langle 4\,y(1-y)\rangle$ falls to $0.003$ (a perfectly binary field is
+zero).
+
+\subsection{Result: energy on the corridor, a stiffer panel, one connected layout}
+\label{sec:codesign:result}
+On a $6\times3$ panel with holes at $(2.0,2.05,\,r{=}0.35)$ and
+$(4.1,0.95,\,r{=}0.45)$, meshed conformally to $11\,055$ triangles and driven at
+$\omega=9$ from a localized aperture at the left mouth ($\eta=0.02$), the co-design
+delivers all three goals at once (Figure~\ref{fig:codesign}, Table~\ref{tab:codesign}).
+The straight-fiber baseline diffracts: only $52\%$ of the interior energy lies in the
+corridor and the wave spills symmetrically around both holes. The co-designed
+toolpath threads the field down-and-up along the S-corridor between the holes and
+into the far edge, raising corridor \emph{confinement} to $85\%$ and the signed
+path-energy objective to $5.5\times$ its baseline. Simultaneously the topology
+stiffens the panel to $0.82\times$ the baseline cantilever compliance at half the
+volume, and it does so as a \emph{single connected component} ($100\%$ of the solid
+mass, zero islands) with $M_{\rm nd}=0.003$. The mandatory isotropy-annihilation
+check passes to machine precision --- with $\mathbf Q_f$ set isotropic, every
+$\partial E/\partial\theta$ and $\partial c/\partial\theta$ is
+$O(10^{-16})$ --- confirming the orientation sensitivity is driven purely by the
+material's anisotropy and not by a discretization artifact.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Co-designed topology $+$ toolpath on the conforming CFRP panel, against the
+straight-fiber, uniform-density baseline. Confinement is the fraction of interior
+energy inside the corridor tube; the path-energy ratio $E/E_0$ uses the signed
+delivery-ramped weight. Compliance is the clamped-left, tip-loaded cantilever
+compliance; $M_{\rm nd}$ is the measure of non-discreteness (0 is perfectly binary).}
+\label{tab:codesign}
+\begin{tabular}{lccccc}
+\toprule
+design & confinement & $E/E_0$ & compliance $c/c_0$ & connectivity & $M_{\rm nd}$\\
+\midrule
+straight fibers & $0.52$ & $1.0$ & $1.00$ & --- & --- \\
+\textbf{co-design} & $\mathbf{0.85}$ & $\mathbf{5.5\times}$ & $\mathbf{0.82}$
+  & $\mathbf{1}$ comp.\ ($100\%$) & $\mathbf{0.003}$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\IfFileExists{figs/cfrp_wave_guide.png}
+  {\includegraphics[width=0.99\textwidth]{figs/cfrp_wave_guide.png}}
+  {\fbox{\parbox[c][35mm][c]{0.9\textwidth}{\centering\itshape
+   figure pending: run in progress}}}
+\caption{Co-designed topology and toolpath on a hole-conforming CFRP mesh.
+(a) The optimized density $z$: a single connected, black-and-white fiber topology at
+half volume, with the two through-holes cut exactly from the geometry.
+(b) The fiber toolpath $\theta$ (drawn only where solid).
+(c) The cantilever compliance converges to $0.82\times$ the straight-fiber baseline.
+(d) Straight-fiber field: the wave diffracts around both holes, confinement $0.52$.
+(e) Co-design field: energy launched at the mouth follows the S-corridor between the
+holes to the far edge, confinement $0.85$ --- a step-index elastic waveguide with a
+soft-matrix core (slow, guiding) inside a stiff-fiber cladding (fast, confining and
+load-bearing). (f) The signed target weight: $+$ (delivery-ramped) along the
+corridor, $-$ leakage penalty elsewhere.}
+\label{fig:codesign}
+\end{figure}
+
+This is the paper's most constrained result and its clearest statement of the central
+thesis. The same anisotropy lever that steers a wave in free space
+(\S\ref{sec:results}) here routes it along a prescribed path around real
+manufacturing obstacles, while a co-designed topology --- built on the very
+soft-core/stiff-clad contrast that guides the wave --- makes the part lighter and
+stiffer at the same time. Nothing in the objective is periodic, nothing relies on a
+band gap, and every quantity is an integral over a finite, buildable part.
 
 \section{Topological valley guiding, and what the mesh must resolve}
 \label{sec:valley}
@@ -1849,7 +2130,7 @@ Painted meshes do converge toward the conforming answer, but slowly: at $h=0.06$
 they are still a factor $\sim\!4$ low. The conforming construction is converged
 at $h=0.12$, where the painted one is not converged at half that spacing.
 
-\begin{table}[h]
+\begin{table}[!htbp]
 \centering
 \caption{Mesh-convergence of the guided band. $\bar T$ is the mean transmission
 over the complete gap \eqref{eq:vgap}; $\omega_{\rm peak}$ is where transmission
@@ -1870,7 +2151,7 @@ painted    & 0.06 & $7.88\times10^{-2}$ & 7.533 & yes \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/valley_convergence.png}
 \caption{(a) Wall transmission vs frequency for rod-conforming (blue, solid) and
@@ -1932,6 +2213,23 @@ anisotropy --- supplied physically by the continuous-fiber toolpath --- is the
 necessary and sufficient enabling mechanism for orientation-based elastic wave
 control.
 
+The same constitutive model then carries into two settings the reference work does
+not treat. On a periodic Bloch cell, co-designing topology and toolpath flattens a
+chosen band and isolates it by complete gaps --- a result we hold to its
+$\mathbf k$-convergence, having found and discarded an earlier ``gap'' that was an
+artifact of sparse $\mathbf k$-sampling. On a finite part meshed conformally to
+prescribed through-holes, co-designing the topology and the toolpath routes a wave
+along a curved corridor between the holes while stiffening the panel, at half volume
+and as a single connected black-and-white layout. That last result is the paper's
+sharpest statement of its thesis, and it turns on a physical fact worth restating: an
+elastic wave is guided by a \emph{slow} core but stiffness is carried by a
+\emph{fast} one, so the two goals are opposed on a single medium and are reconciled
+only by giving each its own region --- a step-index elastic waveguide with a
+soft-matrix core inside a stiff-fiber cladding. Anisotropy steers the wave; topology
+carries the load; the manufacturing constraints (exact hole rims, a real matrix phase
+in place of numerical void, length-scale-controlled tows) are honored throughout
+rather than imposed after the fact.
+
 \appendix
 \section{Complete numerical parameters}
 \label{app:params}
@@ -1939,7 +2237,7 @@ Table~\ref{tab:params} lists every constant needed to reproduce the results; all
 appear literally in the drivers \texttt{examples/dolfinx\_lens.py} and
 \texttt{examples/dolfinx\_cloak\_soft.py}.
 
-\begin{table}[h]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabular}{@{}lll@{}}
@@ -1972,10 +2270,11 @@ Toolpath pitch $d$, Eq.~\eqref{eq:phase} & \multicolumn{2}{c}{$0.16$} \\
 Every mathematical object above maps to one function in the repository
 (Table~\ref{tab:codemap}); the physics/adjoint live in
 \texttt{wavetopo/dolfinx\_elastic.py}, the parametrization, curl and phase helpers
-in \texttt{wavetopo/dolfinx\_wave.py} and \texttt{wavetopo/dolfinx\_viz.py}, and the
-experiments in \texttt{examples/}.
+in \texttt{wavetopo/dolfinx\_wave.py} and \texttt{wavetopo/dolfinx\_viz.py}, the
+conforming constant-strain-triangle plate and its two-phase adjoints in
+\texttt{wavetopo/cfrp\_wave.py}, and the experiments in \texttt{examples/}.
 
-\begin{table}[h]
+\begin{table}[!htbp]
 \centering
 \small
 \begin{tabular}{@{}lll@{}}
@@ -1999,8 +2298,13 @@ Director (anisotropy) map & Fig.~\ref{fig:orient} & \texttt{dolfinx\_viz.py : pl
 Bloch eigenproblem $\mathbf K_r\bm\phi=\omega^2\mathbf M_r\bm\phi$ & \eqref{eq:bloch} & \texttt{bloch.py : BlochProblem} \\
 Eigenvalue sensitivity & \eqref{eq:eigsens} & \texttt{bloch.py : eigen\_sensitivity} \\
 Flat-band $+$ gap objective & \eqref{eq:flatobj} & \texttt{flatband\_opt.py : FlatBandOptimizer} \\
+Conforming hole mesh (OCC) & \S\ref{sec:codesign:cst} & \texttt{cfrp\_wave.py : conforming\_plate} \\
+CST $\mathbf k_f(\theta)$, five-term & \eqref{eq:cstfourier},\eqref{eq:kffourier} & \texttt{cfrp\_wave.py : CSTFourier} \\
+Two-phase $\mathbf D$, adjoints & \eqref{eq:twophase},\eqref{eq:dDdz} & \texttt{cfrp\_wave.py : CFRPWavePlate} \\
+Cone density filter & \S\ref{sec:codesign:model} & \texttt{cfrp\_wave.py : cone\_filter} \\
 Lens / cloak drivers & \S\ref{sec:model}ff & \texttt{examples/dolfinx\_lens.py, dolfinx\_cloak\_soft.py} \\
 Metamaterial driver & \S\ref{sec:meta} & \texttt{examples/flatband\_demo.py} \\
+Co-design driver & \S\ref{sec:codesign} & \texttt{examples/cfrp\_wave\_guide.py} \\
 \bottomrule
 \end{tabular}
 \caption{Traceability map from each equation to its implementing function.}
@@ -2061,6 +2365,82 @@ and by the product rule on \eqref{eq:Dfcong},
 \end{equation}
 which is the object every orientation sensitivity is built from
 (cf.\ \eqref{eq:sens}).
+
+\subsection{Exact five-term Fourier decomposition of $\mathbf D_f(\theta)$}
+\label{app:fourier}
+Equations \eqref{eq:Dfcong}--\eqref{eq:dDf} are correct but not the form the code
+uses, because evaluating a congruence product and its product-rule derivative at
+every element, every iteration, is wasteful and --- more importantly --- entangles
+the $\theta$-dependence with the constant material data. The rotation has a much
+sharper structure: \emph{$\mathbf D_f(\theta)$ is a trigonometric polynomial of
+degree four in $\theta$, exactly}. This is worth deriving in full, because it is the
+single device that makes the orientation gradient exact and cheap, and it is reused
+verbatim by both the structured-quad and the conforming-CST elements.
+
+Start from the entries of $\mathbf T(\theta)$. Each is a quadratic monomial in
+$(c,s)$ --- one of $c^2$, $s^2$, or $sc$ --- and the double-angle identities write
+every such monomial in the fixed basis $\{1,\cos2\theta,\sin2\theta\}$:
+\begin{equation}
+  c^2=\tfrac12(1+\cos2\theta),\qquad
+  s^2=\tfrac12(1-\cos2\theta),\qquad
+  sc=\tfrac12\sin2\theta .
+  \label{eq:double}
+\end{equation}
+So every entry of $\mathbf T$ --- and hence of $\mathbf T\T$ --- lives in
+$\operatorname{span}\{1,\cos2\theta,\sin2\theta\}$. The congruence
+\eqref{eq:Dfcong} multiplies two $\mathbf T$-factors (with the constant $\mathbf
+Q_f$ between them), so each entry of $\mathbf D_f$ is a sum of \emph{products of two}
+such first-harmonic terms. The product-to-sum identities collapse those products to
+the second harmonic and no higher,
+\begin{equation}
+  \cos2\theta\cos2\theta=\tfrac12(1+\cos4\theta),\quad
+  \sin2\theta\sin2\theta=\tfrac12(1-\cos4\theta),\quad
+  \cos2\theta\sin2\theta=\tfrac12\sin4\theta ,
+\end{equation}
+so nothing beyond $4\theta$ can appear. Every entry of $\mathbf D_f(\theta)$ therefore
+lies in the five-dimensional space
+$\operatorname{span}\{1,\cos2\theta,\sin2\theta,\cos4\theta,\sin4\theta\}$, and
+collecting the coefficient of each basis function into its own constant $3\times3$
+matrix gives the \emph{exact} decomposition
+\begin{equation}
+  \boxed{\;\mathbf D_f(\theta)=\sum_{s=0}^{4}c_s(\theta)\,\mathbf C_s\;},\qquad
+  \mathbf c(\theta)=\bigl[\,1,\ \cos2\theta,\ \sin2\theta,\ \cos4\theta,\ \sin4\theta\,\bigr],
+  \label{eq:dffourier}
+\end{equation}
+in which the five $\mathbf C_s$ depend only on $\mathbf Q_f$ (each symmetric, since
+$\mathbf D_f$ is). They are recovered once, offline, by projecting $\mathbf
+D_f(\theta)$ onto the basis $\mathbf c$ over a dense $\theta$-sample --- an exact fit,
+not an approximation, because the five functions span the range; in the
+implementation the residual of the least-squares recovery is
+$8.5\times10^{-16}$, i.e.\ machine zero, which is the numerical confirmation that the
+degree is really four and not higher.
+
+Two consequences make this the preferred form. First, the derivative no longer needs
+the product rule \eqref{eq:dDf}; it is just the (elementwise) derivative of the
+scalar basis,
+\begin{equation}
+  \frac{\partial\mathbf D_f}{\partial\theta}=\sum_{s=0}^{4}c_s'(\theta)\,\mathbf C_s,
+  \qquad
+  \mathbf c'(\theta)=\bigl[\,0,\ -2\sin2\theta,\ 2\cos2\theta,\ -4\sin4\theta,\ 4\cos4\theta\,\bigr],
+  \label{eq:dffourierderiv}
+\end{equation}
+which is exact to round-off and shares the constant $\mathbf C_s$ with the value
+\eqref{eq:dffourier}, so value and gradient cost one small matrix combination each.
+Second, the decomposition passes \emph{through} the element integral. The fiber
+element stiffness is $\mathbf k_f(\theta)=\int_e \mathbf B\T\mathbf D_f(\theta)\,
+\mathbf B$, and because the $c_s(\theta)$ are scalars they factor out of the integral,
+\begin{equation}
+  \mathbf k_f(\theta)=\sum_{s=0}^{4}c_s(\theta)\,\underbrace{\int_e \mathbf B\T
+    \mathbf C_s\,\mathbf B}_{\textstyle \mathbf k_f^{(s)}}
+  =\sum_{s=0}^{4}c_s(\theta)\,\mathbf k_f^{(s)} ,
+  \label{eq:kffourier}
+\end{equation}
+so each element caches five fixed matrices $\mathbf k_f^{(s)}$ (for the CST,
+$\mathbf k_f^{(s)}=A\,\mathbf B\T\mathbf C_s\mathbf B$, since $\mathbf B$ is
+constant on a triangle), and every value or $\theta$-derivative of the element
+stiffness is a five-term weighted sum of them --- no per-iteration rotation, no
+congruence product, and a gradient that is exact rather than finite-differenced. This
+is the object \eqref{eq:cstfourier} the conforming element assembles.
 
 \subsection{Isotropy annihilation (proof of Remark~\ref{rem:iso})}
 $\mathbf Q_f$ is isotropic iff $Q_{11}=Q_{22}$ and $Q_{66}=\tfrac12(Q_{11}-Q_{12})$.
