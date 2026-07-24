@@ -145,39 +145,41 @@ def main():
     z = np.full(nt, a.vol); thh = np.zeros(Mth)
     A = mesh.area; Asum = A.sum()
 
-    def phys(zv, thhv, beta):
-        y = project(Filt @ zv, beta)
-        th = rbf.Phi @ thhv
-        return y, th
+    # PASSIVE-SOLID corridor (the CFRP paper's passive-region mechanism): a
+    # continuous solid channel from source to output, so the wave always has a
+    # connected medium to propagate through.  The topology z is then driven by
+    # COMPLIANCE alone -- which connects load to support by construction and so is
+    # never disconnected -- and the wave is tailored by the toolpath theta.  The
+    # earlier failure fed the wave's standing-wave-oscillatory dE/dz into z; after
+    # filtering that oscillation becomes disconnected islands (12 components, half
+    # the material floating).  Routing the wave through theta, not z, removes it.
+    dcor_e, _ = corridor_coords(np.column_stack([mesh.cx, mesh.cy]), CORRIDOR)
+    xe = mesh.cx
+    core = (dcor_e < TUBE_HALF * 0.55)                      # matrix core (slow)
+    clad = (dcor_e >= TUBE_HALF * 0.7) & (dcor_e < TUBE_HALF * 1.5)  # fiber clad
+    passive = core | clad
+    pval = np.where(core, 0.0, 1.0)                         # core=matrix, clad=fiber
 
-    y0, th0 = phys(z, thh, 1.0)
+    def apply_passive(y):
+        yp = np.where(passive, pval, y)
+        return yp, (~passive).astype(float)                # y_phys, active
+
+    y0 = apply_passive(project(Filt @ z, 1.0))[0]
+    th0 = rbf.Phi @ thh
     u0 = P.dynamic(y0, th0, False)[1]
     Enorm = float((np.abs(u0[0::2])**2 + np.abs(u0[1::2])**2)[interior].sum())
-    Enorm = Enorm if Enorm > 1e-12 else 1.0
-    E0 = Enorm                                   # stable positive normalizer
+    E0 = Enorm if Enorm > 1e-12 else 1.0
     c0 = P.static(y0, th0, False)[0]
-    print(f"baseline: interior energy norm={Enorm:.3e}  compliance={c0:.3e}",
-          flush=True)
+    print(f"baseline: interior energy norm={E0:.3e}  compliance={c0:.3e}; "
+          f"waveguide: matrix core {int(core.sum())} elts, fiber clad {int(clad.sum())} elts", flush=True)
 
-    def phys_J(y, th):
-        """Coupled physics objective and its gradients on a PROJECTED density y.
-        J_phys = -w_dyn E/E0 + w_stat c/c0 (minimized)."""
-        E, uE, dEy, dEth = P.dynamic(y, th)
-        c, uc, dcy, dcth = P.static(y, th)
-        Jp = -a.w_dyn * (E / E0) + a.w_stat * (c / c0)
-        dJy = -a.w_dyn * dEy / E0 + a.w_stat * dcy / c0
-        dJth = -a.w_dyn * dEth / E0 + a.w_stat * dcth / c0
-        return Jp, dJy, dJth, (E / E0, c / c0)
-
-    # Robust erode / intermediate / dilate thresholds (Wang, Lazarov & Sigmund
-    # 2011): a grey design fails under erosion (blurred members vanish) and under
-    # dilation (gaps close), so optimizing the WORST case forces black-and-white,
-    # length-scale-controlled members -- and it attacks the wave-prefers-grey
-    # problem directly, since a graded-index design also degrades under erode /
-    # dilate.  Worst case via KS-softmax; volume + grey penalties on intermediate.
-    etas = [0.5 + a.deta, 0.5, 0.5 - a.deta]        # eroded, intermediate, dilated
+    # Robust erode/dilate (Wang, Lazarov & Sigmund 2011) on the STRUCTURAL
+    # (compliance) objective, which drives z: the worst case over eroded /
+    # intermediate / dilated projections forces crisp, length-scale-controlled,
+    # connected members.  The wave routes through theta on the intermediate field.
+    etas = [0.5 + a.deta, 0.5, 0.5 - a.deta]
     rho_ks = 12.0
-    stage = max(a.iters // 8, 1)                    # beta doubling schedule
+    stage = max(a.iters // 8, 1)
 
     mma = MMA(np.concatenate([np.zeros(nt), np.full(Mth, -np.pi / 2)]),
               np.concatenate([np.ones(nt), np.full(Mth, np.pi / 2)]),
@@ -188,34 +190,44 @@ def main():
         beta = min(a.betamax, 2.0 ** (it // stage))
         yf = Filt @ z
         th = rbf.Phi @ thh
-        Js, dJys, dJths, infos = [], [], [], []
+
+        # z <- COMPLIANCE, robust over erode/dilate (connected + crisp)
+        cs, dcz_parts = [], []
         for eta in etas:
             y = project(yf, beta, eta); dpr = dproject(yf, beta, eta)
-            Jp, dJy, dJth, info = phys_J(y, th)
-            Js.append(Jp); dJys.append(dpr * dJy); dJths.append(dJth)
-            infos.append(info)
-        Js = np.array(Js)
-        m = Js.max()                                    # KS soft-max (worst case)
-        wk = np.exp(rho_ks * (Js - m)); wk /= wk.sum()
-        Jrob = float(m + np.log(np.sum(np.exp(rho_ks * (Js - m)))) / rho_ks)
+            yp, act = apply_passive(y)
+            c, uc, dcy, dcth = P.static(yp, th)
+            cs.append(c / c0)
+            dcz_parts.append(dpr * act * (dcy / c0))
+        cs = np.array(cs)
+        mM = cs.max(); wk = np.exp(rho_ks * (cs - mM)); wk /= wk.sum()
+        Crob = float(mM + np.log(np.sum(np.exp(rho_ks * (cs - mM)))) / rho_ks)
 
-        # penalties on the INTERMEDIATE design (eta=0.5, index 1)
+        # intermediate field: wave objective (drives theta), volume, grey, metrics
         y_i = project(yf, beta, 0.5); dpr_i = dproject(yf, beta, 0.5)
-        vol = float((A @ y_i) / Asum)
+        yp_i, act_i = apply_passive(y_i)
+        E, uE, dEy, dEth = P.dynamic(yp_i, th)
+        c_i, uc_i, dcy_i, dcth_i = P.static(yp_i, th)
+        vol = float((A @ yp_i) / Asum)
         grey = float((A @ (y_i * (1 - y_i))) / Asum)
-        Mnd = float((A @ (4 * y_i * (1 - y_i))) / Asum)     # non-discreteness
-        J = Jrob + a.cvol * (vol - a.vol) ** 2 + a.w_grey * grey
+        Mnd = float((A @ (4 * y_i * (1 - y_i))) / Asum)
+        J = (a.w_stat * Crob - a.w_dyn * (E / E0)
+             + a.cvol * (vol - a.vol) ** 2 + a.w_grey * grey)
 
-        dJy_tot = sum(wk[k] * dJys[k] for k in range(3))
-        dJy_tot = dJy_tot + dpr_i * (a.cvol * 2 * (vol - a.vol) * (A / Asum)
-                                     + a.w_grey * (1 - 2 * y_i) * (A / Asum))
-        dz = Filt.T @ dJy_tot
-        dth = rbf.Phi.T @ sum(wk[k] * dJths[k] for k in range(3))
+        # z gradient: robust compliance + volume + grey (NO wave -> no islands)
+        dz = Filt.T @ (a.w_stat * sum(wk[k] * dcz_parts[k] for k in range(3))
+                       + dpr_i * (a.cvol * 2 * (vol - a.vol) * (A / Asum)
+                                  + a.w_grey * (1 - 2 * y_i) * (A / Asum)))
+        # theta gradient: WAVE routing only.  Each design field owns one
+        # objective -- z<->compliance (connected topology), theta<->wave -- coupled
+        # only through the shared K(z,theta).  Feeding compliance into theta orients
+        # fibers for stiffness and actively de-confines the wave.
+        dth = rbf.Phi.T @ (-a.w_dyn * dEth / E0)
 
-        E_i, c_i = infos[1]
+        E_i, c_i = E / E0, c_i / c0
         hist.append(dict(E=E_i, c=c_i, vol=vol, Mnd=Mnd, J=J))
-        if abs(vol - a.vol) < 0.03 and beta >= 4.0 and J < best['J']:
-            best = dict(J=J, z=z.copy(), thh=thh.copy(), y=y_i.copy(),
+        if abs(vol - a.vol) < 0.05 and beta >= 4.0 and J < best['J']:
+            best = dict(J=J, z=z.copy(), thh=thh.copy(), y=yp_i.copy(),
                         th=th.copy(), E=E_i, c=c_i, vol=vol, Mnd=Mnd)
         if it % 15 == 0 or it == a.iters - 1:
             print(f"[{it:3d}] beta={beta:5.1f} E/E0={E_i:7.2f} c/c0={c_i:6.3f} "

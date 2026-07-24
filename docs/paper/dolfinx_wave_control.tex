@@ -1842,7 +1842,7 @@ $2.2\times10^{-16}$ and centroid offset $3\times10^{-16}$.
 
 Table~\ref{tab:vconv} shows the consequence. Sweeping wall transmission over
 frequency at three resolutions, the conforming meshes agree to a factor
-$\VCONVC$ and peak inside the gap \eqref{eq:vgap} at every resolution. The
+$\VCONVC$ and peak inside the gap \eqref{eq:vgap} at every resolution. Thes
 painted meshes spread by a factor $\VCONVP$, and at the coarsest resolution their
 peak falls at $\omega=8.0$, outside the gap altogether --- no guided band at all.
 Painted meshes do converge toward the conforming answer, but slowly: at $h=0.06$
@@ -2273,28 +2273,159 @@ imposing symmetry introduces no inconsistency between the two --- the projected
 gradient is exactly the gradient of the restricted problem. \qed
 
 \subsection{Eigenvalue sensitivity for the Bloch metamaterial}
-For the generalized Hermitian eigenproblem $\mathbf K_r\bm\phi_n=\lambda_n\mathbf
-M_r\bm\phi_n$ (\eqref{eq:bloch}, $\lambda_n=\omega_n^2$), normalize
-$\bm\phi_n\HH\mathbf M_r\bm\phi_n=1$. Differentiating the eigen-relation w.r.t.\ a
-design $p$ and left-multiplying by $\bm\phi_n\HH$,
+\label{sec:app:hf}
+The band-structure objectives of \S\ref{sec:meta} are functions of the
+eigenfrequencies $\omega_n(\mathbf k)$, so the optimizer needs
+$\partial\omega_n/\partial p$ for each design variable $p$. Computing this by
+finite differences would cost one extra eigensolve per variable per
+$\mathbf k$-point --- thousands of eigensolves per iteration --- so we instead
+use the analytic first-order perturbation result below, which delivers every
+$\partial\lambda_n/\partial p$ from quantities \emph{already} computed by the
+single eigensolve at that $\mathbf k$. This is the discrete counterpart of the
+Hellmann--Feynman theorem of quantum mechanics (the energy derivative of a
+Hamiltonian equals the expectation of the Hamiltonian's derivative in the
+unperturbed state); the derivation makes precise why no eigenvector derivative
+survives.
+
+\paragraph{Setup.} At a fixed wavevector $\mathbf k$ the reduced problem
+\eqref{eq:bloch} is the generalized Hermitian eigenproblem
 \begin{equation}
-  \bm\phi_n\HH\mathbf K_r'\bm\phi_n+\bm\phi_n\HH\mathbf K_r\bm\phi_n'
-  =\lambda_n'\,\bm\phi_n\HH\mathbf M_r\bm\phi_n
-  +\lambda_n\bigl(\bm\phi_n\HH\mathbf M_r'\bm\phi_n
-  +\bm\phi_n\HH\mathbf M_r\bm\phi_n'\bigr).
+  \mathbf K_r\,\bm\phi_n=\lambda_n\,\mathbf M_r\,\bm\phi_n,\qquad
+  \lambda_n=\omega_n^2,\qquad
+  \mathbf K_r=\mathbf K_r\HH,\ \ \mathbf M_r=\mathbf M_r\HH\succ0,
+  \label{eq:app:geneig}
 \end{equation}
-Because $\bm\phi_n\HH\mathbf K_r=\lambda_n\bm\phi_n\HH\mathbf M_r$ (Hermitian), the
-two $\bm\phi_n'$ terms cancel, leaving the Hellmann--Feynman form
-$\lambda_n'=\bm\phi_n\HH(\mathbf K_r'-\lambda_n\mathbf M_r')\bm\phi_n$
-(\eqref{eq:eigsens}); no eigenvector derivative is needed. With
-$\mathbf K_r=\mathbf T\HH\mathbf K\mathbf T$ and the full-cell $\mathbf K,\mathbf M$
-element-assembled, $\mathbf K_r',\mathbf M_r'$ reduce to element energies of the
-Bloch state $\bm\psi_n=\mathbf T\bm\phi_n$: for orientation
-$\partial\mathbf K/\partial\hat\theta_i$ carries $\partial\mathbf k_f/\partial
-\theta$ \eqref{eq:dDf} through the CS-RBF map, for density the SIMP derivatives
-$p\,z^{p-1}(\mathbf k_f-\mathbf k_m)$ and $(\rho_f-\rho_m)\mathbf m_e$. The band
-gradients are then KS-aggregated into \eqref{eq:flatobj}
-(\texttt{flatband\_opt.py}).
+with $\mathbf K_r,\mathbf M_r$ depending on the design $p\in\{z_e,\hat\theta_i\}$
+through the assembled cell matrices. We assume $\lambda_n$ is a \emph{simple}
+(non-degenerate) eigenvalue --- the caveat when it is not is discussed at the end
+--- and fix the scale of the eigenvector by the $\mathbf M_r$-normalization
+\begin{equation}
+  \bm\phi_n\HH\mathbf M_r\bm\phi_n=1.
+  \label{eq:app:norm}
+\end{equation}
+Write $(\cdot)'\equiv\partial(\cdot)/\partial p$. The matrices, the eigenvalue,
+and the eigenvector all depend on $p$; the goal is $\lambda_n'$ alone.
+
+\paragraph{Differentiate the eigen-relation.} Applying $\partial/\partial p$ to
+\eqref{eq:app:geneig} by the product rule gives
+\begin{equation}
+  \mathbf K_r'\bm\phi_n+\mathbf K_r\bm\phi_n'
+  =\lambda_n'\,\mathbf M_r\bm\phi_n
+  +\lambda_n\mathbf M_r'\bm\phi_n
+  +\lambda_n\mathbf M_r\bm\phi_n'.
+  \label{eq:app:diff}
+\end{equation}
+This still contains the \emph{unknown} eigenvector derivative $\bm\phi_n'$, which
+is expensive (it requires solving a singular system, or summing over all other
+modes). The trick is to project it out. Left-multiply \eqref{eq:app:diff} by
+$\bm\phi_n\HH$:
+\begin{equation}
+  \underbrace{\bm\phi_n\HH\mathbf K_r'\bm\phi_n}_{\text{(A)}}
+  +\underbrace{\bm\phi_n\HH\mathbf K_r\bm\phi_n'}_{\text{(B)}}
+  =\lambda_n'\underbrace{\bm\phi_n\HH\mathbf M_r\bm\phi_n}_{=1}
+  +\lambda_n\underbrace{\bm\phi_n\HH\mathbf M_r'\bm\phi_n}_{\text{(C)}}
+  +\lambda_n\underbrace{\bm\phi_n\HH\mathbf M_r\bm\phi_n'}_{\text{(D)}}.
+  \label{eq:app:projected}
+\end{equation}
+
+\paragraph{Why the eigenvector-derivative terms cancel.} Consider the two terms
+carrying $\bm\phi_n'$, namely (B) and (D). For (B), use that $\mathbf K_r$ is
+Hermitian and $\bm\phi_n$ is its eigenvector: taking the conjugate transpose of
+$\mathbf K_r\bm\phi_n=\lambda_n\mathbf M_r\bm\phi_n$ and using
+$\mathbf K_r\HH=\mathbf K_r$, $\mathbf M_r\HH=\mathbf M_r$, $\lambda_n\in\mathbb
+R$ (real, since the pencil is Hermitian-definite) gives the \emph{left}
+eigen-relation
+\begin{equation}
+  \bm\phi_n\HH\mathbf K_r=\lambda_n\,\bm\phi_n\HH\mathbf M_r.
+  \label{eq:app:left}
+\end{equation}
+Substituting \eqref{eq:app:left} into (B),
+\[
+  \text{(B)}=\bm\phi_n\HH\mathbf K_r\bm\phi_n'
+  =\lambda_n\,\bm\phi_n\HH\mathbf M_r\bm\phi_n'
+  =\lambda_n\,\text{(D)},
+\]
+so on the right-hand side the term $\lambda_n\cdot\text{(D)}$ is \emph{identical}
+to (B) on the left, and the two cancel when \eqref{eq:app:projected} is
+rearranged. The unknown $\bm\phi_n'$ has dropped out entirely --- this is the
+crux, and it is exactly the discrete Hellmann--Feynman cancellation: the
+first-order change of a normalized eigenvector is $\mathbf M_r$-orthogonal to the
+mode itself, so it cannot change the Rayleigh quotient to first order. (Note we
+did \emph{not} need $\partial/\partial p$ of the normalization
+\eqref{eq:app:norm}; the cancellation is purely a consequence of the left
+eigen-relation. Differentiating \eqref{eq:app:norm} gives the complementary fact
+$2\Real(\bm\phi_n\HH\mathbf M_r\bm\phi_n')=-\bm\phi_n\HH\mathbf M_r'\bm\phi_n$,
+which fixes the component of $\bm\phi_n'$ along $\bm\phi_n$ but is not needed
+here.)
+
+\paragraph{Result.} What remains of \eqref{eq:app:projected} is the
+Hellmann--Feynman sensitivity
+\begin{equation}
+  \boxed{\;\frac{\partial\lambda_n}{\partial p}
+  =\bm\phi_n\HH\Bigl(\frac{\partial\mathbf K_r}{\partial p}
+  -\lambda_n\frac{\partial\mathbf M_r}{\partial p}\Bigr)\bm\phi_n\;}
+  \tag{\ref{eq:eigsens}}
+\end{equation}
+and then $\partial\omega_n/\partial p=\partial\lambda_n/\partial p/(2\omega_n)$.
+The formula has a clean physical reading: $\bm\phi_n\HH\mathbf K_r'\bm\phi_n$ is
+the change in the mode's \emph{elastic (strain) energy} caused by the design
+perturbation, and $\lambda_n\,\bm\phi_n\HH\mathbf M_r'\bm\phi_n$ the corresponding
+change in its \emph{kinetic energy}; the eigenfrequency rises when the
+perturbation stiffens the mode faster than it mass-loads it, and falls otherwise.
+Everything on the right is available from the one eigenpair $(\lambda_n,
+\bm\phi_n)$ already computed --- no extra solve, no eigenvector derivative.
+
+\paragraph{Reduction to element energies.} The reduced matrices are congruence
+transforms of the full-cell matrices, $\mathbf K_r=\mathbf T\HH\mathbf K\mathbf T$
+and $\mathbf M_r=\mathbf T\HH\mathbf M\mathbf T$, with the Bloch reduction
+$\mathbf T(\mathbf k)$ \emph{independent} of the design. Hence
+$\mathbf K_r'=\mathbf T\HH\mathbf K'\mathbf T$ and likewise for $\mathbf M_r'$, and
+\eqref{eq:eigsens} becomes a quadratic form in the full-space Bloch state
+$\bm\psi_n=\mathbf T\bm\phi_n$:
+\begin{equation}
+  \frac{\partial\lambda_n}{\partial p}
+  =\bm\psi_n\HH\frac{\partial\mathbf K}{\partial p}\bm\psi_n
+  -\lambda_n\,\bm\psi_n\HH\frac{\partial\mathbf M}{\partial p}\bm\psi_n.
+\end{equation}
+Because $\mathbf K=\sum_e\mathbf k_e$ and $\mathbf M=\sum_e\mathbf m_e$ are
+element-assembled and each element depends on the design only locally, both
+quadratic forms collapse to sums of \emph{element energies} of $\bm\psi_n$. For
+an orientation variable $\hat\theta_i$, only $\mathbf K$ depends on it (through
+$\mathbf k_f(\theta)$), and the dependence passes through the CS-RBF map
+$\theta=\hat{\bm\Phi}\hat{\bm\theta}$, so by the chain rule
+\begin{equation}
+  \frac{\partial\lambda_n}{\partial\hat\theta_i}
+  =\sum_e\hat\Phi_{ei}\,z_e^{\,p}\,
+  \bm\psi_{n,e}\HH\frac{\partial\mathbf k_f}{\partial\theta}(\theta_e)\,
+  \bm\psi_{n,e},
+\end{equation}
+with $\partial\mathbf k_f/\partial\theta$ the exact Fourier derivative
+\eqref{eq:dDf}. For a density variable $z_e$, the two-phase SIMP interpolation
+gives $\partial\mathbf k_e/\partial z_e=p\,z_e^{p-1}(\mathbf k_f-\mathbf k_m)$ and
+$\partial\mathbf m_e/\partial z_e=(\rho_f-\rho_m)\mathbf m_e^0$, so
+\begin{equation}
+  \frac{\partial\lambda_n}{\partial z_e}
+  =p\,z_e^{p-1}\,\bm\psi_{n,e}\HH(\mathbf k_f-\mathbf k_m)\bm\psi_{n,e}
+  -\lambda_n(\rho_f-\rho_m)\,\bm\psi_{n,e}\HH\mathbf m_e^0\bm\psi_{n,e}.
+\end{equation}
+These per-band, per-$\mathbf k$ gradients are then combined by the smooth KS
+extrema of \eqref{eq:flatobj} (\texttt{flatband\_opt.py}) and finite-difference
+verified to $\sim\!10^{-6}$.
+
+\paragraph{Caveat: degenerate eigenvalues.} The cancellation above assumed
+$\lambda_n$ simple, so that $\bm\phi_n$ is defined up to a phase and (B)$=\lambda_n
+\cdot$(D) holds for \emph{that} eigenvector. At a degenerate eigenvalue --- e.g.\
+the four-fold $\Gamma$-point degeneracy of a symmetric cell --- the eigenvectors
+within the degenerate subspace are only defined up to a unitary mixing, the map
+$p\mapsto\lambda_n(p)$ is generally not differentiable (only directionally so),
+and \eqref{eq:eigsens} evaluated on an arbitrary basis of the subspace disagrees
+with finite differences by order one. This is not a defect of the formula but of
+the question: one must instead diagonalize the $2\times2$ (or $d\times d$)
+restriction of $\mathbf K_r'-\lambda_n\mathbf M_r'$ onto the degenerate subspace
+to get the (one-sided) sensitivities of the split branches. In practice we sidestep
+this by starting the optimizer from a deliberately symmetry-broken cell, where all
+bands of interest are simple; \S\ref{sec:multifunc} records the failure mode when
+this is neglected.
 
 \subsection{MMA subproblem}
 Each iteration the Method of Moving Asymptotes replaces $J,\Pi$ by convex
