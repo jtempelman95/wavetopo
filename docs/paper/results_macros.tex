@@ -77,3 +77,14 @@
 \DefN{\FLKNEE}{35}       % focus at +20% compliance (mid-front)
 \DefN{\FLFDFOC}{6}       % focus-adjoint FD digits
 \DefN{\FLFDC}{2.9\times10^{-7}} % compliance-adjoint FD error
+% ---- bracket mode-separation (examples/cfrp_bracket_modal.py --w-eig2) -- %
+\DefN{\BRTWOGAP}{1.2}    % min FREQ gap omega2/omega1=sqrt(lam2/lam1) at w2=2 (plate 3.14)
+\DefN{\BRTWOPLATE}{3.1}  % equal-mass plate frequency gap omega2/omega1
+\DefN{\BRTWOMAXW}{1.4}   % gap already at the pure max-omega1 design (w2=0)
+% ---- feasible (curl-constrained) cloak (scratchpad/cloak_curl_conf.py) -- %
+\DefN{\CLKFEAS}{9.6}     % printable cloak reduction at |zeta|<=1/R_V (best feasible iterate)
+\DefN{\CLKUNC}{36}       % unconstrained optimum reduction (not printable)
+\DefN{\CLKAN}{1.9}       % analytical transformation-direction cloak reduction
+% ---- bracket anisotropy-vs-printability (scratchpad/diag_*.py, za sweep) - %
+\DefN{\BRANISOPT}{64}    % pointwise-optimal compliance gain %% (align to principal stress)
+\DefN{\BRANISOSTEER}{18} % hero mean fiber steering, deg (za=9 dramatic hero, |zeta|<=9)

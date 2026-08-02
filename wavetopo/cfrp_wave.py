@@ -29,7 +29,8 @@ import scipy.sparse as sp
 
 from .cfrp import Material, Df_of_theta
 
-__all__ = ["Material", "conforming_plate", "CSTFourier", "PlateMesh"]
+__all__ = ["Material", "conforming_plate", "CSTFourier", "PlateMesh",
+           "cone_filter", "curl_operators", "director_curl", "curl_penalty"]
 
 PlateMesh = namedtuple("PlateMesh",
                        "npx tris cx cy area edof ndof nnode Lx Ly holes")
@@ -170,6 +171,7 @@ class CSTFourier:
         comps = np.stack([Df_of_theta(t, material.Qf) for t in th])  # (nsamp,3,3)
         coef, *_ = np.linalg.lstsq(basis, comps.reshape(nsamp, 9), rcond=None)
         C = coef.reshape(5, 3, 3)
+        self.C = C                     # 5-term Fourier coeffs of Df(theta) (for stress)
         self.fit_err = np.max(np.abs((basis @ coef).reshape(nsamp, 3, 3) - comps)) \
             / np.max(np.abs(comps))
 
@@ -317,6 +319,36 @@ class CFRPWavePlate:
                      * eM).real
         return E, u, dz, dth
 
+    def dynamic_multi(self, z, theta, drives, want_grad=True):
+        """Protected energy summed over SEVERAL source drives at this frequency,
+        reusing ONE LU factorization of the dynamic operator (which is
+        drive-independent).  The adjoint reuses the same factor by conjugation
+        (conj(D) lam = b  <=>  lam = conj( D^{-1} conj(b) )).  Returns
+        (E_total, [u_s]) or (E_total, [u_s], dtheta_total)."""
+        m = self.mesh
+        K, M, w, kf = self._assemble(z, theta)
+        D = ((1 + 1j * self.eta) * K - self.omega**2 * M
+             + 1j * self.omega * self.C).tocsc()
+        fr = self._free
+        lu = sp.linalg.splu(D[fr][:, fr])
+        dkf = self.fs.dkf(theta) if want_grad else None
+        fac = (1 + 1j * self.eta)
+        Etot = 0.0; us = []; dth = np.zeros(m.tris.shape[0])
+        for F in drives:
+            u = np.zeros(m.ndof, complex)
+            u[fr] = lu.solve(F[fr])
+            Etot += float(np.real(np.vdot(u, self.W @ u)))
+            us.append(u)
+            if want_grad:
+                lam = np.zeros(m.ndof, complex)
+                lam[fr] = np.conj(lu.solve(np.conj((self.W @ u)[fr])))
+                uE = u[m.edof]; lamE = lam[m.edof]
+                dth += -2.0 * (w * fac * np.einsum('ep,epq,eq->e',
+                                                   np.conj(lamE), dkf, uE)).real
+        if not want_grad:
+            return Etot, us
+        return Etot, us, dth
+
     # ---- static: compliance + gradient ---------------------------------- #
     def static(self, z, theta, want_grad=True):
         m = self.mesh
@@ -336,9 +368,185 @@ class CFRPWavePlate:
         dz = -(self._dw(z) * np.einsum('ep,epq,eq->e', uE, kf - self.fs.km, uE))
         return c, u, dz, dth
 
+    def modal(self, z, theta, nev=4, want_grad=True):
+        """Smallest ``nev`` eigenpairs of the clamped generalized eigenproblem
+        K(z,theta) phi = lam M(z) phi  (lam = omega^2), plus the sensitivities of the
+        FUNDAMENTAL lam_1 w.r.t. BOTH density z and orientation theta.  With phi
+        mass-normalized (phi^T M phi = 1) the Rayleigh-quotient derivative is
+        dlam_1/dp = phi^T (dK/dp - lam_1 dM/dp) phi.  Orientation leaves the mass
+        untouched (dM/dtheta = 0); density moves both:
+
+          dlam_1/dtheta_e = w_e * phi_e^T (dkf/dtheta)_e phi_e
+          dlam_1/dz_e     = w'(z_e) phi_e^T (kf - km)_e phi_e
+                            - lam_1 (rho_f - rho_m) phi_e^T Me0_e phi_e
+
+        (K is SIMP-penalized in z, so its term carries w'(z); the mass M is LINEAR in
+        z, so its term does NOT.)  The second, negative term is the counterintuitive
+        one: removing mass where the mode has kinetic energy (large phi^T Me0 phi)
+        RAISES lam_1.  Returns (lam, phi, dlam_dz, dlam_dtheta)."""
+        from scipy.sparse.linalg import eigsh
+        m = self.mesh
+        K, M, w, kf = self._assemble(z, theta)
+        fr = self._sfree
+        Kf = K[fr][:, fr].tocsc(); Mf = M[fr][:, fr].tocsc()
+        try:
+            lam, V = eigsh(Kf, k=nev, M=Mf, sigma=0.0, which='LM')
+        except RuntimeError:
+            # a zero pivot in the sigma=0 shift-invert factorization: retry with a
+            # tiny negative shift (K - sigma M = K + |sigma| M is then positive
+            # definite), which finds the same smallest eigenvalues.
+            shift = 1e-6 * float(np.abs(Kf.diagonal()).mean())
+            lam, V = eigsh(Kf, k=nev, M=Mf, sigma=-shift, which='LM')
+        order = np.argsort(lam); lam = lam[order]; V = V[:, order]
+        phi = np.zeros(m.ndof); phi[fr] = V[:, 0]
+        phi /= np.sqrt(max(phi @ (M @ phi), 1e-300))     # phi^T M phi = 1
+        if not want_grad:
+            return lam, phi
+        phiE = phi[m.edof]; dkf = self.fs.dkf(theta); lam1 = float(lam[0])
+        dth = w * np.einsum('ep,epq,eq->e', phiE, dkf, phiE)
+        eK = np.einsum('ep,epq,eq->e', phiE, kf - self.fs.km, phiE)
+        eM = np.einsum('ep,epq,eq->e', phiE, self.fs.Me0, phiE)
+        dz = (self._dw(z) * eK
+              - lam1 * (self.mat.rho_f - self.mat.rho_m) * eM)
+        return lam, phi, dz, dth
+
+    def modal_two(self, z, theta, nev=6, want_grad=True):
+        """Like :meth:`modal`, but returns the sensitivities of BOTH the first and
+        second eigenvalues, for objectives that play omega_1 against omega_2 (e.g.
+        maximize the fundamental while minimizing the second frequency).  Each mode's
+        Rayleigh-quotient sensitivity uses its own mass-normalized eigenvector.  NB:
+        near a crossing lam_1 ~ lam_2 the individual modal sensitivities are only
+        subgradients (the eigenvectors are not unique for a repeated eigenvalue); MMA
+        move limits and beta-continuation keep this well behaved in practice.
+        Returns (lam, phi1, phi2, dz1, dth1, dz2, dth2)."""
+        from scipy.sparse.linalg import eigsh
+        m = self.mesh
+        K, M, w, kf = self._assemble(z, theta)
+        fr = self._sfree
+        Kf = K[fr][:, fr].tocsc(); Mf = M[fr][:, fr].tocsc()
+        try:
+            lam, V = eigsh(Kf, k=nev, M=Mf, sigma=0.0, which='LM')
+        except RuntimeError:
+            shift = 1e-6 * float(np.abs(Kf.diagonal()).mean())
+            lam, V = eigsh(Kf, k=nev, M=Mf, sigma=-shift, which='LM')
+        order = np.argsort(lam); lam = lam[order]; V = V[:, order]
+        phis = []
+        for j in (0, 1):
+            p = np.zeros(m.ndof); p[fr] = V[:, j]
+            p /= np.sqrt(max(p @ (M @ p), 1e-300))         # phi^T M phi = 1
+            phis.append(p)
+        if not want_grad:
+            return lam, phis[0], phis[1]
+        dkf = self.fs.dkf(theta); dw = self._dw(z)
+        drho = self.mat.rho_f - self.mat.rho_m
+        g = []
+        for j in (0, 1):
+            phiE = phis[j][m.edof]; lamj = float(lam[j])
+            dth = w * np.einsum('ep,epq,eq->e', phiE, dkf, phiE)
+            eK = np.einsum('ep,epq,eq->e', phiE, kf - self.fs.km, phiE)
+            eM = np.einsum('ep,epq,eq->e', phiE, self.fs.Me0, phiE)
+            g.append((dw * eK - lamj * drho * eM, dth))
+        return lam, phis[0], phis[1], g[0][0], g[0][1], g[1][0], g[1][1]
+
+    def stress(self, z, theta, pnorm=8.0, qrelax=0.5, want_grad=True):
+        r"""p-norm von Mises stress under the static load, a smooth surrogate for the
+        PEAK stress.  Element stress is the fiber-material stress
+        sigma_e = D_f(theta_e) B_e u_e, qp-relaxed by z_e^q so void elements carry no
+        spurious stress; the plane-stress von Mises measure is
+        sigma_vm = sqrt(sigma^T V sigma).  Returns (PN, sigma_vm_relaxed) or
+        (PN, sigma_vm_relaxed, dPN/dz, dPN/dtheta) via the stress adjoint."""
+        m = self.mesh
+        w = self._w(z); kf = self.fs.kf(theta)
+        kel = w[:, None, None] * kf + (1.0 - w)[:, None, None] * self.fs.km
+        K = self.fs._scatter(kel).tocsc()
+        fr = self._sfree
+        u = np.zeros(m.ndof)
+        u[fr] = sp.linalg.spsolve(K[fr][:, fr], self.Fs[fr])
+        uE = u[m.edof]                                    # (T,6)
+        B = self.fs.B                                     # (T,3,6)
+        Ce = np.einsum('ts,sij->tij', self.fs._basis(theta), self.fs.C)   # Df(theta)
+        eps = np.einsum('tij,tj->ti', B, uE)              # (T,3) strain (Voigt)
+        sig = np.einsum('tij,tj->ti', Ce, eps)            # (T,3) stress (Voigt)
+        V = np.array([[1.0, -0.5, 0.0], [-0.5, 1.0, 0.0], [0.0, 0.0, 3.0]])
+        svm = np.sqrt(np.maximum(np.einsum('ti,ij,tj->t', sig, V, sig), 1e-30))
+        zq = np.asarray(z, float) ** qrelax
+        svmr = zq * svm                                   # relaxed von Mises
+        A = m.area; wgt = A / A.sum()
+        PN = float(np.sum(wgt * svmr ** pnorm) ** (1.0 / pnorm))
+        if not want_grad:
+            return PN, svmr
+        dPN = PN ** (1 - pnorm) * wgt * svmr ** (pnorm - 1)           # dPN/dsvmr_e (T,)
+        dsvm_dsig = np.einsum('ij,tj->ti', V, sig) / svm[:, None]     # (T,3)
+        # explicit density (qp factor) and orientation (Df depends on theta). The
+        # z^(q-1) is floored to avoid inf where z->0: there dPN carries svmr^(p-1)=0,
+        # so the true limit is 0 and the floor only prevents inf*0 = NaN.
+        zc = np.maximum(np.asarray(z, float), 1e-12)
+        dz = dPN * qrelax * zc ** (qrelax - 1.0) * svm
+        dCe = np.einsum('ts,sij->tij', self.fs._dbasis(theta), self.fs.C)
+        dth = dPN * zq * np.einsum('ti,ti->t',
+                                   dsvm_dsig, np.einsum('tij,tj->ti', dCe, eps))
+        # stress adjoint:  K lam = dPN/du ,  dPN/du_e = dPN_e zq_e (dsvm_dsig Ce B)_e
+        drE = (dPN * zq)[:, None] * np.einsum('ti,tij,tjk->tk', dsvm_dsig, Ce, B)
+        rhs = np.zeros(m.ndof); np.add.at(rhs, m.edof, drE)
+        lam = np.zeros(m.ndof)
+        lam[fr] = sp.linalg.spsolve(K[fr][:, fr], rhs[fr])           # K symmetric
+        lamE = lam[m.edof]; dkf = self.fs.dkf(theta)
+        dz += -self._dw(z) * np.einsum('tp,tpq,tq->t', lamE, kf - self.fs.km, uE)
+        dth += -w * np.einsum('tp,tpq,tq->t', lamE, dkf, uE)
+        return PN, svmr, dz, dth
+
     def volume(self, z):
         A = self.mesh.area
         return float((A @ z) / A.sum())
+
+
+def curl_operators(mesh: PlateMesh):
+    """Sparse element-to-element gradient operators (Px, Py) for a piecewise-
+    constant field on the conforming triangulation: grad(f)_e = [Px f, Py f].
+    Built as (P1 shape gradient) @ (area-weighted nodal averaging), so a
+    per-element field is first smoothed to nodes then differentiated -- the
+    unstructured analogue of the structured Bx, By curl operators. Used to impose
+    a fiber-curvature (turning-radius) limit on the toolpath theta."""
+    npx, tris, A = mesh.npx, mesh.tris, mesh.area
+    nt, nn = tris.shape[0], npx.shape[0]
+    rows = tris.ravel(); cols = np.repeat(np.arange(nt), 3); wA = np.repeat(A, 3)
+    Wsum = np.bincount(rows, weights=wA, minlength=nn)
+    Nav = sp.csr_matrix((wA / Wsum[rows], (rows, cols)), shape=(nn, nt))
+    X = npx[tris]
+    x0, y0 = X[:, 0, 0], X[:, 0, 1]; x1, y1 = X[:, 1, 0], X[:, 1, 1]
+    x2, y2 = X[:, 2, 0], X[:, 2, 1]
+    det = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0)
+    b = np.stack([y1 - y2, y2 - y0, y0 - y1], 1) / det[:, None]
+    c = np.stack([x2 - x1, x0 - x2, x1 - x0], 1) / det[:, None]
+    er = np.repeat(np.arange(nt), 3)
+    Gx = sp.csr_matrix((b.ravel(), (er, tris.ravel())), shape=(nt, nn))
+    Gy = sp.csr_matrix((c.ravel(), (er, tris.ravel())), shape=(nt, nn))
+    return (Gx @ Nav).tocsr(), (Gy @ Nav).tocsr()
+
+
+def director_curl(theta, Px, Py):
+    """Per-element director (line-field) curvature magnitude
+    zeta_e = |t . grad theta|, t=(cos,sin), computed via the line field
+    (cos2theta, sin2theta) so the pi-periodic director has no angle-wrap branch."""
+    c2, s2 = np.cos(2 * theta), np.sin(2 * theta)
+    gth = 0.5 * (c2[:, None] * np.stack([Px @ s2, Py @ s2], 1)
+                 - s2[:, None] * np.stack([Px @ c2, Py @ c2], 1))
+    t = np.stack([np.cos(theta), np.sin(theta)], 1)
+    return np.abs((t * gth).sum(1))
+
+
+def curl_penalty(theta, Px, Py, area):
+    r"""Dirichlet energy of the director line-field and its exact theta-gradient,
+    Pi = sum_e A_e (|grad c2|^2 + |grad s2|^2) = sum_e 4 A_e |grad theta|^2,
+    which penalizes fiber curvature (identity |grad c2|^2+|grad s2|^2 = 4|grad
+    theta|^2 for (c2,s2)=(cos2theta,sin2theta)). Smooth and quadratic in the line
+    field, so the gradient is a pair of sparse mat-vecs; FD-verified to ~1e-7."""
+    c2, s2 = np.cos(2 * theta), np.sin(2 * theta)
+    gxc, gyc, gxs, gys = Px @ c2, Py @ c2, Px @ s2, Py @ s2
+    Pi = float(area @ (gxc**2 + gyc**2 + gxs**2 + gys**2))
+    dc2 = 2 * (Px.T @ (area * gxc) + Py.T @ (area * gyc))
+    ds2 = 2 * (Px.T @ (area * gxs) + Py.T @ (area * gys))
+    return Pi, dc2 * (-2 * s2) + ds2 * (2 * c2)
 
 
 def cone_filter(mesh: PlateMesh, radius):

@@ -113,7 +113,7 @@ def _two_row_curl(path, res_name, pub_name, suptitle, publish, holes=None):
     zmax = max(float(np.abs(d["zc0"]).max()), float(np.abs(d["zc1"]).max()))
     vmax = np.percentile(d["m0"], FIELD_PCTL)
     mk = circles(hol, ec="w") if hol else None
-    fig, ax = plt.subplots(2, 3, figsize=(19, 9))
+    fig, ax = plt.subplots(2, 3, figsize=(7.6, 3.6) if os.environ.get("FIGNOSUP") else (19, 9))
     for r, (m, th, zc, tag) in enumerate([
             (d["m0"], d["th0"], d["zc0"], "unconstrained"),
             (d["m1"], d["th1"], d["zc1"], f"$|\\zeta|\\leq${float(d['zeta_all']):.2f}")]):
@@ -121,9 +121,9 @@ def _two_row_curl(path, res_name, pub_name, suptitle, publish, holes=None):
         field_panel(ax[r, 0], tri, m, xl, yl,
                     f"{tag}: field" + (f"  ({float(g):.0f}$\\times$)" if g is not None else ""),
                     vmax, mk)
-        tow_panel(ax[r, 1], d["cent"], th, xl, yl,
-                  f"{tag}: toolpaths  (max$|\\zeta|$="
-                  f"{float(d[f'zmax{r}']):.2f})", holes=hol)
+        _tt = f"{tag}: toolpaths" if os.environ.get("FIGNOSUP") else \
+            f"{tag}: toolpaths  (max$|\\zeta|$={float(d[f'zmax{r}']):.2f})"
+        tow_panel(ax[r, 1], d["cent"], th, xl, yl, _tt, holes=hol)
         F.curv_panel(ax[r, 2], tri, d["tris"], zc, xl, yl,
                      f"{tag}: fiber curvature $|\\zeta|$", zmax, mk)
     F.layout(fig, suptitle, y=0.98)
@@ -172,7 +172,7 @@ def build_lens_multi(publish):
         for (x, y, r), c in [(FA, "cyan"), (FB, "cyan"), (NR, "red")]:
             a_.add_patch(plt.Circle((x, y), r, ec=c, fc="none", lw=1.3, ls="--"))
     c0 = float(d["tA0"])/float(d["tN0"]); c1 = float(d["tA1"])/float(d["tN1"])
-    fig, ax = plt.subplots(2, 2, figsize=(14, 9))
+    fig, ax = plt.subplots(2, 2, figsize=(7.4, 4.76) if os.environ.get("FIGNOSUP") else (14, 9))
     vmax = np.percentile(d["m1"], FIELD_PCTL)
     field_panel(ax[0, 0], tri, d["m0"], xl, yl,
                 f"baseline: target/null contrast {c0:.1f}", vmax, mk)
@@ -181,8 +181,9 @@ def build_lens_multi(publish):
                 vmax, mk)
     tow_panel(ax[1, 0], d["cent"], d["thopt"], xl, yl, "fiber toolpaths")
     dir_panel(ax[1, 1], d["cent"], d["thopt"], xl, yl, "anisotropy director field")
-    fig.suptitle("Multi-target beam shaping: two foci (cyan) and a null (red)",
-                 y=0.97, fontsize=13)
+    if not os.environ.get("FIGNOSUP"):
+        fig.suptitle("Multi-target beam shaping: two foci (cyan) and a null (red)",
+                     y=0.97, fontsize=13)
     F.layout(fig, y=0.97)
     return save(fig, "dolfinx_lens_multi.png", "dfx_lens_multi.png", publish)
 

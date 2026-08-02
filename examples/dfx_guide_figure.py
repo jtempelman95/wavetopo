@@ -10,6 +10,7 @@ director panels get a proportionally larger share -- which is where the detail i
     PYTHONPATH=/home/jrt/wavetopo /home/jrt/miniforge3/bin/python3 \
         examples/dfx_guide_figure.py
 """
+import os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -52,21 +53,24 @@ def marks(a_, corridor=True):
     a_.set_aspect("equal"); a_.set_xlim(0, Lx); a_.set_ylim(0, Ly)
 
 
-fig, ax = plt.subplots(2, 2, figsize=(17, 10.2))
+_P = bool(os.environ.get("FIGNOSUP"))   # print mode: concise titles, label only data panels
+fig, ax = plt.subplots(2, 2, figsize=(7.4, 4.44) if _P else (17, 10.2))
 
 tp = ax[0, 0].tripcolor(tri, m0, cmap="magma", vmax=vmax, shading="gouraud")
 marks(ax[0, 0])
-ax[0, 0].set_title(f"straight fibers: the beam diffracts onto the joint\n"
+ax[0, 0].set_title("straight fibers" if _P else
+                   f"straight fibers: the beam diffracts onto the joint\n"
                    f"downstream confinement {100*confd0:.0f}%, "
-                   f"exit/guard = {Ex0/Eg0:.4f}", fontsize=11)
+                   f"exit/guard = {Ex0/Eg0:.4f}")
 plt.colorbar(tp, ax=ax[0, 0], fraction=0.028, pad=0.01)
 
 tp = ax[0, 1].tripcolor(tri, m1, cmap="magma", vmax=vmax, shading="gouraud")
 marks(ax[0, 1])
-ax[0, 1].set_title(f"orientation-CHANNELLED: exit {gain:.0f}$\\times$, guard "
+ax[0, 1].set_title("orientation-channelled" if _P else
+                   f"orientation-CHANNELLED: exit {gain:.0f}$\\times$, guard "
                    f"{guard:.2f}$\\times$\ndownstream confinement "
                    f"{100*confd0:.0f}%$\\to${100*confd1:.0f}%, "
-                   f"protection {prot:.0f}$\\times$", fontsize=11)
+                   f"protection {prot:.0f}$\\times$")
 plt.colorbar(tp, ax=ax[0, 1], fraction=0.028, pad=0.01)
 
 # finer tow pitch and grid: this panel is meant to be read closely
@@ -75,14 +79,15 @@ plot_toolpaths_phase(ax[1, 0], cent, th, (0, Lx), (0, Ly), holes=(JX, JY, RJ),
 ax[1, 0].plot(xs, cy, "c--", lw=1.1, alpha=0.85)
 ax[1, 0].plot(JX+(RJ+GUARD)*np.cos(tc), JY+(RJ+GUARD)*np.sin(tc), "r:", lw=1.4)
 ax[1, 0].set_aspect("equal"); ax[1, 0].set_xlim(0, Lx); ax[1, 0].set_ylim(0, Ly)
-ax[1, 0].set_title(f"fiber toolpaths   (max$|\\zeta|$={zmax:.2f} $\\leq$ "
-                   f"$1/R_{{\\rm tow}}$={zeta_all:.2f})", fontsize=11)
+ax[1, 0].set_title("fiber toolpaths" if _P else
+                   f"fiber toolpaths   (max$|\\zeta|$={zmax:.2f} $\\leq$ "
+                   f"$1/R_{{\\rm tow}}$={zeta_all:.2f})")
 
 lc = plot_director_field(ax[1, 1], cent, th, (0, Lx), (0, Ly),
                          holes=(JX, JY, RJ), n=52, lw=1.9)
 ax[1, 1].plot(xs, cy, "c--", lw=1.1, alpha=0.85)
 ax[1, 1].set_aspect("equal"); ax[1, 1].set_xlim(0, Lx); ax[1, 1].set_ylim(0, Ly)
-ax[1, 1].set_title("anisotropy director field", fontsize=11)
+ax[1, 1].set_title("director field" if _P else "anisotropy director field")
 cb = plt.colorbar(lc, ax=ax[1, 1], fraction=0.028, pad=0.01,
                   ticks=[0, np.pi/2, np.pi])
 cb.ax.set_yticklabels(["0", r"$\pi/2$", r"$\pi$"])
@@ -90,5 +95,8 @@ cb.ax.set_yticklabels(["0", r"$\pi/2$", r"$\pi$"])
 F.layout(fig, "Channelling elastic energy along a curved corridor around a "
               "through-hole joint (localised aperture source, leakage penalised)",
          y=0.97)
-F.save_pair(fig, "results/dolfinx_guide_joint.png", "docs/paper/figs/dfx_guide_joint.png")
+if _P:
+    F.panel_labels(ax)          # label only the four data panels, not the colorbar axes
+F.save_pair(fig, "results/dolfinx_guide_joint.png", "docs/paper/figs/dfx_guide_joint.png",
+            label=not _P)
 print("saved guide figure as a 2x2 (director n=52, tow pitch 0.11)")

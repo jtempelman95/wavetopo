@@ -58,6 +58,21 @@ JOURNAL = dict(
 )
 
 
+def _print_mode():
+    """True when building the print-sized figures for the manufacturable paper.
+
+    The paper figures are authored near their 6.5in print width, so they are
+    much smaller than the on-screen/omnibus renders.  In this mode we trim the
+    fonts and open the inter-panel spacing so nothing collides once scaled.
+    """
+    return bool(os.environ.get("FIGNOSUP"))
+
+
+def _pfs(pt):
+    """Font size in points, trimmed for the smaller print-mode figures."""
+    return pt * (0.84 if _print_mode() else 1.0)
+
+
 def journal(on=True):
     """Apply publication typography to the CURRENT matplotlib rcParams.
 
@@ -68,16 +83,17 @@ def journal(on=True):
         plt.rcParams.update(plt.rcParamsDefault)
         return
     J = JOURNAL
+    s = 0.84 if _print_mode() else 1.0   # trim fonts for the smaller print figures
     plt.rcParams.update({
         "font.family": "serif",
         "font.serif": ["STIXGeneral", "DejaVu Serif"],
         "mathtext.fontset": "stix",
-        "font.size": J["base"],
-        "axes.titlesize": J["title"],
-        "axes.labelsize": J["label"],
-        "xtick.labelsize": J["base"], "ytick.labelsize": J["base"],
-        "legend.fontsize": J["legend"],
-        "figure.titlesize": J["suptitle"],
+        "font.size": J["base"] * s,
+        "axes.titlesize": J["title"] * s,
+        "axes.labelsize": J["label"] * s,
+        "xtick.labelsize": J["base"] * s, "ytick.labelsize": J["base"] * s,
+        "legend.fontsize": J["legend"] * s,
+        "figure.titlesize": J["suptitle"] * s,
         "axes.linewidth": J["lw_axes"],
         "xtick.direction": "in", "ytick.direction": "in",
         "xtick.major.width": J["lw_axes"], "ytick.major.width": J["lw_axes"],
@@ -127,6 +143,8 @@ def panel_labels(target, labels=None, x=-0.015, y=1.02, weight="bold",
                 if a is not None]
     axes = [a for i, a in enumerate(axes) if i not in set(skip)]
     labels = labels or list(string.ascii_lowercase)
+    if _print_mode():
+        y = 1.05          # lift the tag clear of the top y-tick on the smaller figures
     for a, ch in zip(axes, labels):
         tag = fmt.format(ch)
         if any(getattr(t, "_wavetopo_panel", False) for t in a.texts):
@@ -135,7 +153,7 @@ def panel_labels(target, labels=None, x=-0.015, y=1.02, weight="bold",
                     t.set_text(tag)
             continue
         t = a.text(x, y, tag, transform=a.transAxes,
-                   fontsize=JOURNAL["panel"], fontweight=weight,
+                   fontsize=_pfs(JOURNAL["panel"]), fontweight=weight,
                    va="bottom", ha="right" if x < 0 else "left")
         t._wavetopo_panel = True
     return axes
@@ -168,9 +186,12 @@ def layout(fig, suptitle=None, y=0.975, fontsize=13, **over):
     under one backend/DPI and skewed under another.  subplots_adjust is
     deterministic, which is what a published figure needs.
     """
-    if suptitle:
+    if suptitle and not os.environ.get("FIGNOSUP"):
         fig.suptitle(suptitle, y=y, fontsize=fontsize)
-    fig.subplots_adjust(**{**MARGINS, **over})
+    m = dict(MARGINS)
+    if _print_mode():                    # open row/column gaps and headroom
+        m.update(top=0.915, bottom=0.075, hspace=0.38, wspace=0.20)
+    fig.subplots_adjust(**{**m, **over})
 
 
 def attach_cbar(ax, mappable=None, ticks=None, ticklabels=None,
@@ -258,7 +279,7 @@ def field_panel(ax, tri, m, xlim, ylim, title, vmax=None, marks=None,
     if marks:
         marks(ax)
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)
-    ax.set_title(title, fontsize=10)
+    ax.set_title(title, fontsize=_pfs(10))
     attach_cbar(ax, tp)
     return tp
 
@@ -267,7 +288,7 @@ def tow_panel(ax, cent, th, xlim, ylim, title, holes=None):
     plot_toolpaths_phase(ax, cent, th, xlim, ylim, holes=holes,
                          spacing=STYLE["tow_pitch"], n=STYLE["tow_n"])
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)
-    ax.set_title(title, fontsize=10)
+    ax.set_title(title, fontsize=_pfs(10))
     attach_cbar(ax)            # reserve the same width so the grid stays aligned
 
 
@@ -275,7 +296,7 @@ def dir_panel(ax, cent, th, xlim, ylim, title, holes=None, n=None):
     lc = plot_director_field(ax, cent, th, xlim, ylim, holes=holes,
                              n=n or STYLE["director_n"], lw=STYLE["director_lw"])
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)
-    ax.set_title(title, fontsize=10)
+    ax.set_title(title, fontsize=_pfs(10))
     attach_cbar(ax, lc, ticks=[0, np.pi/2, np.pi],
                 ticklabels=["0", r"$\pi/2$", r"$\pi$"])
     return lc
@@ -291,7 +312,7 @@ def curv_panel(ax, tri, tris, zc, xlim, ylim, title, vmax, marks=None):
     if marks:
         marks(ax)
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)
-    ax.set_title(title, fontsize=10)
+    ax.set_title(title, fontsize=_pfs(10))
     attach_cbar(ax, tp)
     return tp
 

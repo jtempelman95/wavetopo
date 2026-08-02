@@ -6,7 +6,7 @@
  - an AS-MANUFACTURED validation: re-simulate the band structure with the cropped
    (projected) density and the actual fiber toolpath orientation.
 Runs in the base numpy/scipy env; no re-optimization."""
-import numpy as np, matplotlib; matplotlib.use("Agg")
+import os, numpy as np, matplotlib; matplotlib.use("Agg")
 from wavetopo import figlib as _F; _F.journal()  # publication typography
 import matplotlib.pyplot as plt
 
@@ -84,7 +84,7 @@ chi_c = np.tile(chi1, (2, 2))                        # 2x2 tiling, seamless
 
 # ---------------- figure ----------------
 kk = np.arange(npath)
-fig, ax = plt.subplots(2, 3, figsize=(17, 9))
+fig, ax = plt.subplots(2, 3, figsize=(7.6, 4.02) if os.environ.get("FIGNOSUP") else (17, 9))
 panels = [(ax[0, 0], bands0, f"baseline (band {b} width {w0:.2f})", None, None),
           (ax[0, 1], bands1, f"optimized SIMP (width {w1:.2f})", gap_up, gap_dn),
           (ax[0, 2], bands_v, f"as-manufactured (width {w_v:.2f})", gu_v, gd_v)]
@@ -103,22 +103,29 @@ dens_2 = np.tile(dcell, (2, 2))
 im = ax[1, 0].imshow(dens_2, origin="lower", cmap="gray_r", vmin=0, vmax=1,
                      extent=[0, 2*a, 0, 2*a], aspect="equal", interpolation="bilinear")
 ax[1, 0].axhline(a, color="r", lw=0.8); ax[1, 0].axvline(a, color="r", lw=0.8)
-ax[1, 0].set_title("cropped density (topology), 2$\\times$2 tiling")
+ax[1, 0].set_title("cropped density" if os.environ.get("FIGNOSUP")
+                   else "cropped density (topology), 2$\\times$2 tiling")
 plt.colorbar(im, ax=ax[1, 0], fraction=0.046)
 
 ax[1, 1].imshow(chi_c, origin="lower", extent=[0, 2*a, 0, 2*a], cmap="gray_r",
                 interpolation="bilinear", vmin=0, vmax=1, aspect="equal")
 ax[1, 1].axhline(a, color="r", lw=0.8); ax[1, 1].axvline(a, color="r", lw=0.8)
-ax[1, 1].set_title("fiber toolpaths (as-manufactured tows), 2$\\times$2 tiling")
+ax[1, 1].set_title("fiber toolpaths" if os.environ.get("FIGNOSUP")
+                   else "fiber toolpaths (as-manufactured tows), 2$\\times$2 tiling")
 
 ax[1, 2].plot(hist_w, label="band width"); ax[1, 2].plot(hist_gu, label="gap above")
 ax[1, 2].plot(hist_gd, label="gap below"); ax[1, 2].axhline(0, color="k", lw=0.6)
 ax[1, 2].set_title("convergence"); ax[1, 2].set_xlabel("iter"); ax[1, 2].legend(); ax[1, 2].grid(alpha=0.3)
 
-fig.suptitle("Flat-band + band-gap metamaterial: co-optimized topology and fiber "
-             "toolpath, with as-manufactured validation", y=1.0, fontsize=14)
+import os
+if not os.environ.get("FIGNOSUP"):
+    fig.suptitle("Flat-band + band-gap metamaterial: co-optimized topology and fiber "
+                 "toolpath, with as-manufactured validation", y=1.0, fontsize=14)
 plt.tight_layout()
-F.save_pair(fig, "results/flatband_demo.png", "docs/paper/figs/flatband.png")
+if os.environ.get("FIGNOSUP"):
+    F.panel_labels(ax)          # label the six data panels only, not the colorbar
+F.save_pair(fig, "results/flatband_demo.png", "docs/paper/figs/flatband.png",
+            label=not os.environ.get("FIGNOSUP"))
 np.savez("results/flatband_manuf.npz", bands_v=bands_v, theta_hat=theta_hat,
          z_manuf=z_manuf, w_v=w_v, gu_v=gu_v, gd_v=gd_v)
 print("saved flatband figure (periodic tows + as-manufactured validation)")

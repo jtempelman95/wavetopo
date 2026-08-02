@@ -471,6 +471,12 @@ def _box(x, y, b):
 
 def make_multi(nx=110, omega=OMEGA, eta=0.02):
     ew = make(nx, omega, eta)
+    # LOCALIZED central-aperture beam, not a full-width plane wave: this makes the
+    # problem genuine BEAM SPLITTING (steer one incident beam into two off-axis
+    # foci) rather than a diffraction pattern whose brightest energy never leaves
+    # the source region and only games the target/null contrast metric.
+    ew.set_source(lambda x, y: 45.0*np.exp(-80*(x-0.1)**2)
+                  * np.exp(-((y-Ly/2)/0.30)**2))
     ew.set_region(lambda x, y: _box(x, y, FOC_A) + _box(x, y, FOC_B)
                   - LAM*_box(x, y, NULLR))
     return ew
