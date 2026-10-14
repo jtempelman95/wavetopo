@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from .dolfinx_viz import plot_toolpaths_phase, plot_director_field
+from .dolfinx_viz import plot_toolpaths_phase, plot_director_field, plot_director_tows
 
 STYLE = dict(
     cmap_field="magma",     # wave amplitude panels
@@ -113,6 +113,49 @@ def journal(on=True):
         "pdf.fonttype": 42, "ps.fonttype": 42,
         "figure.dpi": 110,
     })
+
+
+# Single source of truth for PRINTED font sizes (points on paper).  Mirrored in
+# examples/figures/_paperfig.py (imported from here).  harmonize_fonts() forces a
+# figure's chrome to these sizes / its display scale, so that after
+# \includegraphics scales the figure by `scale` in the paper, every figure -- from
+# either style path -- prints at exactly these point sizes.
+PAPER_FONT = dict(base=8.0, title=8.5, label=8.5, tick=8.0, legend=7.5, panel=8.5)
+
+
+def harmonize_fonts(fig, scale=1.0):
+    """Force every chrome text element to PAPER_FONT / scale.
+
+    `scale` is the figure's display scale in the paper = (\\includegraphics width) /
+    (saved PDF width).  Dividing by it here cancels LaTeX's scaling so the PRINTED
+    point sizes equal PAPER_FONT for every figure, regardless of authored size or
+    which style path built it.  Harmonizes titles, axis labels, tick labels (incl.
+    offset/exponent text), legends, panel letters and colorbar text; leaves
+    free-standing data annotations (callouts, star labels) alone.
+    """
+    f = {k: v / scale for k, v in PAPER_FONT.items()}
+    for ax in fig.axes:
+        # center, left AND right titles (loc="left" lives in ax._left_title, which
+        # ax.title / ax.get_title() do NOT cover)
+        for t in (ax.title, getattr(ax, "_left_title", None), getattr(ax, "_right_title", None)):
+            if t is not None and t.get_text():
+                t.set_fontsize(f["title"])
+        if ax.get_xlabel():
+            ax.xaxis.label.set_fontsize(f["label"])
+        if ax.get_ylabel():
+            ax.yaxis.label.set_fontsize(f["label"])
+        for t in (ax.get_xticklabels() + ax.get_yticklabels()):
+            t.set_fontsize(f["tick"])
+        ax.xaxis.get_offset_text().set_fontsize(f["tick"])
+        ax.yaxis.get_offset_text().set_fontsize(f["tick"])
+        leg = ax.get_legend()
+        if leg:
+            for t in leg.get_texts():
+                t.set_fontsize(f["legend"])
+        for t in ax.texts:                      # figlib panel letters (tagged)
+            if getattr(t, "_wavetopo_panel", False):
+                t.set_fontsize(f["panel"])
+    return fig
 
 
 def panels_of(fig):
@@ -292,9 +335,17 @@ def tow_panel(ax, cent, th, xlim, ylim, title, holes=None):
     attach_cbar(ax)            # reserve the same width so the grid stays aligned
 
 
-def dir_panel(ax, cent, th, xlim, ylim, title, holes=None, n=None):
-    lc = plot_director_field(ax, cent, th, xlim, ylim, holes=holes,
-                             n=n or STYLE["director_n"], lw=STYLE["director_lw"])
+def dir_panel(ax, cent, th, xlim, ylim, title, holes=None, n=None, mode="tows"):
+    """Anisotropy (fiber director) panel.  mode="tows" (default) draws continuous
+    phase-coloured toolpaths (plot_director_tows); mode="segments" draws the older
+    discrete director segments (plot_director_field).  Both use the same cyclic
+    phase colormap (period pi)."""
+    if mode == "tows":
+        lc = plot_director_tows(ax, cent, th, xlim, ylim, holes=holes,
+                                spacing=STYLE["tow_pitch"], lw=1.3)
+    else:
+        lc = plot_director_field(ax, cent, th, xlim, ylim, holes=holes,
+                                 n=n or STYLE["director_n"], lw=STYLE["director_lw"])
     ax.set_aspect("equal"); ax.set_xlim(*xlim); ax.set_ylim(*ylim)
     ax.set_title(title, fontsize=_pfs(10))
     attach_cbar(ax, lc, ticks=[0, np.pi/2, np.pi],
@@ -330,6 +381,18 @@ def focus_marker(fx, fy, fr):
     def f(ax):
         ax.add_patch(plt.Circle((fx, fy), fr, ec="#bfefff", fc="none",
                                 lw=1.3, ls="--"))
+    return f
+
+
+def compose(*fns):
+    """Combine several mark-drawing callables into one axis-decorator; None
+    entries are skipped, so callers can pass an optional hole marker alongside a
+    focus marker without branching."""
+    fns = [g for g in fns if g]
+
+    def f(ax):
+        for g in fns:
+            g(ax)
     return f
 
 

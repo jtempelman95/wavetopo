@@ -80,6 +80,65 @@ def plot_director_field(ax, cents, theta, xlim, ylim, holes=None, n=26,
     return lc
 
 
+def _nansmooth(Z, s):
+    """Gaussian smooth ignoring NaN (holes/voids): smooth value and validity, divide."""
+    from scipy.ndimage import gaussian_filter
+    m = np.isfinite(Z)
+    num = gaussian_filter(np.where(m, Z, 0.0), s)
+    den = gaussian_filter(m.astype(float), s)
+    out = num / np.maximum(den, 1e-6)
+    out[~m] = np.nan
+    return out
+
+
+def plot_director_tows(ax, cents, theta, xlim, ylim, holes=None, spacing=0.12,
+                       n=340, cmap="hsv", lw=1.5, smooth=1.2):
+    r"""Continuous fiber toolpaths coloured by the local orientation phase -- a
+    hybrid of :func:`plot_toolpaths_phase` and :func:`plot_director_field`.  The
+    lines are the evenly spaced level sets of the robust fiber phase $\psi$ (so they
+    inherit the seam-free, constant-pitch, defect-tolerant tows that the grayscale
+    toolpaths use), but each segment is coloured by the local director angle through
+    the same cyclic colormap (period $\pi$) as the discrete director field.  A
+    continuous, phase-coloured rendering of the anisotropy the optimizer designs.
+    Returns the LineCollection (for a colorbar)."""
+    from matplotlib.collections import LineCollection
+    from contourpy import contour_generator
+    xs, ys, psi = fiber_phase(cents, theta, xlim, ylim, n=n, holes=holes)
+    _, _, C, S = _director_grid(cents, theta, xlim, ylim, n=n, hole=holes)
+    A = 0.5*np.arctan2(S, C)
+    if smooth:                                   # smooth the NEMATIC (double-angle)
+        Cs = _nansmooth(np.cos(2*A), smooth); Ss = _nansmooth(np.sin(2*A), smooth)
+        A = 0.5*np.arctan2(Ss, Cs)
+    # Colour by the local director angle, but INTERPOLATE THE NEMATIC (double-angle)
+    # components -- never the wrapped angle.  A % pi jumps by pi across the locus of
+    # horizontal directors; interpolating that wrapped scalar across a grid cell that
+    # straddles the seam returns a spurious mid-range value -- a false cyan/green
+    # streak cutting across otherwise-red tows.  cos2A/sin2A are smooth there.
+    C2i = RegularGridInterpolator((ys, xs), np.cos(2*A), bounds_error=False, fill_value=np.nan)
+    S2i = RegularGridInterpolator((ys, xs), np.sin(2*A), bounds_error=False, fill_value=np.nan)
+    lo, hi = np.nanmin(psi), np.nanmax(psi)
+    cg = contour_generator(xs, ys, np.where(np.isfinite(psi), psi, np.nan))
+    segs, cols = [], []
+    for lev in np.arange(lo, hi + spacing, spacing):
+        for path in cg.lines(float(lev)):
+            if len(path) < 4:                    # drop tiny fragments at defects
+                continue
+            mid = 0.5*(path[:-1] + path[1:])
+            pts = np.column_stack([mid[:, 1], mid[:, 0]])       # sample at (y, x)
+            a = 0.5*np.arctan2(S2i(pts), C2i(pts)) % np.pi      # recover angle, no seam
+            for k in range(len(path) - 1):
+                if np.isfinite(a[k]):
+                    segs.append(path[k:k+2]); cols.append(a[k])
+    lc = LineCollection(segs, array=np.array(cols), cmap=cmap, linewidths=lw)
+    lc.set_clim(0, np.pi); ax.add_collection(lc)
+    th = np.linspace(0, 2*np.pi, 80)
+    for cx, cy, r in _holelist(holes):
+        ax.fill(cx+r*np.cos(th), cy+r*np.sin(th), color="white", ec="0.4",
+                lw=1.0, zorder=5)
+    ax.set_xlim(xlim); ax.set_ylim(ylim); ax.set_aspect("equal")
+    return lc
+
+
 def _orient_consistent(fx, fy, V, ref=(1.0, 0.0)):
     """Region-grow a globally sign-consistent director branch: BFS over the valid
     grid, flipping each pixel to align with an already-visited neighbour.  This

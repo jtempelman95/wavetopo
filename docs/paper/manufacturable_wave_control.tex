@@ -304,7 +304,14 @@ $\theta$-derivative bilinear form $b(\vu,\vw)\equiv\veps(\vu)\Tp(\partial\Df/\pa
   +\eta\bigl(b(\vu_r,\bm\lambda_i)-b(\vu_i,\bm\lambda_r)\bigr)\Bigr]\,\rmd\vx,
   \label{eq:sensharm}
 \end{equation}
-with $(\vu_r,\vu_i),(\bm\lambda_r,\bm\lambda_i)$ the real/imaginary state and adjoint.
+with $(\vu_r,\vu_i),(\bm\lambda_r,\bm\lambda_i)$ the real/imaginary state and adjoint. The
+adjoint is driven by the objective's state-gradient $\partial J/\partial\bar{\vU}$: with the
+region Gram matrix $\Mmat_R=\int_{\Omega_R}\mathbf N\Tp\mathbf N$, the focal-energy objective
+$E=\vU\Hp\Mmat_{\rm reg}\vU$ that the lens \emph{maximizes} ($J=-E$) has load
+$-\Mmat_{\rm reg}\vU$ --- simply the state restricted to the focal region, so the lens is
+self-adjoint up to that restriction --- while the cloak mismatch $J=(\vU-\vU_{\rm ref})\Hp
+\Mmat_{\rm obs}(\vU-\vU_{\rm ref})$ has load $\Mmat_{\rm obs}(\vU-\vU_{\rm ref})$. The adjoint
+solve reuses the transposed forward factorization, so it adds no assembly.
 
 \paragraph{Compliance (stiffness).} Minimizing the service compliance $c=\vf\Tp\vu$ is
 self-adjoint, so
@@ -313,19 +320,29 @@ self-adjoint, so
   \veps(\vu)\,\rmd\vx .
 \]
 
-\paragraph{Eigenfrequency (dynamics).} For a mass-normalized mode $\vphi_n$
-($\vphi_n\Tp\Mmat\vphi_n=1$) the Rayleigh-quotient derivative is
+\paragraph{Eigenfrequency (dynamics).} For a simple eigenvalue $\lambda_n=\omega_n^2$
+with a mass-normalized mode $\vphi_n$ ($\vphi_n\Tp\Mmat\vphi_n=1$), first-order (Rayleigh
+-quotient) perturbation gives the design derivative
 \begin{equation}
-  \frac{\rmd\lambda_n}{\rmd\theta_\ell}=\int_{\Omega_\ell}\veps(\vphi_n)\Tp
-  \frac{\partial\Df}{\partial\theta}\veps(\vphi_n)\,\rmd\vx,
+  \frac{\partial\lambda_n}{\partial p}=\vphi_n\Tp\Bigl(\frac{\partial\Kmat}{\partial p}
+  -\lambda_n\frac{\partial\Mmat}{\partial p}\Bigr)\vphi_n,
+  \qquad p\in\{\theta_\ell,\ z_e\},
   \label{eq:eigsens}
 \end{equation}
-the mass carrying no $\theta$-dependence (density design, where present, adds a
-$-\lambda_n(\rho_f-\rho_m)\,\vphi_n\Tp\mathbf m_0\vphi_n$ term). The two contributions have
-a clean reading --- the change in the mode's \emph{strain} energy, minus $\lambda_n$ times
-the change in its \emph{kinetic} energy --- so a natural frequency rises when a perturbation
-stiffens the mode faster than it mass-loads it, and falls otherwise; everything follows
-from the one eigenpair already computed, with no eigenvector derivative.
+requiring no eigenvector derivative --- the eigenvector's projection onto its own mode
+cannot change the quotient to first order. This is the identical generalized-eigenproblem
+sensitivity used throughout the companion study; the two settings here are just
+specializations. For an \emph{orientation} variable only the stiffness carries the design
+($\partial\Mmat/\partial\theta=0$), so \eqref{eq:eigsens} collapses to the strain-energy
+form $\rmd\lambda_n/\rmd\theta_\ell=\int_{\Omega_\ell}\veps(\vphi_n)\Tp(\partial\Df/\partial
+\theta)\veps(\vphi_n)\,\rmd\vx$; a \emph{density} variable additionally contributes the mass
+term $-\lambda_n(\rho_f-\rho_m)\,\vphi_n\Tp\mathbf m_e\vphi_n$. The reading is clean ---
+change in the mode's \emph{strain} energy minus $\lambda_n$ times the change in its
+\emph{kinetic} energy --- so a natural frequency rises when a perturbation stiffens the mode
+faster than it mass-loads it, and falls otherwise; everything follows from the one eigenpair
+already computed. The periodic (Bloch) band-structure sensitivity in \S\ref{sec:meta} is the
+same expression with $\vphi_n$ replaced by the reduced Bloch mode $\bm\psi_n=\mathbf T(\mathbf k)
+\vphi_n$ and $\Tp\!\to\!{}\Hp$.
 
 \paragraph{Peak stress (strength).} The bracket's strength is governed by a $p$-norm
 surrogate of the peak von Mises stress,
@@ -594,6 +611,28 @@ Mesh refinement & reported gain/reduction over $h$
 \end{tabular}
 \end{table}
 
+\paragraph{Optimization and gradient checks.} The design vector is the CS-RBF support
+amplitudes $\hat{\bm\theta}$ (a few hundred per case, Table~\ref{tab:params}), reduced to a
+smooth per-cell field by the map $\theta=\Phi\hat{\bm\theta}$ and, for the bracket,
+co-designed with the SIMP density $z$; every case starts from straight fibers
+$\hat{\bm\theta}=\mathbf 0$ (the honest baseline). The reduced gradient is assembled by the
+transpose chain of Figure~\ref{fig:flow} --- adjoint or eigenvalue perturbation, then
+$\Phi\Tp$ and the curvature term \eqref{eq:gcompose} --- and handed to the method of moving
+asymptotes (MMA) with a move limit of $0.08$--$0.10$ on the box $|\hat\theta_\ell|\le\pi/2$
+and adaptively updated asymptotes; because raw wave objectives are $O(10^{-4})$ we feed MMA
+the scale-invariant log-gradient. Mirror-symmetric cases (the two-focus splitter, the cloak)
+project both the iterate and the gradient onto the symmetric subspace so the design cannot
+drift off symmetry. Runs take $75$--$140$ iterations under the adaptive curvature-penalty
+continuation and best-feasible safeguard of Algorithm~\ref{alg:opt}; a stalled objective is
+perturbed by $\sigma=0.1$\,rad and resumed. Every non-trivial gradient is verified against
+central finite differences $[\,J(\hat{\bm\theta}+\varepsilon\mathbf e_i)-J(\hat{\bm\theta}
+-\varepsilon\mathbf e_i)\,]/2\varepsilon$ at $\varepsilon=10^{-5}$ on randomly chosen support
+DoFs (relative error $\lesssim10^{-6}$), and against the isotropy-annihilation identity,
+which forces \emph{every} component to machine zero when $\Qf$ is made isotropic
+(Table~\ref{tab:verify}). This adjoint / eigenvalue-perturbation / MMA machinery follows the
+established stiffness--wave co-design methodology; the contribution here is the
+curvature-constrained, best-feasible \emph{front}, not the sensitivity framework itself.
+
 \section{Results: one front, four regimes}
 \label{sec:results}
 The manufacturability front appears in every regime we tried --- static stiffness and
@@ -770,26 +809,50 @@ a process allows.
 \caption{\textbf{The wave front for a lens.} \emph{Top:} the unconstrained optimum focuses
 strongly ($\GAINU\times$) with sharp tows ($|\zeta|_{\max}=\CURLU$). \emph{Bottom:} with the
 curvature constraint at $\zall=\CURLC$, the field still focuses ($\GAINC\times$), the
-toolpaths are gentle printable arcs, and $|\zeta|$ is capped at the limit.}
+toolpaths are gentle printable arcs, and $|\zeta|$ is capped at the limit. The dashed circle
+in the field panels marks the focus target the lens is optimized to fill.}
 \label{fig:lens}
 \end{figure}
 
 \subsection{Beam shaping: two foci and a null}
 \label{sec:multi}
-The focus objective generalizes to several targets at once. Optimizing $\theta$ to place
-energy at two off-axis foci while holding a central null splits the incident wave into two
-beams, raising the on-axis two-focus contrast to $\MCONB\times$ (from $\MCONA\times$ for
-straight fibers) at a combined target gain of $\MTGAIN\times$ (Figure~\ref{fig:multi}). The
-device is a single solid plate; the beam splitting is entirely in the fiber pattern, and it
-sits on the same manufacturability front --- a curvature limit trades focus contrast for
-gentler tows exactly as in \S\ref{sec:lens}.
+The focus objective generalizes to several targets at once. We drive a localized aperture
+beam and optimize $\theta$ to place energy at two off-axis foci while holding a central null
+(Figure~\ref{fig:multi}): straight fibers send the beam straight through the \emph{intended
+null}, leaving the foci dark, whereas the optimized orientation forks it into two branches
+that light the foci and leave a dark centre --- inverting the pattern into a foci/null
+contrast of $\MCONB\times$, a ${\sim}\MTGAIN\times$ swing from the straight-fiber baseline.
+The design maximizes the foci energy \emph{fraction}: with region energies $E_R=\int_{\Omega_R}
+|\vu|^2\,\rmd\vx$ and the whole-plate energy $E_\Omega$, the objective is the normalized,
+null-penalized ratio
+\begin{equation}
+  \mathcal J_{\rm multi}=\frac{E_A+E_B-\gamma\,E_{\rm null}}{E_\Omega},
+  \label{eq:multi}
+\end{equation}
+with $\gamma$ a fixed null-suppression weight. Its gradient is the quotient rule
+\begin{equation}
+  \frac{\rmd\mathcal J_{\rm multi}}{\rmd\theta_\ell}=\frac{
+  (\dot E_A+\dot E_B-\gamma\,\dot E_{\rm null})\,E_\Omega
+  -(E_A+E_B-\gamma\,E_{\rm null})\,\dot E_\Omega}{E_\Omega^2},\qquad
+  \dot E_R\equiv\frac{\rmd E_R}{\rmd\theta_\ell},
+  \label{eq:multigrad}
+\end{equation}
+where each region rate $\dot E_R$ is the harmonic region-energy sensitivity \eqref{eq:sensharm}
+with its own adjoint load $\Mmat_R\vU$. Normalizing by $E_\Omega$ makes suppressing transmission
+useless --- it shrinks numerator and denominator alike --- so the optimizer cannot cheat and must
+genuinely relocate the incident beam into the foci. The device is
+a single solid plate; the beam splitting is entirely in the fiber pattern, and it sits on the
+same manufacturability front --- a curvature limit trades focus contrast for gentler tows
+exactly as in \S\ref{sec:lens}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{figs/dfx_lens_multi}
-\caption{\textbf{Multi-target beam shaping.} The optimized orientation splits an incident
-plane wave into two off-axis foci while holding a central null, a two-focus contrast of
-$\MCONB\times$ over the straight-fiber plate --- all in a single solid sheet.}
+\caption{\textbf{Multi-target beam shaping.} Straight fibers (left) send the incident beam
+straight through the intended null, leaving the two off-axis foci (cyan) dark; the optimized
+orientation (right) forks the beam into the two foci with a dark centre (red null) --- a
+foci/null contrast of $\MCONB\times$, all in a single solid sheet. Panels: baseline and
+optimized $|u|$, the fiber toolpaths, and the anisotropy director field.}
 \label{fig:multi}
 \end{figure}
 
@@ -860,6 +923,60 @@ band by $\FBFLAT\times$ and opens complete gaps ($\FBGU$, $\FBGD$) on both sides
 a slow, nearly non-dispersive branch --- all through the orientation field, under the same
 fiber-curvature limit.}
 \label{fig:meta}
+\end{figure}
+
+\subsection{Composing the regimes: a multifunctional panel}
+\label{sec:panel}
+The regimes above are usually studied one at a time; a real part must do several at
+once. We close with a single bolted CFRP mounting panel whose \emph{one} orientation
+field is asked to do four jobs simultaneously, over a frequency \emph{band}: deliver an
+incident machine vibration to an energy-harvesting sensor patch $S$, hold a mounted
+payload $P$ in an acoustic shadow, keep the four fatigue-critical fastener rims $F$
+quiet, and --- for free --- stiffen the bolted mount. The wave jobs compose into one
+signed weight over the region energies $E_R=\int_{\Omega_R}|\vu|^2$,
+\begin{equation}
+  \mathcal J_{\rm wave}=W_S\log\frac{E_S}{E_S^0}
+  -\lambda_P\frac{E_P}{E_P^0}-\lambda_F\frac{E_F}{E_F^0}-\lambda_O\frac{E_O}{E_O^0},
+  \label{eq:panel}
+\end{equation}
+each term normalised to its straight-fiber baseline $E_R^0$ (all $O(1)$ and comparable),
+with $O$ the interior outside the target regions (a leakage/confinement term) and the
+delivery reward \emph{logarithmic} so protecting the rims stays worthwhile however
+bright the sensor already is. The gradient is a single adjoint per solve: for
+$\mathcal J_{\rm wave}=\sum_R c_R E_R$ the adjoint load is
+$\sum_R(\partial\mathcal J/\partial E_R)\,w_R$, and \eqref{eq:sensharm} then returns
+$\rmd\mathcal J/\rmd\theta_\ell$. Robustness over the operational band
+$[\PANBLO,\PANBHI]$ is imposed by averaging over $\PANNF$ sample frequencies,
+$\mathcal J=\tfrac1K\sum_k\mathcal J_{\rm wave}(\omega_k)$ --- one adjoint per frequency.
+
+The same $\hat{\bm\theta}$ is scored for stiffness: the panel is clamped at the four
+bolt rims and carries a service load over the payload footprint, and the compliance
+$c=\vf\Tp\vu$ with its self-adjoint sensitivity (\S\ref{sec:sens}) enters as a
+co-objective. Because the fiber angle is largely spent on the wave, orientation buys
+only a modest stiffness co-benefit --- $\PANSTIFF\times$ over straight fibers, at no
+added mass --- but it is genuinely \emph{free}, riding along with the wave design.
+
+The optimized layup (Figure~\ref{fig:panel}) splits the incident beam cleanly around
+the payload into a dark pocket (shielded to $\PANSHIELD\times$ its straight-fiber
+energy), threads the quiet gaps between the fastener rows (rims at $\PANPROT\times$),
+and reconverges on the harvester ($\PANROUTE\times$ delivery), while lifting the mount
+stiffness $\PANSTIFF\times$ --- all in one printable, mirror-symmetric fiber field
+($\max|\zeta|=\PANZMAX\le\zall$) that holds across the band. Composition is the point:
+the manufacturability front is not four separate tricks but one design lever exercised
+against four objectives at once.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figs/dfx_panel}
+\caption{\textbf{A multifunctional CFRP panel.} One mirror-symmetric, curvature-feasible
+fiber layout routes an incident vibration to a harvester ($\PANROUTE\times$), shields a
+payload core ($\PANSHIELD\times$), protects the four fastener rims ($\PANPROT\times$),
+and stiffens the bolted mount ($\PANSTIFF\times$, orientation only) --- held across the
+operational band $[\PANBLO,\PANBHI]$. (a)~straight-fiber baseline; (b)~optimized field,
+shielded payload (green) and harvester (blue) marked; (c)~the director field;
+(d)~the as-printed toolpaths; (e)~the operational-bandwidth curve (band-optimized solid,
+single-tone dashed).}
+\label{fig:panel}
 \end{figure}
 
 \section{Discussion}

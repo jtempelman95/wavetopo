@@ -30,11 +30,10 @@
 \DefN{\GZALL}{6.67}  % 1/R_TOW (print head), NOT 1/R_J
 \DefN{\GCONFZ}{22}   % downstream confinement, baseline
 \DefN{\GCONFO}{97}   % downstream confinement, optimized
-% multi-target beam shaping (examples/dolfinx_lens.py multi) -- TO FILL
-\DefN{\MCONA}{2}
-\DefN{\MCONB}{19}
-\DefN{\MTGAIN}{19}
-\DefN{\MCIMP}{10}
+% multi-target beam shaping (examples/dolfinx/dolfinx_lens.py multi)
+\DefN{\MCONA}{0.0}     % straight-fiber baseline foci/null contrast
+\DefN{\MCONB}{18}      % optimized foci/null contrast
+\DefN{\MTGAIN}{1500}   % ~swing in foci/null contrast from the straight-fiber baseline
 % flat-band metamaterial (examples/flatband_demo.py) -- TO FILL
 \DefN{\FBBAND}{3}
 \DefN{\FBWZ}{2.78}
@@ -46,6 +45,16 @@
 \DefN{\FBGUV}{+0.41}
 \DefN{\FBGDV}{+0.67}
 % multi-functional metamaterial (examples/multifunc_demo.py) -- co-design sweep
+
+% multifunctional CFRP panel (examples/dolfinx/dolfinx_panel.py) route/shield/protect/stiffen
+\DefN{\PANROUTE}{1.7}     % harvester delivery vs straight fibers (band centre)
+\DefN{\PANSHIELD}{0.20}   % payload shield (fraction of straight-fiber energy)
+\DefN{\PANPROT}{0.14}     % fastener-rim protection (band centre)
+\DefN{\PANSTIFF}{1.15}    % static stiffness co-benefit (orientation only, no added mass)
+\DefN{\PANZMAX}{6.1}      % max fiber curvature (limit 6.2 = 1/R_tow)
+\DefN{\PANBLO}{44}        % operational band, low
+\DefN{\PANBHI}{56}        % operational band, high
+\DefN{\PANNF}{5}          % frequencies averaged across the band
 
 % ---- topological valley guiding (examples/valley_*.py) ----------------- %
 % bulk complete gap, conforming cell, 41x41 BZ sampling (converged)

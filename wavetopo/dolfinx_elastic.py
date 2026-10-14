@@ -169,7 +169,10 @@ class ElasticWave:
             fem.assemble_scalar(fem.form(self.wsel * j * ufl.dx)), op=_SUM())
 
     # ---- discrete-adjoint sensitivity dJ/dtheta ----------------------- #
-    def _sensitivity(self, Jexpr):
+    def _adjoint_residual(self, Jexpr):
+        """Solve the discrete adjoint for objective Jexpr and return the residual
+        form R whose theta / zfac derivatives are the design sensitivities (both
+        come from the SAME adjoint solve)."""
         P = ufl.TestFunction(self.W)
         Jform = self.wsel * Jexpr(self.U) * ufl.dx
         g = assemble_vector(fem.form(ufl.derivative(Jform, self.U, P)))
@@ -185,9 +188,12 @@ class ElasticWave:
         kk = lambda a, b: self._stiff(a, b, D)
         ms = lambda a, b: rho * ufl.dot(a, b) * ufl.dx
         dp = lambda a, b: self.cspg * ufl.dot(a, b) * ufl.dx
-        R = (kk(ur, lr) - w**2*ms(ur, lr) - et*kk(ui, lr) - w*dp(ui, lr)
-             + kk(ui, li) - w**2*ms(ui, li) + et*kk(ur, li) + w*dp(ur, li)
-             - ufl.inner(self.fr, Lm)*ufl.dx)
+        return (kk(ur, lr) - w**2*ms(ur, lr) - et*kk(ui, lr) - w*dp(ui, lr)
+                + kk(ui, li) - w**2*ms(ui, li) + et*kk(ur, li) + w*dp(ur, li)
+                - ufl.inner(self.fr, Lm)*ufl.dx)
+
+    def _sensitivity(self, Jexpr):
+        R = self._adjoint_residual(Jexpr)
         dR = fem.form(ufl.derivative(R, self.theta, ufl.TestFunction(self.S)))
         return assemble_vector(dR).array.copy()
 
@@ -198,6 +204,15 @@ class ElasticWave:
         Ur = self.Uref
         return self._sensitivity(
             lambda U: sum((U[i]-Ur[i])*(U[i]-Ur[i]) for i in range(4)))
+
+    def focus_grads(self):
+        """(dJ/dtheta, dJ/dz) for the focus objective from ONE adjoint solve --
+        for orientation+density co-design."""
+        R = self._adjoint_residual(lambda U: sum(U[i]*U[i] for i in range(4)))
+        vS = ufl.TestFunction(self.S)
+        dth = assemble_vector(fem.form(ufl.derivative(R, self.theta, vS))).array.copy()
+        dz = assemble_vector(fem.form(ufl.derivative(R, self.zfac, vS))).array.copy()
+        return dth, dz
 
 
 def _SUM():

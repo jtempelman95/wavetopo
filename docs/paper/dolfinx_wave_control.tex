@@ -80,7 +80,7 @@
 
 \title{\bfseries In-Plane Orthotropic Elastic Wave Control by
 Fiber-Orientation Design}
-\author{}
+\author{Joshua R.~Tempelman}
 \date{\today}
 
 \begin{document}
@@ -1151,8 +1151,8 @@ targets and $w=-\lambda$ on the null ($\lambda=1$) and maximizing
 $J=\int_\Omega w|\vu|^2$ drives a fiber beam splitter. The straight-fiber baseline
 illuminates the three regions almost equally (target/null contrast $\MCONA$); the
 optimized orientation splits the wave into the two off-axis foci and holds the
-centre as a local dark node, raising the target/null contrast to $\MCONB$ --- a
-$\MCIMP\times$ improvement --- while the two foci themselves brighten
+centre as a local dark node, raising the target/null contrast to $\MCONB$ while
+the foci-to-null energy swing against the baseline reaches
 $\MTGAIN\times$ (Figure~\ref{fig:multi}). (The whole field amplifies off the very
 dim straight-fiber baseline, so the meaningful measure of the null is its
 \emph{contrast} against the neighbouring foci, not its absolute level.) Only the
@@ -1289,9 +1289,9 @@ delineation (\texttt{plot\_director\_field}, Table~\ref{tab:codemap}).
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.99\textwidth]{figs/dfx_orient.png}
-\caption{Anisotropy orientation (fiber director) vector maps: each segment is the
-local fiber direction $(\cos\theta,\sin\theta)$, coloured by angle (cyclic, period
-$\pi$). From left: the optimized wave lens; the lens with two prescribed circular
+\caption{Anisotropy orientation (fiber director) maps: continuous tows trace the
+local fiber direction as streamlines of the orientation field, coloured by the
+director angle (cyclic, period $\pi$). From left: the optimized wave lens; the lens with two prescribed circular
 through-holes (the anisotropy routes around the voids); the elastic cloak, whose
 principal axis winds around the void \emph{only inside the design shell} and is
 exactly straight outside it; and the joint-routing design of \S\ref{sec:guide}.
@@ -1351,7 +1351,8 @@ unconstrained --- the fibers route around the voids and refocus the wave, with
 tight bends ($|\zeta|_{\max}=\HCURLU$). Bottom row: with the through-hole limit
 $|\zeta|\le1/R\approx\HRINV$, the toolpaths wrap the holes with arcs no tighter
 than the holes ($|\zeta|_{\max}=\HCURLC$) at a modest focus cost. Columns: field,
-toolpaths, fiber-curvature $|\zeta|$ map.}
+toolpaths, fiber-curvature $|\zeta|$ map. The dashed circle in the field panels
+marks the focus target the lens is optimized to fill.}
 \label{fig:lenshole}
 \end{figure}
 
@@ -1386,7 +1387,8 @@ Top: straight-fiber baseline and the re-optimized field ($\AGAIN\times$ focus
 gain). Bottom: the phase-field fiber toolpaths and the anisotropy director map ---
 both asymmetric, wrapping the differently placed/sized voids as their local
 geometry requires. This is a genuine per-geometry re-optimization, not a mirrored
-copy of Figure~\ref{fig:lenshole}.}
+copy of Figure~\ref{fig:lenshole}. The dashed circle in the field panels marks the
+focus target.}
 \label{fig:lenshole_asym}
 \end{figure}
 
@@ -1962,6 +1964,99 @@ cannot: because the removed material is real holes, not compliant voids, the wav
 nowhere soft to collect, so the panel is lighter \emph{and} the shielded field never
 leaves the solid. Nothing in the objective is periodic and every quantity is an
 integral over a finite, buildable part.
+
+\section{A multifunctional panel: routing, shielding, protection and stiffness in one
+band-robust fiber layout}
+\label{sec:panel}
+The examples so far each exercise the anisotropy lever against \emph{one} objective.
+A real mounting panel must do several at once, and across the operational frequency band
+of the machine it carries. We close the wave-control studies with a single bolted CFRP
+panel ($L_x\times L_y = 7\times 4$, four conforming fastener holes) whose one orientation
+field $\theta(\mathbf x)$ is co-designed for four jobs simultaneously: \textbf{route} the
+incident vibration to reconverge on an energy-harvesting / structural-health sensor patch
+$S$; \textbf{shield} a mounted-payload core $P$ so the beam flows \emph{around} it into a
+dark pocket; \textbf{protect} the four fatigue-critical fastener rims $F$ (an annulus
+around each hole); and \textbf{confine} the field so no energy sprays into the bulk $O$.
+
+\subsection{Four objectives as one signed region weight}
+With the region energies $E_R=\int_{\Omega_R}|\mathbf u|^2\,\mathrm d\mathbf x$, the four
+wave jobs compose into a single scalar
+\begin{equation}
+  \mathcal J_{\rm wave}=W_S\log\frac{E_S}{E_S^0}
+  -\lambda_P\frac{E_P}{E_P^0}-\lambda_F\frac{E_F}{E_F^0}-\lambda_O\frac{E_O}{E_O^0},
+  \label{eq:panelobj}
+\end{equation}
+with the regions made \emph{disjoint} by priority (rims $>$ payload $>$ sensor $>$
+outside) so no cell is rewarded and penalised at once, and each term divided by its
+straight-fiber baseline $E_R^0$ so all four are $O(1)$ and directly comparable. Two
+choices matter. The delivery reward is \emph{logarithmic}: with a plain ratio a bright
+sensor term would swamp the rim penalty and the optimizer would buy delivery by letting
+the fasteners get busier, whereas $\log$ has diminishing returns so protecting the rims
+stays worthwhile however bright the port already is. The confinement term penalises
+interior energy \emph{outside} the target regions, which forces a clean routed beam
+rather than a diffraction spray. The gradient still needs one adjoint solve per state:
+for $\mathcal J_{\rm wave}=\sum_R c_R E_R$ (the log term contributing $c_S=W_S/E_S$,
+re-evaluated each iterate) the adjoint load is the summed region weight
+$w=\sum_R(\partial\mathcal J/\partial E_R)\,\mathbf 1_{\Omega_R}$, and the
+discrete-adjoint sensitivity of \S\ref{sec:adj} returns
+$\mathrm d\mathcal J_{\rm wave}/\mathrm d\theta_\ell$; the CS-RBF transpose then gives the
+reduced gradient. The panel is mirror-symmetric about $y=L_y/2$, enforced exactly by a
+symmetric support grid and the antisymmetric projector of \S\ref{sec:rbf}.
+
+\subsection{Operational bandwidth}
+A single-frequency optimum is a single-tone trick. We make the design robust across an
+operational band $[\PANBLO,\PANBHI]$ by averaging the objective over $\PANNF$ sample
+frequencies,
+\begin{equation}
+  \mathcal J=\frac1K\sum_{k=1}^{K}\mathcal J_{\rm wave}(\omega_k;\theta),\qquad
+  \frac{\mathrm d\mathcal J}{\mathrm d\theta_\ell}
+  =\frac1K\sum_k\frac{\mathrm d\mathcal J_{\rm wave}(\omega_k)}{\mathrm d\theta_\ell},
+  \label{eq:panelband}
+\end{equation}
+one forward and one adjoint solve per frequency per iterate. The band optimization earns
+its keep at the band \emph{edges}: a design tuned at the centre alone holds the shield and
+delivery across the band but lets the fastener protection degrade toward the edges, which
+the averaged design restores (Figure~\ref{fig:panel}e).
+
+\subsection{Stiffness for free}
+The same orientation is scored for static stiffness. The panel is clamped at the four bolt
+rims (the bolted mount) and carries a service load over the payload footprint; the
+compliance $c=\mathbf f^\top\mathbf u$ and its self-adjoint orientation sensitivity
+$\mathrm d c/\mathrm d\theta_\ell=-\int_{\Omega_\ell}
+\boldsymbol\varepsilon(\mathbf u)^\top(\partial\mathbf D_f/\partial\theta)
+\boldsymbol\varepsilon(\mathbf u)\,\mathrm d\mathbf x$ --- one extra linear solve, reusing
+the static factorization --- enter the objective as $-w_c\,c/c_0$. Orientation is a strong
+stiffness lever in isolation (compliance-only design reaches $6.8\times$ here), but the
+fiber angle is largely spent on the wave, so the co-design keeps a genuinely \emph{free}
+co-benefit of $\PANSTIFF\times$ over straight fibers at no added mass; pushing stiffness
+harder trades directly against the routing and shielding. A density/topology field would
+decouple stiffness and mass from the wave, but a SIMP soft-void contradicts the
+conforming-void modeling used throughout and is not pursued here.
+
+\subsection{Result: one band-robust layout, four functions}
+The optimized layup (Figure~\ref{fig:panel}) splits the incident beam symmetrically around
+the payload into a clean dark pocket --- shielded to $\PANSHIELD\times$ its straight-fiber
+energy --- threads the quiet gaps between the two fastener rows (rims at $\PANPROT\times$
+near band centre), and reconverges on the harvester at $\PANROUTE\times$ delivery, while
+lifting the bolted-mount stiffness $\PANSTIFF\times$. Every fiber path is printable
+($\max|\zeta|=\PANZMAX\le 1/R_{\rm tow}$) and the four functions all hold across
+$[\PANBLO,\PANBHI]$. Composition is the message of the whole paper made concrete: the
+manufacturability front is not a catalogue of separate tricks but one design lever --- the
+fiber angle laid by AFP --- exercised against four objectives, on one buildable,
+band-robust part.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\textwidth]{figs/dfx_panel.png}
+\caption{Multifunctional CFRP panel: one mirror-symmetric, curvature-feasible fiber layout
+routes an incident vibration to a harvester ($\PANROUTE\times$), shields a payload core
+($\PANSHIELD\times$), protects the four fastener rims ($\PANPROT\times$), and stiffens the
+bolted mount ($\PANSTIFF\times$, orientation only), held across the band
+$[\PANBLO,\PANBHI]$. (a)~straight-fiber baseline; (b)~optimized $|u|$ with the shielded
+payload (green) and harvester (blue); (c)~director field; (d)~as-printed toolpaths;
+(e)~operational bandwidth (band-optimized solid, single-tone dashed).}
+\label{fig:panel}
+\end{figure}
 
 \section{A stiffer, stronger bracket with a higher fundamental: topology and toolpath
 for a modal objective}
