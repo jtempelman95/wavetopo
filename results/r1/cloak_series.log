@@ -1,0 +1,4 @@
+[series] h=0.0450 (53722 cells): optimized  36.2x  curv-limited   9.6x  transformation   1.9x
+[series] h=0.0375 (77647 cells): optimized  32.9x  curv-limited   9.2x  transformation   2.0x
+[series] h=0.0300 (120783 cells): optimized  26.3x  curv-limited   8.2x  transformation   2.0x
+[series] h=0.0250 (173807 cells): optimized  23.7x  curv-limited   8.0x  transformation   2.1x

@@ -13,7 +13,13 @@ Paper-producing scripts (all write into `results/`):
 - analysis: `examples/analysis/lens_mechanism.py`, `lens_flux.py`, `lens_flux_control.py`, `lens_dose.py`,
   `lens_front.py` (+ `lens_front_robust.py <zeta>`), `cloak_band.py`, `wt_verify.py A B C D`, `cloak_fine.py`,
   `cloak_fine_band.py`, `lens_absorber.py`, `panel_mesh_check.py`
-- assets: `examples/analysis/wt_paper_assets.py` (numbers, tables, summary figures),
-  `wt_figs_fields.py` (field figures), `wt_schematic.py` (Fig. 1); then `pdflatex dolfinx_wave_control`.
+- revision R1 analyses (dolfinx env): `examples/analysis/wt_r1_lens.py power fluxmap fine absorber asbuilt`,
+  `wt_r1_cloak.py series sponge fields`, `wt_r1_dose_ms.py <s>` for s in 0.25 0.50 0.75 1.00 1.10,
+  `wt_r1_panel.py`; plain Python: `wt_r1_rays.py` (ray prediction)
+- assets: `examples/analysis/wt_paper_assets.py` (numbers, tables, Fig. 5), `wt_r1_figs.py` (Figs. 3, 4),
+  `wt_figs_fields.py` (Figs. 2, 6, 7), `wt_schematic.py` (Fig. 1); then three passes of
+  `pdflatex dolfinx_wave_control`.
+
+The submitted version is archived in `docs/paper/archive/R0/` (git tag `R0`); this revision is tag `R1`.
 
 Scripts under `examples/drivers/` and `examples/figures/` belong to earlier exploratory studies.

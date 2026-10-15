@@ -63,7 +63,7 @@ $\mathbb{DG}_0$ density void on a structured grid staircases the boundary to
 within one element, scatters off the staircase corners, and blurs the very radius
 $R$ that the curvature rule $\zeta_{\rm all}=1/R$ is tied to.
 
-\begin{table}[h]
+\begin{table}[!tbp]
 \centering\small
 \caption{Discrete spaces, element types and meshes ($\mathcal T_h$ the cell complex).}
 \label{tab:spaces}
@@ -226,7 +226,33 @@ region indicator:
   \Psi_{\rm cloak}=|\vu-\vu_{\rm ref}|^2=\!\sum_{k=0}^{3}(U_k-U_k^{\rm ref})^2,
 \end{equation}
 the focus energy in a target box (maximized) and the far-field mismatch to a
-void-free reference (minimized).
+void-free reference (minimized). Throughout, ``energy'' in a region means this
+displacement-squared measure $\int|\vu|^2$, which for a time-harmonic field is proportional to the
+time-averaged kinetic energy.
+
+\subsection{Energy flux, power balance and the power routed into a region}\label{sec:power}
+For the convention $\Real\{\vu e^{+\ii\omega t}\}$ the velocity is $\bm v=\ii\omega\vu$, and the
+time-averaged energy flux is $P_j=-\tfrac12\Real\{\sigma_{ij}\bar v_i\}$. With $\vu=\vu^{\rm r}+\ii\vu^{\rm i}$
+and the elastic stress $\bm\sigma=\mathbf D_f\veps$,
+\begin{equation}
+P_j=\tfrac{\omega}{2}\big[\sigma_{ij}(\vu^{\rm r})\,u^{\rm i}_i-\sigma_{ij}(\vu^{\rm i})\,u^{\rm r}_i\big],
+\label{eq:flux}
+\end{equation}
+evaluated per cell from the solved field. We use the elastic part of the stress; the hysteretic part
+$\ii\eta\mathbf D_f\veps$ changes $\bm P$ by a relative $O(\eta)=2\%$. The time-averaged powers of the
+discrete system satisfy an exact balance,
+\begin{equation}
+P_{\rm in}=-\tfrac{\omega}{2}\!\int\!\mathbf f\cdot\vu^{\rm i}
+=\underbrace{\tfrac{\omega\eta}{2}\!\int\!\big[\veps(\vu^{\rm r})\T\mathbf D_f\veps(\vu^{\rm r})
++\veps(\vu^{\rm i})\T\mathbf D_f\veps(\vu^{\rm i})\big]}_{P_\eta\ \text{(structural loss)}}
++\underbrace{\tfrac{\omega^2}{2}\!\int\!c\,|\vu|^2}_{P_c\ \text{(sponge)}},
+\label{eq:balance}
+\end{equation}
+which our solutions satisfy to $\WPowBal$. In steady state the net power flowing into a region
+without sponge equals the power dissipated inside it. The share of the injected power delivered to
+the target is therefore $\Pi=P_{\eta,\rm target}/P_{\rm in}$, and its ratio to straight fibers,
+$\Pi/\Pi_0$, measures routing of \emph{power}, as opposed to the redistribution of stored energy
+measured by $G_\varphi$ (Sec.~\ref{sec:predictions}).
 
 \subsection{Lagrangian, adjoint equation, and residual derivative}
 Adjoin the forward problem $\mathcal A(\vth)\vU-\vb=\mathbf0$ with a multiplier
@@ -279,7 +305,7 @@ tiny ($\sim\!10^{-4}$), so for the lens we descend the scale-invariant
 gradients for the Method of Moving Asymptotes (MMA) \cite{svanberg1987} under
 $\theta_\ell\in[-\tfrac\pi2,\tfrac\pi2]$.
 
-\subsection{Smooth orientation parametrization and manufacturable toolpaths}
+\subsection{Smooth orientation parametrization and tow paths}
 \label{sec:rbf}
 A raw per-cell orientation is mesh-scale noisy --- un-manufacturable and, driving
 the wave field, incoherent. We therefore parametrize $\theta$ by a coarse grid of

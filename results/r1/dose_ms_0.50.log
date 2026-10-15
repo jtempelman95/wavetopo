@@ -1,0 +1,4 @@
+s=0.50 straight (paper run)  : band G_phi  4.21 (paper layer)   3.00 (layer x2)
+s=0.50 random 11             : band G_phi  3.02 (paper layer)   2.21 (layer x2)
+s=0.50 random 12             : band G_phi  2.94 (paper layer)   2.09 (layer x2)
+s=0.50 random 13             : band G_phi  3.38 (paper layer)   2.42 (layer x2)

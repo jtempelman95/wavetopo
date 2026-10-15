@@ -1,0 +1,8 @@
+[fluxmap] w=  35 straight: |P|-weighted dev   0.2 deg (all cells   0.2), within 20 deg 100.0%, strong-flux cells 100.0%, kinetic along fibers 99.9%
+[fluxmap] w=  35 lens    : |P|-weighted dev   9.2 deg (all cells  11.6), within 20 deg 88.4%, strong-flux cells 60.9%, kinetic along fibers 51.9%
+[fluxmap] w=  40 straight: |P|-weighted dev   0.3 deg (all cells   0.3), within 20 deg 100.0%, strong-flux cells 100.0%, kinetic along fibers 99.9%
+[fluxmap] w=  40 lens    : |P|-weighted dev   5.8 deg (all cells   6.7), within 20 deg 94.1%, strong-flux cells 66.1%, kinetic along fibers 71.3%
+[fluxmap] w=  45 straight: |P|-weighted dev   0.3 deg (all cells   0.3), within 20 deg 100.0%, strong-flux cells 100.0%, kinetic along fibers 99.9%
+[fluxmap] w=  45 lens    : |P|-weighted dev   4.5 deg (all cells   5.5), within 20 deg 96.2%, strong-flux cells 72.8%, kinetic along fibers 74.2%
+[fluxmap] w=  50 straight: |P|-weighted dev   0.2 deg (all cells   0.2), within 20 deg 100.0%, strong-flux cells 100.0%, kinetic along fibers 100.0%
+[fluxmap] w=  50 lens    : |P|-weighted dev   3.5 deg (all cells   4.5), within 20 deg 96.6%, strong-flux cells 71.5%, kinetic along fibers 78.7%

@@ -1,0 +1,7 @@
+[asbuilt] tau in the interior: 0.00-51.61; |ln tau|>0.1 on 90% of the interior
+[asbuilt] N= 4 gap: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.57  6.06  6.69  5.66  band mean 5.25
+[asbuilt] N= 4 ovl: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.36  5.70  6.32  5.94  band mean 5.08
+[asbuilt] N= 8 gap: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.41  6.55  6.71  5.75  band mean 5.35
+[asbuilt] N= 8 ovl: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.36  5.77  6.47  6.00  band mean 5.15
+[asbuilt] N=16 gap: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.37  6.21  6.67  5.87  band mean 5.28
+[asbuilt] N=16 ovl: G_phi at (35.0, 40.0, 45.0, 50.0) =  2.35  5.80  6.51  6.01  band mean 5.17

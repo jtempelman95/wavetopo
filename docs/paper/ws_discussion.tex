@@ -1,120 +1,100 @@
 \section{Discussion}\label{sec:discussion}
 
-\subsection{Answer to the question}
-\begin{itemize}[itemsep=1pt]
-\item \textbf{Mechanism.} Fiber orientation controls in-plane elastic waves by
-  \emph{channeling} their energy along the fibers. The control is the redirection of a
-  plate's vibration energy toward a target, by a few times ($\WAbsBand$--$\WRedirBandMean\times$
-  band-averaged for the lens, depending on the absorbing layer), over a broad band.
-\item \textbf{What bounds it.} The lamina anisotropy (none for isotropic material, growing
-  with the channeling share) and the tow curvature (no loss while the minimum tow radius is below about $0.7$
-  along-fiber wavelengths, then a gradual decline of the best design found).
-\item \textbf{Cancellation.} Canceling the field of a finite scatterer (a full cloak) has to
-  rely on interference, because exact cloaking needs anisotropy that no lamina has, and
-  strong cancellation holds only near the design frequency (the curvature-limited design
-  keeps a moderate $\WCloakCurvBandMin$--$\WCloakCurv\times$ across $\omega\in[40,60]$); the inextensible-fiber limit \cite{olsson2011} and
-  ground-plane cloaks \cite{chen2011,popa2011} escape this bound.
+\subsection{What is established, and how firmly}
+\begin{itemize}[itemsep=2pt]
+\item \textbf{Mechanism.} Fiber orientation controls in-plane elastic waves by \emph{channeling} their energy
+  along the fibers. The evidence is fourfold: the flux follows the fibers within a few degrees wherever they
+  turn by less than about $4$\,rad per wavelength; fields that were never optimized channel just as
+  tightly; rays traced through the fiber field alone predict the redirection to within about $20\%$; and
+  redirection vanishes for isotropic material and grows with anisotropy. Channeling is a qP, ray-regime
+  effect: it fails at long wavelengths, near sharply converging fibers and at standing-wave nodes, and
+  about a quarter to a half of the lens's kinetic energy is not qP-like.
+\item \textbf{Size.} With a converged absorbing layer the lens redirects $\WBandConvMin$--$\WBandConvMax\times$ more
+  energy into its target, band-averaged over the tested wavelengths, and absorbs several times more of the
+  injected power there. The larger values obtained with a reflecting layer ($\WRedirBandMean\times$) and at the
+  design frequency ($\WGainForty\times$ in $G$) include reflections and resonance respectively.
+\item \textbf{Limits.} The lever is bounded by the anisotropy and by the tow radius, with no loss while the
+  minimum tow radius is below about $0.7$ along-fiber wavelengths and a gradual decline beyond (best designs
+  found, lower bounds).
+\item \textbf{Cancellation.} A full cloak must rely on interference, because exact cloaking needs anisotropy
+  that no lamina has. Strong cancellation holds only near the design frequency and is tuned to the mesh it
+  was optimized on; the curvature-limited design keeps a moderate $\WCloakCurvBandMin$--$\WCloakCurv\times$ across
+  $\omega\in[40,60]$. The inextensible-fiber limit \cite{olsson2011} and ground-plane cloaks \cite{chen2011,popa2011}
+  escape this bound.
 \end{itemize}
 
-\begin{table}[h]
+\begin{table}[!tbp]
 \centering\footnotesize
 \caption{Status of the predictions.}\label{tab:verdictW}
-\begin{tabular}{@{}p{0.30\linewidth}p{0.36\linewidth}p{0.28\linewidth}@{}}
+\begin{tabular}{@{}p{0.27\linewidth}p{0.41\linewidth}p{0.26\linewidth}@{}}
 \toprule
 prediction & evidence & verdict\\ \midrule
 W1 isotropic plate: no control (identity; consistency check) & Remark~\ref{rem:iso}; Table~\ref{tab:dose} ($s=0$) & holds (exact)\\
-W2 redirection is broadband, extra gain is resonant & Table~\ref{tab:lensband}, Fig.~\ref{fig:lensband}; damping test (App.~\ref{app:verify}) & holds for $\omega\ge37.5$ ($G_\varphi=2.3$ at $35$); fails at long wavelength ($G_\varphi<1$ at $\omega=20$ and $25$)\\
-W3 energy flux follows the fibers & lens: $\WFluxDevBandMin$--$\WFluxDevBandMax^\circ$ across the band (Fig.~\ref{fig:flux}); unoptimized controls: $\WCtrlDevMin$--$\WCtrlDevMax^\circ$ & holds\\
-W4 redirection grows with anisotropy & Table~\ref{tab:dose}, Fig.~\ref{fig:limitsW}a & holds coarsely (1 at isotropy, several times once $E_{f1}/E_{f2}\gtrsim3$); finer steps are within optimizer variability\\
-W5 redirection is unaffected while $R\lesssim0.7\lambda$, then declines; strong cloaking is narrowband & Tables~\ref{tab:front},~\ref{tab:cloakband}; multi-start front & partly holds: redirection is bounded by the tow radius, but declines gradually rather than failing at $R\sim\lambda$ (front values are lower bounds); the cloak half holds (strong cancellation only near the design frequency)\\
+W2 redirection is broadband, extra gain is resonant & Fig.~\ref{fig:lensband}: $G_\varphi\ge\WRedirBandMin$ over $[37.5,60]$; converged absorber $\WBandConvMin$--$\WBandConvMax$; power share; growth peak $Q\approx\WFineQ$, $\propto1/\eta$ & holds over the tested wavelengths ($\lambda_\parallel\lesssim1.5$); fails at long wavelength ($G_\varphi<1$ at $\omega=20,25$)\\
+W3 energy flux follows the fibers; rays predict the redirection & Fig.~\ref{fig:flux}: $\WFluxDevMasked^\circ$ mean, unoptimized controls $\WCtrlDevMin$--$\WCtrlDevMax^\circ$; $G_{\rm ray}=\WRayAbs$--$\WRayPaper$ & holds where fibers turn $\lesssim4$\,rad per wavelength\\
+W4 redirection grows with anisotropy & Table~\ref{tab:dose}, Fig.~\ref{fig:limitsW}a, best of four starts, two absorbing layers & holds for the best designs; finer shape within optimizer spread\\
+W5 redirection unaffected while $R\lesssim0.7\lambda_\parallel$; strong cloaking narrowband & Tables~\ref{tab:front},~\ref{tab:cloakband}; multi-start front; cloak mesh series & partly holds: gradual decline rather than failure at $R\sim\lambda$; cloak narrowband and mesh-tuned\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Consequences for how wave-control designs are reported}
-A finite, lightly damped plate driven at one frequency is a resonator. An optimizer
-maximizing a field energy at that frequency exploits the resonance whenever it can. The
-lens shows the size of the effect: $\WGainForty\times$ at the design frequency, of which
-$\WGrowthForty\times$ is field growth, and $\WGainMinusFive\times$ only $6\%$ away. We
-therefore reaffirm three practices, established for wave topology optimization
-\cite{jensen2005,andkjaer2013}, applied in this paper, and needed before single-frequency
-gains are compared across studies:
-\begin{enumerate}[itemsep=1pt]
-\item report redirection (a share of energy) alongside, or instead of, raw gains;
-\item evaluate every design across a band;
-\item optimize band-averaged objectives when the application has a band
-  (Sec.~\ref{sec:panel}).
-\end{enumerate}
+A finite, lightly damped plate driven at one frequency is a resonator, and an optimizer maximizing a field
+energy at that frequency exploits the resonance whenever it can. We therefore reaffirm three practices,
+established for wave topology optimization \cite{jensen2005,andkjaer2013}: report redirection (a share of
+energy or of injected power) alongside, or instead of, raw gains; evaluate every design across a band and
+against a converged absorbing layer; and optimize band-averaged objectives when the application has a band
+(Sec.~\ref{sec:panel}).
+
+\subsection{Relation to other orientation-design work}
+Orientation fields with smoothness or curvature limits have been designed for compliance \cite{wong2025,jiang2024},
+frequency \cite{abdalla2007,sheikhi2024,pagani2025} and, together with topology and microstructure, for
+mechanical cloaking \cite{lutong2025}. What differs here is the target (time-harmonic routing of in-plane
+elastic waves by a single lamina whose orientation is the only design field) and the analysis of energy
+transport, which identifies the mechanism and separates it from the resonance of the finite plate.
 
 \subsection{Limitations and scope}
 \begin{itemize}[itemsep=2pt]
-\item \textbf{Model.} The model is a single plane-stress lamina, with no through-thickness
-  or flexural waves, no tow gaps or overlaps, and constant thickness.
-\item \textbf{Absorbing layer.} The sponge reflects $|R|\approx\WReflMin$--$\WReflMax$ of the
-  along-fiber qP wave, so finite-plate standing waves remain. With a sponge twice as wide
-  ($|R|\le\WReflThickMax$) the resonant growth of the lens persists ($\WThickGrForty\times$ at
-  $\omega=40$), but the redirection is lower: $\WThickPForty\times$ at $\omega=40$ and
-  $\WThickBand\times$ band-averaged, against $\WRedirForty\times$ and $\WThinBand\times$
-  (Appendix~\ref{app:verify}). This is a systematic bias, not scatter: reflections from the layer raise the
-  target share. Re-optimizing the lens with the better absorber does not recover the
-  difference (band-averaged $\WAbsBand\times$, against $\WAbsBandOld\times$ for the
-  original design with that absorber, and $\WAbsG\times=\WAbsP\times$ redirection
-  $\times\,\WAbsGr\times$ growth at $\omega=40$). Absolute redirection values are therefore
-  about a quarter lower with a near-non-reflecting boundary; the conclusions, which rest
-  on the split between broadband redirection and resonant growth, do not change.
-\item \textbf{Discretization.} Lens metrics change by at most about $7\%$ under $2\times$ mesh
-  refinement. The panel's sensor and payload ratios change by at most $\WPanMeshSenDev\%$ on a
-  finer mesh, its rim ratios by up to $\WPanMeshRimDevAbs$ in absolute terms. The optimized cloak is mesh-tuned ($36\times\to\WCloakFineEval\times$ on a
-  finer mesh), but the capability persists ($\WCloakFineReopt\times$ re-optimized there);
-  we checked two meshes, not a converged sequence.
-\item \textbf{Optimality.} The optimizations are local (MMA, from straight fibers unless
-  stated; the front also uses warm and random starts). The dose and front studies
-  re-optimize each point independently, so their trends carry optimizer noise, and the
-  front values are lower bounds on what each limit allows.
-\item \textbf{Ray picture.} Channeling is argued from plane-wave theory and confirmed by the
-  flux field. A full ray-tracing prediction of the redirection is left for future work.
+\item \textbf{Model.} A single plane-stress lamina, with no through-thickness or flexural waves and constant
+  thickness. The as-built check (Sec.~\ref{sec:asbuilt}) is a continuum estimate of tow spreading and
+  defects; tow width, process defects and multi-ply laminates are not resolved, so the designs are
+  tow-curvature-constrained, not shown to be manufacturable.
+\item \textbf{Absorbing layer.} The paper's layer reflects $|R|\approx\WReflMin$--$\WReflMax$. We report every lens
+  result against a converged layer as well; the redirection is about a quarter lower there, and the front
+  and dose values, computed with the paper's layer, should be read with that factor. No perfectly matched
+  layer was used.
+\item \textbf{Discretization.} Lens metrics change by at most about $7\%$ under $2\times$ mesh refinement. The
+  panel's sensor and payload ratios change by at most $\WPanMeshSenDev\%$ on a finer mesh, its rim ratios by up to
+  $\WPanMeshRimDevAbs$ in absolute terms. The optimized cloak is mesh-tuned, and its fixed-design refinement series
+  has not converged.
+\item \textbf{Optimality.} The optimizations are local (MMA). The dose and front studies use multiple starts,
+  and their values are best designs found, i.e.\ lower bounds on what is attainable.
+\item \textbf{Ray picture.} The ray prediction is single-pass and qP-only. It reproduces the size of the
+  redirection but not its frequency dependence, which comes from reflections and interference.
 \end{itemize}
 
 \subsection{Outlook}
-The channeling picture suggests where orientation design should go next:
-\begin{itemize}[itemsep=1pt]
-\item routing problems around prescribed holes and joints, where tows must wrap
-  obstacles within the curvature limit;
-\item multi-objective layouts that trade wave routing against stiffness;
-\item combined topology and toolpath design, in which voids are cut rather than softened
-  so that energy cannot pool in compliant regions;
-\item a ray-theoretic predictor of redirection from the fiber field alone.
-\end{itemize}
+The channeling picture suggests where orientation design should go next: routing problems around
+prescribed holes and joints, where tows must wrap obstacles within the curvature limit; multi-objective
+layouts that trade wave routing against stiffness; combined topology and toolpath design, in which voids are
+cut rather than softened; and ray-based design, in which \eqref{eq:rays} replaces the wave solver in early
+design stages.
 
 \section{Conclusions}\label{sec:conclusion}
-\begin{enumerate}[itemsep=2pt]
-\item In a CFRP lamina, wave energy is skewed toward the fibers by up to $\WSkewMax^\circ$, and
-  $\WSTwentyCFRP\%$ of quasi-P wave normals carry their energy within $20^\circ$ of the fiber
-  direction (Sec.~\ref{sec:theory}).
-\item An orientation-only lens redirects energy into its target by $\WRedirForty\times$ at
-  its design frequency and by at least $\WRedirBandMin\times$ over $\omega\in[37.5,60]$;
-  with a better absorbing layer, re-optimized, by $\WAbsP\times$ and at least
-  $\WAbsMinFortySixty\times$ over $[40,60]$.
-  Its $\WGainForty\times$ single-frequency gain is mostly a resonant growth of the whole
-  field.
-\item In the optimized lens, the energy flux follows the local fibers: mean deviation
-  $\WFluxDev^\circ$ at the design frequency and $\WFluxDevBandMin$--$\WFluxDevBandMax^\circ$
-  across the band, and the same holds in curved fields that were never optimized.
-\item Redirection vanishes exactly for isotropic material and grows with anisotropy. It
-  is unaffected while the minimum tow radius is at most $0.7\lambda$; beyond it the best
-  design found falls to about half by $R\approx1.2\lambda$ and to $\WFrontTight\times$ by
-  $R\approx2.3\lambda$ (best of $\WFrontNStart$ starts per limit, a lower bound).
-\item A bounded-anisotropy cloak reduces the far-field mismatch $\WCloakPeak\times$ at its
-  design frequency, but only $\WCloakMinus$--$\WCloakPlus\times$ at $\pm5\%$; under the
-  curvature limit it holds a moderate $\WCloakCurvBandMin$--$\WCloakCurv\times$ over
-  $\omega\in[40,60]$. Transformation directions alone give
-  $\WCloakAnalytic\times$.
-\item Band-averaged design delivers multifunctional fiber layouts whose performance holds
-  across the operating band.
-\end{enumerate}
+In a CFRP lamina the energy of quasi-longitudinal waves is skewed toward the fibers, by up to
+$\WSkewMax^\circ$, and $\WSTwentyCFRP\%$ of wave normals carry their energy within $20^\circ$ of them. A steered fiber
+field therefore acts as a field of energy streamlines wherever it turns slowly on the wavelength scale: the
+flux follows the fibers, and rays traced through the fibers predict the redirection. An orientation-only lens
+redirects $\WBandConvMin$--$\WBandConvMax\times$ more energy into its target over the tested band once the absorbing
+layer is converged, and routes several times more of the injected power there. Its much larger
+single-frequency gain is a resonance of the finite plate. The redirection vanishes for isotropic material,
+grows with anisotropy, and survives tow-curvature limits down to a minimum radius of about $0.7$ along-fiber
+wavelengths, which sets the size and frequency at which a given placement process can use it. A full cloak
+cancels the far field strongly only at its design frequency and on its design mesh. Band-averaged design turns
+channeling into multifunctional layouts whose performance holds across the operating band.
 
-\paragraph{Data and code availability.} The solver, result files and the scripts that generate
-the reported results, tables and figures (Appendix~\ref{app:verify} and the parameter tables) are in the
-repository \url{https://github.com/jtempelman95/wavetopo} (branch \texttt{paper-revision}; see \texttt{docs/paper/README\_REPRODUCE.md}).
+\paragraph{Data and code availability.} The solver, result files and the scripts that generate the reported
+results, tables and figures (Appendix~\ref{app:verify} and the parameter tables) are in the repository
+\url{https://github.com/jtempelman95/wavetopo} (tag \texttt{R1}; see \texttt{docs/paper/README\_REPRODUCE.md}).
 
 \paragraph{Competing interests.} The author declares no competing interests.

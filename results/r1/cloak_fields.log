@@ -1,0 +1,3 @@
+[fields] optimized: reduction 36.2x
+[fields] curv-limited: reduction 9.6x
+[fields] transformation: reduction 1.9x

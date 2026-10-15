@@ -88,3 +88,13 @@ wendland1995           OK    title~0.91 year:1995(y) vol:4(True) p:389(True) doi
 All flagged entries with a Crossref record match authors, title, venue, volume and pages; flags arise from online-vs-print year (paper uses print year) or LaTeX accents lowering title similarity:
 
 No Crossref record (books/report/thesis; standard bibliographic data): nayfeh1979 (Wiley 1979), tsai1968 (Composite Materials Workshop, Technomic 1968), kraft1988 (DFVLR-FB 88-28), auld (Krieger 1990, 2nd ed.), xiao2026 (PhD thesis, Univ. Bristol; title and author verified on the local PDF docs/literature/xiao_2026_phd_thesis.pdf).
+
+
+## Revision R1: references added (verified 2026-10-15; Crossref API and publisher/repository records)
+| key | record checked | status |
+|---|---|---|
+| lutong2025 | Crossref 10.1002/nme.70028: Y. Lu, L. Tong, IJNME 126(6) e70028 (2025) | OK |
+| jiang2024 | Crossref 10.3390/app14135947: S. Jiang, C. Shang, J. Li, B. Yi, X. Peng, Appl. Sci. 14(13) 5947 (2024) | OK |
+| sheikhi2024 | ScienceDirect S0263822323011820; Compos. Struct. 330 (2024) 117836 | OK |
+| pagani2025 | PMC11921628; Aerotec. Missili Spaz. 104(2) (2025) 135-151 | OK |
+| fayazbakhsh2013 | McGill eScholarship; Compos. Struct. 97 (2013) 245-251 | OK |

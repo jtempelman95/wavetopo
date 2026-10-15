@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}          % MUST precede newtxmath
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,fit,backgrounds}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+% ---- flowchart styles ------------------------------------------------- %
+\tikzset{
+  blk/.style={rectangle,rounded corners=2pt,draw=black!65,fill=blue!5,
+              align=center,inner sep=4pt,minimum height=8mm,font=\footnotesize,
+              text width=52mm},
+  sml/.style={blk,text width=44mm},
+  dec/.style={diamond,aspect=2.2,draw=black!65,fill=orange!12,align=center,
+              inner sep=1pt,font=\footnotesize,text width=26mm},
+  post/.style={blk,fill=green!6},
+  ar/.style={-{Latex[length=2mm]},draw=black!70},
+  fb/.style={-{Latex[length=2mm]},draw=black!70,dashed},
+}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+% ---- notation --------------------------------------------------------- %
+% NOTE: these are defined with \providecommand+\renewcommand, NOT \newcommand.
+% Short names like \T, \HH, \ii and \Real are defined by some packages/engines
+% (\T is a text accent in several).  With \newcommand a pre-existing definition
+% makes the declaration FAIL while silently keeping the old meaning, and every
+% later use in math mode then raises "Missing $ inserted" far from the cause --
+% a failure that appears on MiKTeX but not on TeX Live, or vice versa.
+% \providecommand+\renewcommand always installs our meaning.
+\makeatletter
+\newcommand{\DefN}[2]{\@ifundefined{\expandafter\@gobble\string#1}{}{%
+    \PackageInfo{notation}{overriding pre-existing \string#1}}%
+  \providecommand#1{}\renewcommand#1{#2}}
+\makeatother
+% The \DefN applications are made AFTER the font packages (below), because
+% newtxmath ALSO defines short names like \vv and would otherwise clobber our
+% \renewcommand meanings if it loaded after them.
+
+% ---- fonts -------------------------------------------------------------- %
+% Palatino TEXT and MATHS via mathpazo.  (newpxtext/newpxmath were requested but
+% are not installed and cannot be added -- the local TeX Live 2023 predates the
+% remote 2026 repository, so tlmgr refuses the cross-release install.  mathpazo is
+% the installed Palatino equivalent.)  Unlike newpxmath, mathpazo does NOT provide
+% the AMS symbols, so amssymb IS required alongside it.
+\usepackage{mathpazo}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage[scr=rsfso]{mathalfa}
+
+%\usepackage{kpfonts}
+%\usepackage[T1]{fontenc}
+% ---- notation (applied AFTER the fonts so our meanings beat newtxmath) --- %
+\DefN{\vth}{\bm{\theta}}
+\DefN{\vu}{\mathbf{u}}
+\DefN{\vv}{\mathbf{v}}
+\DefN{\vn}{\mathbf{n}}
+\DefN{\vx}{\mathbf{x}}
+\DefN{\vU}{\mathsf{U}}
+\DefN{\vb}{\mathsf{b}}
+\DefN{\veps}{\bm{\varepsilon}}
+\DefN{\rmd}{\,\mathrm{d}}
+\DefN{\ii}{\mathrm{i}}
+\DefN{\T}{^{\mathsf{T}}}
+\DefN{\HH}{^{\mathsf{H}}}
+\DefN{\Real}{\operatorname{Re}}
+\DefN{\Imag}{\operatorname{Im}}
+\input{results_macros}   % shared with the beamer slides
+
+\input{wt_numbers}
+
+\title{\bfseries How fiber orientation steers in-plane elastic waves:\\
+energy channeling, its limits, and manufacturable designs}
+\author{Joshua R.~Tempelman}
+\date{\today}
+
+\emergencystretch=3em
+\begin{document}
+\maketitle
+\input{ws_abstract}
+\tableofcontents
+\input{ws_intro}
+\input{ws_model}
+\input{ws_theory}
+\input{ws_methods}
+\input{ws_results}
+\input{ws_discussion}
+\appendix
+\input{ws_appendix}
+\input{ws_refs}
+\end{document}

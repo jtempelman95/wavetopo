@@ -38,6 +38,41 @@ Appendix~\ref{app:verify}; without it the field is
 speckle), and $c(\vx)\ge0$ is a mass-proportional absorbing sponge
 (\S\ref{sec:sponge}). The orientation $\theta(\vx)$ is the sole design field.
 
+\paragraph{Units and physical scales.} The computations are nondimensional. Moduli are in GPa and
+density in $10^3$\,kg/m$^3$, so speeds come out in km/s: the qP speed is $9.07$ along the fibers and
+$2.38$ across them, and the slowest quasi-shear speed is $1.77$. Lengths are in an arbitrary unit
+$L_0$, so time is in $L_0/(1\,\mathrm{km/s})$ and a nondimensional angular frequency $\omega$ is the
+physical frequency
+\begin{equation}
+f=\frac{\omega}{2\pi}\,\frac{1\,\mathrm{km/s}}{L_0}.
+\label{eq:units}
+\end{equation}
+Every design is defined by its wavelengths, and Table~\ref{tab:scales} lists them. The tow-curvature
+results of Sec.~\ref{sec:front} are stated as a minimum tow radius $R$ in along-fiber wavelengths, which
+is the quantity that transfers between scales. Fixing $L_0$ by the tow radius a process can achieve sets
+the plate size and frequency. Redirection survives down to $R\approx0.7\lambda_\parallel=1.0\,L_0$
+(Sec.~\ref{sec:front}). Continuous-fiber printing with $R_{\min}\approx20\,\mathrm{mm}$ therefore allows
+$L_0\ge20\,\mathrm{mm}$: a $80\times60$\,mm lens at $f\approx320\,\mathrm{kHz}$. Automated fiber
+placement of 6.35\,mm tows with $R_{\min}\approx0.5\,\mathrm{m}$ requires $L_0\ge0.5\,\mathrm{m}$: a
+$2\times1.5$\,m panel at $f\approx13\,\mathrm{kHz}$.
+
+\begin{table}[!tbp]
+\centering\small
+\caption{Wavelengths and resolution of the three problems (lengths in units of $L_0$, frequency by
+\eqref{eq:units}). $\lambda_\parallel$, $\lambda_\perp$: qP along and across the fibers; $\lambda_{\rm qS}$: the shortest
+(quasi-shear) wavelength; $h$: element size; $L_\theta=1/\max|\nabla\theta|$: the shortest
+orientation-gradient length of the design.}
+\label{tab:scales}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+problem & domain & $\omega$ & $\lambda_\parallel$ & $\lambda_\perp$ & $\lambda_{\rm qS}$ & $h$ & $\lambda_{\rm qS}/h$ & $L_\theta$\\ \midrule
+lens & $4\times3$ & $40$ & $1.42$ & $0.37$ & $0.28$ & $0.031$ & $9$ & $0.15$\\
+cloak & $8\times5$ & $50$ & $1.14$ & $0.30$ & $0.22$ & $0.045$ & $4.9$ & --\\
+panel & $7\times4$ & $50$ & $1.14$ & $0.30$ & $0.22$ & $0.055$ & $4.0$ & $0.17$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{remark}[Isotropy annihilates the orientation lever]
 \label{rem:iso}
 The stiffness of an \emph{isotropic} material is a rotationally invariant tensor:

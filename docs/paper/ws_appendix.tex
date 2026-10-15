@@ -2,7 +2,7 @@
 Every constant below is the literal argument of the drivers
 (\texttt{examples/\allowbreak dolfinx/\allowbreak dolfinx\_\allowbreak lens.py}, \texttt{dolfinx\_\allowbreak cloak\_\allowbreak conforming\_\allowbreak vec.py},
 \texttt{dolfinx\_\allowbreak panel.py}) and the analysis scripts in \texttt{examples/\allowbreak analysis/}.
-\begin{table}[h]
+\begin{table}[!tbp]
 \centering\small
 \caption{Complete parameter set.}\label{tab:params}
 \setlength{\tabcolsep}{4pt}
@@ -390,7 +390,7 @@ $\mathrm d\mathcal J_{\rm wave}/\mathrm d\theta_\ell$; the CS-RBF transpose then
 reduced gradient. The panel is mirror-symmetric about $y=L_y/2$, enforced exactly by a
 symmetric support grid and the antisymmetric projector of \S\ref{sec:rbf}.
 
-\begin{table}[h]
+\begin{table}[!tbp]
 \centering\footnotesize
 \caption{Parameters of the multifunctional panel. Band design:
 \texttt{dolfinx\_panel.py --band 44,47,50,53,56 --lam-p 3 --stiff 0.3}; the single-frequency
@@ -445,19 +445,47 @@ harder trades directly against the routing and shielding. A density/topology fie
 decouple stiffness and mass from the wave, but a SIMP soft-void contradicts the
 conforming-void modeling used throughout and is not pursued here.
 
-\section{Numerical verification}\label{app:verify}
-All checks are produced by the scripts \texttt{wt\_\allowbreak verify.py},
-\texttt{cloak\_\allowbreak fine.py}, \texttt{lens\_\allowbreak absorber.py} and
-\texttt{lens\_\allowbreak flux\_\allowbreak control.py}
-in \texttt{examples/\allowbreak analysis/}; Table~\ref{tab:verify} lists the lens checks.
+\section{Numerical verification and reproducibility}\label{app:verify}
+\paragraph{Software, solver and files.} Table~\ref{tab:env} lists the software and solver settings. Every
+linear solve is a sparse direct LU factorization (MUMPS through PETSc), so there is no iterative tolerance;
+the forward and adjoint residuals are at round-off, and the discrete power balance \eqref{eq:balance} closes to
+$\WPowBal$. Every quoted number is a macro generated from the result files by
+\texttt{wt\_\allowbreak paper\_\allowbreak assets.py} (\texttt{docs/paper/wt\_numbers.tex}), and every design
+shown is stored with its mesh centroids and orientation in \texttt{results/} (e.g.\
+\texttt{dolfinx\_lens\_data.npz}, \texttt{lens\_absorber.npz}, \texttt{cloak\_headtohead.npz},
+\texttt{dolfinx\_panel\_band\_repro\_data.npz}).
+
+\begin{table}[!tbp]
+\centering\footnotesize
+\caption{Software environment and solver settings.}\label{tab:env}
+\begin{tabular}{@{}ll@{}}
+\toprule
+FE library & \texttt{dolfinx} 0.7.3, \texttt{ufl} 2023.2.0, \texttt{basix} 0.7.0\\
+linear algebra & PETSc 3.20.6, real scalars (float64); MUMPS sparse direct LU (forward and adjoint)\\
+meshes & structured triangles (lens, $n_x=130$); \texttt{gmsh} 4.15 OCC, conforming holes, rim refinement $h/2$\\
+elements & $[\mathbb P_1]^4$ state (real four-field split), $\mathbb{DG}_0$ orientation\\
+optimizer & MMA \cite{svanberg1987}, move limit 0.10 (lens), 0.15 (cloak); iterations in Table~\ref{tab:params}\\
+other & NumPy 1.26.4, SciPy 1.15.3; figures with Matplotlib (pgf backend)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Checks.} The checks are produced by the scripts \texttt{wt\_\allowbreak verify.py},
+\texttt{cloak\_\allowbreak fine.py}, \texttt{lens\_\allowbreak absorber.py},
+\texttt{lens\_\allowbreak flux\_\allowbreak control.py} and, for this revision, \texttt{wt\_\allowbreak r1\_\allowbreak lens.py}
+(power balance, flux map, fine sweep, absorber series, as-built), \texttt{wt\_\allowbreak r1\_\allowbreak rays.py},
+\texttt{wt\_\allowbreak r1\_\allowbreak cloak.py} (mesh series, wider layer, scattered fields),
+\texttt{wt\_\allowbreak r1\_\allowbreak dose\_\allowbreak ms.py} and \texttt{wt\_\allowbreak r1\_\allowbreak panel.py}, all in
+\texttt{examples/\allowbreak analysis/}. Table~\ref{tab:verify} lists the lens checks.
 \begin{itemize}[itemsep=1pt]
 \item \textbf{Mesh.} The lens is re-solved with the optimized field resampled (through
   $(\cos2\theta,\sin2\theta)$, the field being a smooth CS-RBF field) on structured meshes
   with $n_x=130$ (the design mesh: about 9 P1 elements per wavelength of the slowest,
   quasi-shear wave at $\omega=40$, and about 46 per along-fiber qP wavelength), $195$ and
   $260$. At $\omega=40$, $G$ stays within $\WMeshGmin$--$\WMeshGmax$
-  and $G_\varphi$ within $\WMeshPmin$--$\WMeshPmax$. The cloak, refined from $h=0.045$ to
-  $0.03$, is discussed in Sec.~\ref{sec:cloak}.
+  and $G_\varphi$ within $\WMeshPmin$--$\WMeshPmax$. The design's sharpest orientation gradient length,
+  $L_\theta=0.15$, spans about $5$ elements of the design mesh. The cloak's fixed-design refinement series
+  ($h=0.045$ to $0.025$) is discussed in Sec.~\ref{sec:cloak}.
 \item \textbf{Damping.} At $\omega=40$ the redirection is independent of the damping
   ($G_\varphi=\WEtaOneP$, $\WEtaTwoP$, $\WEtaFourP$ for $\eta=0.01$, $0.02$, $0.04$), while
   the interior growth falls roughly as $1/\eta$ ($\WEtaOneGr$, $\WEtaTwoGr$, $\WEtaFourGr$: a ratio of $1.7$--$2.0$ per doubling of $\eta$), and so
@@ -489,7 +517,7 @@ in \texttt{examples/\allowbreak analysis/}; Table~\ref{tab:verify} lists the len
   against $\WCloakFineReopt\times$ at $50$ (\texttt{cloak\_\allowbreak fine\_\allowbreak band.py}),
   as narrowband as the design on the coarser mesh.
 \end{itemize}
-\begin{table}[h]
+\begin{table}[!tbp]
 \centering\footnotesize
 \caption{Numerical verification of the lens (fixed optimized design).}\label{tab:verify}
 \IfFileExists{wt_verify_table.tex}{\input{wt_verify_table.tex}}{\textit{table pending}}

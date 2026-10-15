@@ -72,6 +72,9 @@ class ElasticWave:
         self.S = fem.functionspace(domain, ("DG", 0))
         self.theta = fem.Function(self.S)
         self.zfac = fem.Function(self.S); self.zfac.x.array[:] = 1.0  # SIMP density
+        # as-built thickness / fiber-content factors (stiffness x kfac, mass x mfac); 1 = ideal
+        self.kfac = fem.Function(self.S); self.kfac.x.array[:] = 1.0
+        self.mfac = fem.Function(self.S); self.mfac.x.array[:] = 1.0
         self.cspg = fem.Function(self.S)
         self.fr = fem.Function(self.W)
         self.U = fem.Function(self.W)
@@ -102,11 +105,11 @@ class ElasticWave:
         return self._zeps + (1 - self._zeps) * self.zfac**self.penal
 
     def _rho_eff(self):
-        return self.zfac * self.rho + (1 - self.zfac) * self.rho_m
+        return self.mfac * (self.zfac * self.rho + (1 - self.zfac) * self.rho_m)
 
     def _forms(self):
         w = self.omega; et = self.eta
-        D = self._zp() * self._Dmat(self.theta)          # SIMP-weighted stiffness
+        D = self.kfac * self._zp() * self._Dmat(self.theta)   # SIMP-weighted stiffness
         rho = self._rho_eff()
         U = ufl.TrialFunction(self.W); P = ufl.TestFunction(self.W)
         ur = ufl.as_vector([U[0], U[1]]); ui = ufl.as_vector([U[2], U[3]])
@@ -180,7 +183,7 @@ class ElasticWave:
         neg = g.copy(); neg.scale(-1.0)
         ksp.solve(neg, self.Lam.vector); self.Lam.x.scatter_forward()
         w = self.omega; et = self.eta
-        D = self._zp() * self._Dmat(self.theta)
+        D = self.kfac * self._zp() * self._Dmat(self.theta)
         rho = self._rho_eff()
         Uu, Lm = self.U, self.Lam
         ur = ufl.as_vector([Uu[0], Uu[1]]); ui = ufl.as_vector([Uu[2], Uu[3]])

@@ -57,10 +57,24 @@ ones (Sec.~\ref{sec:dose}), it rises monotonically:
 \IfFileExists{wt_skew_table.tex}{\input{wt_skew_table.tex}}{\textit{table pending}}
 \end{center}
 A CFRP lamina therefore sends the energy of almost every incident direction along its
-fibers. This is the physical content of the hypothesis. When $\theta$ varies slowly on
-the wavelength scale, ray (WKB) theory applies locally, and the energy paths of a
-wave field in a steered plate approximate the integral curves of the fiber field. The
-fiber field is then a designable field of energy streamlines.
+fibers. This is the physical content of the hypothesis.
+
+\paragraph{Rays in a steered lamina, and when they apply.} When $\theta(\vx)$ varies slowly on the
+wavelength scale, ray (WKB) theory applies locally. qP energy then travels along the rays of the
+Hamiltonian $\omega(\vx,\bm k)=|\bm k|\,c(\psi-\theta(\vx))$, with $\psi$ the wave-normal angle and $c$
+the qP phase speed of the lamina. Since $\omega$ is conserved, Hamilton's equations reduce to
+\begin{equation}
+\dot{\vx}=c\,\vn+c'\,\vn^\perp,\qquad \dot\psi=c'(\psi-\theta)\,\big(\vn^\perp\!\cdot\nabla\theta\big),
+\label{eq:rays}
+\end{equation}
+the first being the group velocity \eqref{eq:skew}. Because $c'$ is small except near
+$\psi-\theta\approx75^\circ$, rays are dragged along with the fibers, and the energy paths approximate
+the integral curves of the fiber field. Launching rays from the drive and absorbing them in the sponge,
+the target's share of the ray dwell time is a single-pass, frequency-independent estimate of its share
+of the energy. Its ratio to straight fibers is a ray prediction $G_{\rm ray}$ of the redirection that
+uses only the fiber field (Sec.~\ref{sec:flux}). The picture neglects the qS waves, mode conversion,
+reflections and interference, and it fails where the fibers turn on the wavelength scale. These are
+exactly the conditions under which we expect, and test for, departures from channeling.
 
 \subsection{Predictions}\label{sec:predictions}
 \begin{itemize}[itemsep=2pt]
@@ -83,7 +97,7 @@ finite, lightly damped plate, and so on frequency. A gain beyond $G_\varphi$ at 
 design frequency should therefore not survive a frequency change.
 \item \textbf{W3 (flux follows fibers).} In any slowly curving fiber field, optimized or
 not, the local energy flux should align with the local fiber director far better than
-with the drive direction. The control is a set of curved fields that were never
+with the drive direction, and the ray prediction \eqref{eq:rays} should reproduce the redirection. The control is a set of curved fields that were never
 optimized: if channeling were selected by the optimizer rather than imposed by the
 lamina, the flux would not follow their fibers.
 \item \textbf{W4 (anisotropy).} $G_\varphi$ should grow with the anisotropy, following

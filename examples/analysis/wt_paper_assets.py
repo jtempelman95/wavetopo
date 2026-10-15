@@ -3,7 +3,7 @@ result files (single source of truth):
 
   docs/paper/wt_numbers.tex          macros \W...
   docs/paper/wt_*_table.tex          lens band, dose, front, cloak band tables
-  docs/paper/figs/wt_lens_band.pdf, wt_flux.pdf, wt_limits.pdf
+  docs/paper/figs/wt_limits.pdf   (wt_lens_band.pdf and wt_flux.pdf: wt_r1_figs.py)
 
     python examples/analysis/wt_paper_assets.py
 """
@@ -57,20 +57,7 @@ if have("lens_mechanism.npz"):
                 b = "\\bf " if abs(om[i] - 40) < 1e-9 else ""
                 fh.write(f"{b}{om[i]:.1f} & {b}{G[i]:.1f} & {b}{Gphi[i]:.2f} & {b}{I1[i]/I0[i]:.2f} & {b}{P1[i]/P0[i]:.2f}\\\\\n")
         fh.write("\\bottomrule\n\\end{tabular}\n")
-    fig, ax = plt.subplots(1, 2, figsize=(ps.FULL, 2.4))
-    ax[0].semilogy(om, G, "o-", color=ps.INK, ms=3.5, mfc="white", mew=1.0, lw=1.2, zorder=6, label=r"gain $G$")
-    ax[0].semilogy(om, Gphi, "s-", color=ps.GREEN, ms=3, lw=1.4, label=r"redirection $G_\varphi$")
-    ax[0].semilogy(om, I1 / I0, "^--", color=ps.RED, ms=3, lw=1.0, label="interior field growth")
-    ax[0].axvline(40, color=ps.GRID, lw=0.8); ax[0].axhline(1, color=ps.GREY, lw=0.6, ls=":")
-    ax[0].set_xlabel(r"drive frequency $\omega$"); ax[0].set_ylabel("ratio to straight fibers")
-    ax[0].set_ylim(0.1, 2e3); ax[0].set_yticks([0.1, 1, 10, 100]); ax[0].set_yticklabels(["0.1", "1", "10", "100"]); ax[0].minorticks_off()
-    ax[0].legend(frameon=False, fontsize=8, loc="upper left", ncol=2, columnspacing=1.0); ps.panel(ax[0], "a"); ps.grid(ax[0]); ps.despine(ax[0])
-    ax[1].plot(om, 100 * E0 / I0, "o-", color=ps.GREY, ms=3, lw=1.2, label="straight fibers")
-    ax[1].plot(om, 100 * E1 / I1, "s-", color=ps.GREEN, ms=3, lw=1.4, label="steered lens")
-    ax[1].axvline(40, color=ps.GRID, lw=0.8)
-    ax[1].set_xlabel(r"drive frequency $\omega$"); ax[1].set_ylabel(r"target share of interior energy (\%)")
-    ax[1].set_ylim(0, 9.5); ax[1].legend(frameon=False, fontsize=8, loc="upper left"); ps.panel(ax[1], "b"); ps.grid(ax[1]); ps.despine(ax[1])
-    fig.tight_layout(); save(fig, "wt_lens_band")
+    pass                                                     # figure: wt_r1_figs.py
 
 # ---------------------------------------------------------------- energy flux
 if have("lens_flux.npz"):
@@ -81,61 +68,7 @@ if have("lens_flux.npz"):
     put("WFluxDevFifty", F["lens_50"][0])
     devs = [F[f"lens_{w}"][0] for w in (35, 40, 45, 50)]
     put("WFluxDevBandMin", min(devs)); put("WFluxDevBandMax", max(devs))
-if have("lens_flux_lens.npy"):
-    from scipy.interpolate import griddata
-    d = np.load(os.path.join(R, "lens_flux_lens.npy"))
-    c, Pv, th = d[:, :2], -d[:, 2:4], d[:, 4]      # saved with the e^{-iwt} sign; flip to e^{+iwt}
-    Lx, Ly, m = 4.0, 3.0, 0.6
-    gx, gy = np.linspace(0.05, Lx - m, 140), np.linspace(m, Ly - m, 70)
-    GX, GY = np.meshgrid(gx, gy)
-    U = griddata(c, Pv[:, 0], (GX, GY)); V = griddata(c, Pv[:, 1], (GX, GY))
-    T = griddata(c, th, (GX, GY), method="nearest")
-    fig = plt.figure(figsize=(ps.FULL, 2.7))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.6, 1, 1], wspace=0.4)
-    a = fig.add_subplot(gs[0])
-    st = 8
-    a.quiver(GX[::st, ::st], GY[::st, ::st], np.cos(T[::st, ::st]), np.sin(T[::st, ::st]),
-             headwidth=0, headlength=0, headaxislength=0, pivot="middle", color="#8d969e",
-             scale=24, width=0.005)
-    spd = np.hypot(U, V)
-    a.streamplot(gx, gy, U, V, density=0.8, color=ps.GREEN, linewidth=0.35 + 0.9 * spd / np.nanmax(spd),
-                 arrowsize=0.55)
-    a.add_patch(plt.Rectangle((0.78 * Lx - 0.18, Ly / 2 - 0.18), 0.36, 0.36, ec="#22b8cf", fc="none", ls="--", lw=1.0, zorder=5))
-    a.set_aspect("equal"); a.set_xlim(0, Lx - m + 0.05); a.set_ylim(m, Ly - m)
-    a.set_xlabel(r"$x$"); a.set_ylabel(r"$y$"); ps.panel(a, "a"); a.set_anchor("N")
-    from matplotlib.lines import Line2D
-    a.legend(handles=[Line2D([], [], color=ps.GREEN, lw=1.0, label=r"flux $\bm{P}$"),
-                      Line2D([], [], color="#8d969e", lw=1.0, label="fiber direction"),
-                      Line2D([], [], color="#22b8cf", lw=1.0, ls="--", label="objective region")],
-             loc="upper center", bbox_to_anchor=(0.5, -0.3), ncol=3, frameon=False, fontsize=8,
-             handlelength=1.5, columnspacing=0.9)
-    b = fig.add_subplot(gs[1])
-    mask = (c[:, 0] > 0.3) & (c[:, 0] < Lx - m) & (c[:, 1] > m) & (c[:, 1] < Ly - m)
-    mag = np.linalg.norm(Pv, axis=1)[mask]
-    phiP = np.arctan2(Pv[mask, 1], Pv[mask, 0])
-    dfib = np.degrees(np.abs(np.angle(np.exp(2j * (phiP - th[mask])))) / 2)
-    dx = np.degrees(np.abs(np.angle(np.exp(2j * phiP))) / 2)
-    bins = np.linspace(0, 90, 19)
-    b.hist(dfib, bins=bins, weights=mag / mag.sum(), color=ps.GREEN, alpha=0.85, label="flux vs.\\ fiber")
-    b.hist(dx, bins=bins, weights=mag / mag.sum(), histtype="step", color=ps.INK, lw=1.1, label=r"flux vs.\ $x$")
-    b.set_xlabel("angle (deg)"); b.set_ylabel(r"$|\bm{P}|$-weighted share")
-    b.set_xticks([0, 30, 60, 90]); b.set_xlim(0, 90)
-    b.legend(frameon=False, fontsize=8); ps.panel(b, "b"); ps.grid(b); ps.despine(b)
-    cax = fig.add_subplot(gs[2])
-    from lamina import lamina_Q, Q_family
-    for s, col, lab in ((0.0, ps.GREY, "isotropic"), (0.5, ps.STEEL, r"$E_{f1}/E_{f2}=2.9$"), (1.0, ps.INK, "CFRP")):
-        Q = Q_family(s, lamina_Q() / 1e9)
-        psv = np.linspace(0, np.pi / 2, 400); cc = []
-        for p_ in psv:
-            n = np.array([np.cos(p_), np.sin(p_)]); N = np.array([[n[0], 0], [0, n[1]], [n[1], n[0]]])
-            cc.append(np.sqrt(np.linalg.eigvalsh(N.T @ Q @ N)[-1] / 1.6))
-        cc = np.array(cc); dpsi = np.gradient(cc, psv)
-        yy = np.degrees(psv + np.arctan(dpsi / cc)); cax.plot(np.degrees(psv), yy, color=col, lw=1.3, label=lab)
-    cax.set_xlabel(r"wave normal $\psi$ (deg)"); cax.set_ylabel(r"qP energy direction (deg)")
-    cax.set_xlim(0, 90); cax.set_ylim(0, 90); cax.set_xticks([0, 30, 60, 90]); cax.set_yticks([0, 30, 60, 90])
-    cax.legend([r"$E_{f1}/E_{f2}=1$", "2.9", "14.6"], loc="upper center", bbox_to_anchor=(0.4, -0.27),
-               ncol=3, frameon=False, fontsize=8, handlelength=1.2, columnspacing=0.6, handletextpad=0.3); ps.panel(cax, "c"); ps.grid(cax); ps.despine(cax)
-    fig.subplots_adjust(bottom=0.3, top=0.93, left=0.07, right=0.98); save(fig, "wt_flux")
+# figure wt_flux.pdf: examples/analysis/wt_r1_figs.py
 
 # ---------------------------------------------------------------- anisotropy dose
 from lamina import lamina_Q as _lQ, Q_family as _Qf
@@ -175,10 +108,19 @@ with open(os.path.join(P, "wt_skew_table.tex"), "w") as fh:
 put("WSkewMax", _rows[4][1], "{:.0f}"); put("WSTwentyCFRP", _rows[4][2], "{:.0f}")
 if have("lens_dose.npy"):
     D = np.load(os.path.join(R, "lens_dose.npy"))
+    MS = {}
+    for _s in D[:, 0]:
+        f_ = os.path.join(R, f"wt_r1_dose_ms_{_s:.2f}.npy")
+        if os.path.exists(f_):
+            MS[round(float(_s), 2)] = np.load(f_)                  # rows: s, band (paper layer), band (layer x2)
     with open(os.path.join(P, "wt_dose_table.tex"), "w") as fh:
-        fh.write("\\begin{tabular}{@{}cccccc@{}}\n\\toprule\n$s$ & $E_{f1}/E_{f2}$ & $s_{20}$ & $G(40)$ & $G_\\varphi(40)$ & $\\langle G_\\varphi\\rangle_{\\rm band}$\\\\ \\midrule\n")
+        fh.write("\\begin{tabular}{@{}ccccccc@{}}\n\\toprule\n$s$ & $E_{f1}/E_{f2}$ & $s_{20}$ & $G(40)$ & $G_\\varphi(40)$ & "
+                 "$\\langle G_\\varphi\\rangle_{\\rm band}$, 4 starts & better absorber, 4 starts\\\\ \\midrule\n")
         for s, r, g, gp, gb in D:
-            fh.write(f"{s:.2f} & {r:.1f} & {s20[round(s,2)]}\\% & {g:.1f} & {gp:.2f} & {gb:.2f}\\\\\n")
+            m_ = MS.get(round(float(s), 2))
+            c1 = f"{m_[:, 1].min():.2f}--{m_[:, 1].max():.2f}" if m_ is not None else f"{gb:.2f}"
+            c2 = f"{m_[:, 2].min():.2f}--{m_[:, 2].max():.2f}" if m_ is not None else "1.00"
+            fh.write(f"{s:.2f} & {r:.1f} & {s20[round(s,2)]}\\% & {g:.1f} & {gp:.2f} & {c1} & {c2}\\\\\n")
         fh.write("\\bottomrule\n\\end{tabular}\n")
     put("WDoseIso", D[0, 4], "{:.2f}")
     kk = lambda v: int(np.argmin(np.abs(D[:, 0] - v)))
@@ -249,37 +191,50 @@ if have("lens_dose.npy") or have("lens_front.npy"):
     fig, ax = plt.subplots(1, 3, figsize=(ps.FULL, 2.45), gridspec_kw=dict(width_ratios=[1.15, 1, 1]))
     RED_LAB = r"band-averaged redirection $\langle G_\varphi\rangle$"
     if have("lens_dose.npy"):
-        ax[0].plot(D[:, 1], D[:, 4], "o-", color=ps.GREEN, ms=4, lw=1.4)
+        ax[0].plot(D[:, 1], D[:, 4], "o:", color=ps.GREEN, ms=3.2, mfc="white", lw=0.9, zorder=2)
+        _x = [D[i, 1] for i in range(len(D)) if round(float(D[i, 0]), 2) in MS]
+        _m = [MS[round(float(D[i, 0]), 2)] for i in range(len(D)) if round(float(D[i, 0]), 2) in MS]
+        for xx_, mm_ in zip(_x, _m):
+            ax[0].plot([xx_, xx_], [mm_[:, 1].min(), mm_[:, 1].max()], color=ps.GREEN, alpha=0.35, lw=3, solid_capstyle="butt")
+            ax[0].plot([xx_, xx_], [mm_[:, 2].min(), mm_[:, 2].max()], color="#7a5195", alpha=0.35, lw=3, solid_capstyle="butt")
+        _bx = [D[0, 1]] + _x; _b1 = [1.0] + [mm_[:, 1].max() for mm_ in _m]; _b2 = [1.0] + [mm_[:, 2].max() for mm_ in _m]
+        ax[0].plot(_bx, _b1, "o-", color=ps.GREEN, ms=4, lw=1.4, zorder=3)
+        ax[0].plot(_bx, _b2, "D--", color="#7a5195", ms=3.5, mfc="white", mew=1.0, lw=1.1, zorder=3)
         ax[0].set_xscale("log"); logticks(ax[0], [1, 2, 3, 5, 10, 20, 30])
         ax[0].set_xlabel(r"lamina anisotropy $E_{f1}/E_{f2}$")
         ax[0].set_ylabel(RED_LAB); ax[0].set_ylim(0, 9.6); ax[0].set_yticks(range(0, 8))
         t = ax[0].twinx(); t.plot(D[:, 1], [s20[round(s, 2)] for s in D[:, 0]], "s--", color=ps.GREY, ms=3, lw=1.0)
         t.set_ylim(0, 128); t.set_yticks([0, 20, 40, 60, 80, 100]); t.set_ylabel(r"channeling share $s_{20}$ (\%)", color=ps.GREY)
         t.tick_params(axis="y", colors=ps.GREY); t.spines["top"].set_visible(False)
-        ax[0].legend(handles=[Line2D([], [], color=ps.GREEN, marker="o", ms=4, label="re-optimized lens"),
+        ax[0].legend(handles=[Line2D([], [], color=ps.GREEN, marker="o", ms=4, label=r"best of 4, $|R|\approx0.33$"),
+                              Line2D([], [], color="#7a5195", marker="D", mfc="white", ls="--", ms=3.5, label=r"best of 4, $|R|\le0.13$"),
+                              Line2D([], [], color=ps.GREY, alpha=0.5, lw=3, label="range over starts"),
                               Line2D([], [], color=ps.GREY, marker="s", ls="--", ms=3, label=r"lamina $s_{20}$ (right)")],
-                     frameon=False, fontsize=8, loc="upper left", borderaxespad=0.1)
+                     frameon=False, fontsize=6.6, loc="upper left", borderaxespad=0.1, handlelength=1.6)
         ps.panel(ax[0], "a"); ps.grid(ax[0])
     if have("lens_front.npy"):
         fin = np.isfinite(Fr[:, 0])
+        LAM_L = 2 * np.pi * 9.0712 / 40.0                            # along-fiber qP wavelength, lens
         for _z, _rr in ROB.items():                                  # spread over independent starts
-            ax[1].plot([_z, _z], [_rr[:, 5].min(), _rr[:, 5].max()], color=ps.GREEN, alpha=0.35, lw=3,
+            ax[1].plot([1 / (_z * LAM_L)] * 2, [_rr[:, 5].min(), _rr[:, 5].max()], color=ps.GREEN, alpha=0.35, lw=3,
                        solid_capstyle="butt", zorder=1)
         ax[1].plot([], [], color=ps.GREEN, alpha=0.35, lw=3, label=f"range over {NSTART} starts")
-        ax[1].plot(Fr[fin, 0], Fr[fin, 4], "o-", color=ps.GREEN, ms=4, lw=1.4, label="best (envelope)", zorder=3)
+        ax[1].plot(1 / (Fr[fin, 0] * LAM_L), Fr[fin, 4], "o-", color=ps.GREEN, ms=4, lw=1.4, label="best found (lower bound)", zorder=3)
         ax[1].axhline(Fr[~fin, 4][0], color=ps.GREEN, lw=0.9, ls=":", label="best, no limit")
-        ax[1].set_xscale("log"); logticks(ax[1], [0.3, 0.6, 1, 1.5, 2.5, 4])
-        ax[1].set_xlabel(r"curvature limit $\zeta_{\rm all}=1/R$"); ax[1].set_ylabel(r"redirection $\langle G_\varphi\rangle$")
+        ax[1].axvline(0.7, color=ps.GREY, lw=0.7, ls="--", zorder=0)
+        ax[1].set_xscale("log"); logticks(ax[1], [0.2, 0.5, 1, 2])
+        ax[1].set_xlabel(r"min.\ tow radius $R/\lambda_\parallel$"); ax[1].set_ylabel(r"redirection $\langle G_\varphi\rangle$")
         ax[1].set_ylim(0, 10.8); ax[1].set_yticks(range(0, 8)); ax[1].set_title("lens", fontsize=8.5)
-        ax[1].legend(frameon=False, fontsize=8, loc="upper left", ncol=1, handlelength=1.6, borderaxespad=0.1)
+        ax[1].legend(frameon=False, fontsize=6.6, loc="lower left", ncol=1, handlelength=1.6, borderaxespad=0.1)
         ps.panel(ax[1], "b"); ps.grid(ax[1]); ps.despine(ax[1])
     if CF is not None:
-        ax[2].plot(CF["zeta_all"], CF["reduction"], "s-", color=ps.STEEL, ms=4, lw=1.4, label="curvature-limited")
+        LAM_C = 2 * np.pi * 9.0712 / 50.0                            # along-fiber qP wavelength, cloak
+        ax[2].plot(1 / (np.asarray(CF["zeta_all"]) * LAM_C), CF["reduction"], "s-", color=ps.STEEL, ms=4, lw=1.4, label="curvature-limited")
         ax[2].axhline(float(CF["red_unc"]), color=ps.STEEL, lw=0.9, ls=":", label="no limit")
-        ax[2].set_xscale("log"); logticks(ax[2], [1, 2, 3, 5])
-        ax[2].set_xlabel(r"curvature limit $\zeta_{\rm all}=1/R$"); ax[2].set_ylabel(r"far-field reduction at $\omega=50$")
+        ax[2].set_xscale("log"); logticks(ax[2], [0.2, 0.5, 1])
+        ax[2].set_xlabel(r"min.\ tow radius $R/\lambda_\parallel$"); ax[2].set_ylabel(r"far-field reduction at $\omega=50$")
         ax[2].set_ylim(0, 57); ax[2].set_yticks(range(0, 41, 10)); ax[2].set_title("cloak", fontsize=8.5)
-        ax[2].legend(frameon=False, fontsize=8, loc="upper left", ncol=1, handlelength=1.6, borderaxespad=0.1)
+        ax[2].legend(frameon=False, fontsize=6.6, loc="upper right", ncol=1, handlelength=1.6, borderaxespad=0.1)
         ps.panel(ax[2], "c"); ps.grid(ax[2]); ps.despine(ax[2])
     fig.subplots_adjust(left=0.07, right=0.985, bottom=0.2, top=0.9, wspace=0.75)
     save(fig, "wt_limits")
@@ -377,6 +332,79 @@ for u in sorted(used - set(M)):
 missing = sorted(u for u in used if M[u] == r"\textbf{??}")
 if missing:
     print("MISSING:", " ".join(missing))
+# ---------------------------------------------------------------- Revision R1
+if have("wt_r1_rays.npz"):
+    RY = np.load(os.path.join(R, "wt_r1_rays.npz"), allow_pickle=True)
+    put("WRayPaper", float(RY["paper_G_ray"])); put("WRayAbs", float(RY["absorber_G_ray"]))
+    put("WRayShareStraight", 100 * float(RY["straight_share"])); put("WRayShareLens", 100 * float(RY["paper_share"]))
+if have("wt_r1_absorber.npy"):
+    SR = np.load(os.path.join(R, "wt_r1_absorber.npy"))            # pad, omega, R, paper(G,Gp,gr), absorber(G,Gp,gr)
+    bands = {}
+    for pad in np.unique(SR[:, 0]):
+        q = SR[SR[:, 0] == pad]
+        bands[pad] = (q[:, 2].max(), q[:, 4].mean(), q[:, 7].mean())
+    put("WReflOne", bands[0.6][0], "{:.2f}"); put("WReflTwo", bands[1.2][0], "{:.2f}"); put("WReflThree", bands[1.8][0], "{:.3f}")
+    conv = [v for k, v in bands.items() if k >= 0.6]
+    allb = [c[1] for c in conv] + [c[2] for c in conv]
+    put("WBandConvMin", min(allb)); put("WBandConvMax", max(allb))
+if have("wt_r1_fine.npy"):
+    FN = np.load(os.path.join(R, "wt_r1_fine.npy"))
+    k = int(np.argmax(FN[:, 3])); gmax = FN[k, 3]; half = 0.5 * gmax
+    om_f = np.linspace(FN[0, 0], FN[-1, 0], 4001); gr_f = np.interp(om_f, FN[:, 0], FN[:, 3])
+    above = om_f[gr_f >= half]; width = above.max() - above.min()
+    put("WFinePeak", gmax); put("WFinePeakOm", FN[k, 0]); put("WFineWidth", width); put("WFineQ", FN[k, 0] / width, "{:.0f}")
+    put("WFineGpMin", FN[:, 2].min()); put("WFineGpMax", FN[:, 2].max())
+if have("wt_r1_power.npy"):
+    PW = np.load(os.path.join(R, "wt_r1_power.npy"))
+    for which, tag in ((0, "Paper"), (1, "Abs")):
+        q = PW[PW[:, 1] == which]; inb = (q[:, 0] >= 35) & (q[:, 0] <= 50)
+        rat = (q[:, 9] / q[:, 6]) / (q[:, 5] / q[:, 2])
+        put(f"WPow{tag}Min", rat[inb].min()); put(f"WPow{tag}Max", rat[inb].max())
+        k40 = int(np.argmin(np.abs(q[:, 0] - 40)))
+        put(f"WPow{tag}PiZero", 100 * q[k40, 5] / q[k40, 2], "{:.2f}"); put(f"WPow{tag}PiOne", 100 * q[k40, 9] / q[k40, 6], "{:.1f}")
+        put(f"WPow{tag}Forty", rat[k40])
+    bal = max(np.max(np.abs(PW[:, 3] + PW[:, 4] - PW[:, 2]) / PW[:, 2]), np.max(np.abs(PW[:, 7] + PW[:, 8] - PW[:, 6]) / PW[:, 6]))
+    put("WPowBal", f"10^{{{int(np.ceil(np.log10(bal)))}}}", "{}")
+if have("wt_r1_fluxmap.npy"):
+    FMd = np.load(os.path.join(R, "wt_r1_fluxmap.npy"), allow_pickle=True).item()
+    put("WFluxDevMasked", FMd["lens_40"]["dev_w"]); put("WFluxStrongFrac", 100 * FMd["lens_40"]["frac_strong"], "{:.0f}")
+    put("WFluxShareMasked", 100 * FMd["lens_40"]["share20"], "{:.0f}")
+    put("WPolLens", 100 * FMd["lens_40"]["pol"], "{:.0f}"); put("WPolStraight", 100 * FMd["straight_40"]["pol"], "{:.0f}")
+    pols = [FMd[f"lens_{w}"]["pol"] for w in (35, 40, 45, 50)]
+    put("WPolMin", 100 * min(pols), "{:.0f}"); put("WPolMax", 100 * max(pols), "{:.0f}")
+if have("wt_r1_asbuilt.npy"):
+    AS = np.load(os.path.join(R, "wt_r1_asbuilt.npy")); bm = AS[:, 2:].mean(axis=1)
+    put("WAsBuiltMin", bm.min(), "{:.2f}"); put("WAsBuiltMax", bm.max(), "{:.2f}")
+    TA = np.load(os.path.join(R, "wt_r1_tau.npy")); c_ = TA[:, :2]
+    inner = (c_[:, 0] < 3.4) & (c_[:, 1] > 0.6) & (c_[:, 1] < 2.4)
+    put("WTauMax", TA[inner, 2].max(), "{:.0f}"); put("WTauMin", TA[inner, 2].min(), "{:.3f}")
+if have("wt_r1_cloak_series.npy"):
+    CS = np.load(os.path.join(R, "wt_r1_cloak_series.npy"))
+    for i, nm in enumerate(("A", "B", "C", "D")):
+        if i < len(CS):
+            put(f"WCSer{nm}", CS[i, 2], "{:.0f}"); put(f"WCSerCurv{nm}", CS[i, 3], "{:.1f}"); put(f"WCSerTr{nm}", CS[i, 4], "{:.1f}")
+            put(f"WCSerH{nm}", f"{CS[i, 0]:.4g}"); put(f"WCSerN{nm}", f"{int(CS[i, 1]):,}".replace(",", "{,}"))
+if have("wt_r1_cloak_sponge.npy"):
+    CSP = np.load(os.path.join(R, "wt_r1_cloak_sponge.npy"))
+    put("WCSpOpt", CSP[1], "{:.0f}"); put("WCSpCurv", CSP[2], "{:.1f}"); put("WCSpTr", CSP[3], "{:.1f}")
+import glob as _gl
+_ms = sorted(_gl.glob(os.path.join(R, "wt_r1_dose_ms_*.npy")))
+if _ms:
+    MSd = {round(float(np.load(f)[0, 0]), 2): np.load(f) for f in _ms}
+    put("WDoseMSmaxSpread", max(v[:, 1].max() - v[:, 1].min() for v in MSd.values()))
+    put("WDoseHalfMin", MSd[0.5][:, 1].min()); put("WDoseHalfMax", MSd[0.5][:, 1].max())
+    put("WDoseBestCFRP", MSd[1.0][:, 1].max()); put("WDoseBestCFRPAbs", MSd[1.0][:, 2].max())
+    put("WDoseBestMaxAbs", MSd[max(MSd)][:, 2].max()); put("WDoseBestQuarterAbs", MSd[0.25][:, 2].max())
+if have("wt_r1_panel.npz"):
+    PN = np.load(os.path.join(R, "wt_r1_panel.npz"))
+    b = PN["band"]; inb = (b[:, 0] >= 44) & (b[:, 0] <= 56)
+    put("WPanShareMin", b[inb, 5].min()); put("WPanShareMax", b[inb, 5].max())
+    put("WPanGrowthMin", b[inb, 4].min(), "{:.2f}"); put("WPanGrowthMax", b[inb, 4].max(), "{:.2f}")
+    put("WPanSenMean", b[inb, 1].mean(), "{:.2f}"); put("WPanPayMean", b[inb, 2].mean(), "{:.2f}"); put("WPanRimMean", b[inb, 3].mean(), "{:.2f}")
+    t = PN["tone"]
+    put("WPanToneRimMean", t[inb, 3].mean(), "{:.2f}"); put("WPanToneRimWorst", t[inb, 3].max(), "{:.2f}")
+    put("WPanRimWorst", b[inb, 3].max(), "{:.2f}")
+
 with open(os.path.join(P, "wt_numbers.tex"), "w") as fh:
     fh.write("% AUTO-GENERATED by examples/analysis/wt_paper_assets.py\n")
     for k in sorted(M):
