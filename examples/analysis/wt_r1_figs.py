@@ -165,7 +165,7 @@ e.plot(mids, mean, "o-", color=ps.GREEN, ms=3.5, lw=1.2)
 for xm, ym, nn in zip(mids, mean, cnt):
     e.annotate(f"{nn}", (xm, ym), xytext=(0, 6) if xm < 4.5 else (5, -6), textcoords="offset points", fontsize=6.0, color=ps.GREY, ha="center" if xm < 4.5 else "left", rotation=90 if xm < 4.5 else 0, va="bottom" if xm < 4.5 else "center")
 e.set_xlabel(r"fiber turning per wavelength, $\lambda_\parallel|\nabla\theta|$ (rad)")
-e.set_ylabel("mean flux--fiber angle (deg)"); e.set_ylim(-3, 27)
+e.set_ylabel("mean flux--fiber angle (deg)"); e.set_ylim(0, 27)
 e.set_title(r"(\textbf{d}) channeling vs.\ turning rate", loc="left", fontsize=8.5)
 ps.grid(e); ps.despine(e)
 # (e) skew of a homogeneous lamina
