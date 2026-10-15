@@ -9,12 +9,11 @@ result files (single source of truth):
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import os
 import sys
 import numpy as np
 
-sys.path.insert(0, (_NLTOPT + "/examples"))
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 import paperstyle as ps                      # pgf/LaTeX vector style (shared with NLTopt)
 ps.use_palatino()                       # wavetopo manuscript is set in Palatino
 import matplotlib.pyplot as plt
@@ -123,9 +122,7 @@ if have("lens_flux_lens.npy"):
     b.set_xticks([0, 30, 60, 90]); b.set_xlim(0, 90)
     b.legend(frameon=False, fontsize=8); ps.panel(b, "b"); ps.grid(b); ps.despine(b)
     cax = fig.add_subplot(gs[2])
-    sys.path.insert(0, (_NLTOPT + ""))
-    from nltopt.laminate import lamina_Q
-    from nltopt.relaxed_plate import Q_family
+    from lamina import lamina_Q, Q_family
     for s, col, lab in ((0.0, ps.GREY, "isotropic"), (0.5, ps.STEEL, r"$E_{f1}/E_{f2}=2.9$"), (1.0, ps.INK, "CFRP")):
         Q = Q_family(s, lamina_Q() / 1e9)
         psv = np.linspace(0, np.pi / 2, 400); cc = []
@@ -141,7 +138,41 @@ if have("lens_flux_lens.npy"):
     fig.subplots_adjust(bottom=0.3, top=0.93, left=0.07, right=0.98); save(fig, "wt_flux")
 
 # ---------------------------------------------------------------- anisotropy dose
-s20 = {0.0: 22, 0.25: 42, 0.5: 61, 0.75: 75, 1.0: 88, 1.1: 94}
+from lamina import lamina_Q as _lQ, Q_family as _Qf
+
+
+def _s20(s, n=3601):
+    """Channeling share: fraction of qP wave normals (uniform in [0, 90 deg]) whose energy direction
+    lies within 20 deg of the fiber, for the lamina Q(s) (rho = 1.6, Q in GPa)."""
+    Q = _Qf(s, _lQ() / 1e9); psv = np.linspace(0, np.pi / 2, n); cc = []
+    for p_ in psv:
+        nn = np.array([np.cos(p_), np.sin(p_)]); N = np.array([[nn[0], 0], [0, nn[1]], [nn[1], nn[0]]])
+        cc.append(np.sqrt(np.linalg.eigvalsh(N.T @ Q @ N)[-1] / 1.6))
+    cc = np.array(cc); ed = psv + np.arctan(np.gradient(cc, psv) / cc)
+    return 100 * np.mean(np.abs(np.degrees(ed)) <= 20)
+
+
+s20 = {k: round(_s20(k)) for k in (0.0, 0.25, 0.5, 0.75, 1.0, 1.1)}
+
+
+def _skew_row(s, n=3601):
+    Q = _Qf(s, _lQ() / 1e9); psv = np.linspace(0, np.pi / 2, n); cc = []
+    for p_ in psv:
+        nn = np.array([np.cos(p_), np.sin(p_)]); N = np.array([[nn[0], 0], [0, nn[1]], [nn[1], nn[0]]])
+        cc.append(np.sqrt(np.linalg.eigvalsh(N.T @ Q @ N)[-1] / 1.6))
+    cc = np.array(cc); skew = np.degrees(np.abs(np.arctan(np.gradient(cc, psv) / cc)))
+    Ex = Q[0, 0] - Q[0, 1] ** 2 / Q[1, 1]; Ey = Q[1, 1] - Q[0, 1] ** 2 / Q[0, 0]
+    return Ex / Ey, skew.max(), _s20(s)
+
+
+_rows = [_skew_row(k) for k in (0.0, 0.25, 0.5, 0.75, 1.0, 1.1)]
+with open(os.path.join(P, "wt_skew_table.tex"), "w") as fh:
+    fh.write("\\begin{tabular}{@{}lcccccc@{}}\n\\toprule\n")
+    fh.write("$E_{f1}/E_{f2}$ & " + " & ".join(f"{r[0]:.1f}" for r in _rows) + "\\\\\n")
+    fh.write("max qP skew & " + " & ".join(f"${r[1]:.0f}^\\circ$" for r in _rows) + "\\\\\n")
+    fh.write("$s_{20}$ & " + " & ".join(f"{r[2]:.0f}\\%" for r in _rows) + "\\\\\n")
+    fh.write("\\bottomrule\n\\end{tabular}\n")
+put("WSkewMax", _rows[4][1], "{:.0f}"); put("WSTwentyCFRP", _rows[4][2], "{:.0f}")
 if have("lens_dose.npy"):
     D = np.load(os.path.join(R, "lens_dose.npy"))
     with open(os.path.join(P, "wt_dose_table.tex"), "w") as fh:

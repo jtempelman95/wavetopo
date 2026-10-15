@@ -6,12 +6,11 @@ carry a labelled colourbar, and voids are drawn as clean filled discs.
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import os
 import sys
 import numpy as np
 
-sys.path.insert(0, (_NLTOPT + "/examples"))
+sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 sys.path.insert(0, (_ROOT + ""))
 import paperstyle as ps
 ps.use_palatino()                       # wavetopo manuscript is set in Palatino

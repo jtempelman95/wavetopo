@@ -7,7 +7,7 @@ straight-fibre baseline, at each drive frequency omega in a sweep:
   E_f     focus-region energy  int_reg |u|^2
   E_int   interior energy (outside the absorbing sponge)  int_int |u|^2
   P_in    time-averaged power injected by the force source,
-          P_in = (omega/2) |int f . Im(u)|   (e^{-i omega t}, real force)
+          P_in = (omega/2) |int f . Im(u)|   (e^{+i omega t}, real force)
   phi     focus fraction E_f / E_int  (redistribution)
   G       = E_f / E_f0                (the paper's 'focus-energy gain')
   G_phi   = phi / phi0                (redirection alone)
@@ -21,7 +21,6 @@ from the (force-controlled) source rather than stored energy.
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import sys
 import numpy as np
 import ufl

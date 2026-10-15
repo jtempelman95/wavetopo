@@ -12,7 +12,6 @@ Writes results/lens_front_robust_<zeta>.npy (one row per start).
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import sys
 import time
 import numpy as np

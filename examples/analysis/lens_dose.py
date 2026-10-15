@@ -1,4 +1,4 @@
-r"""Anisotropy dose-response of orientation-only wave control (prediction W3).
+r"""Anisotropy dose-response of orientation-only wave control (prediction W4).
 
 Material family Q(s) = Q_iso + s (Q_cfrp - Q_iso), Q_iso sharing the CFRP's
 rotation invariants U1, U4, U5: s = 0 is isotropic (orientation is a dead variable),
@@ -13,7 +13,6 @@ dolfinx_lens.run (symmetric CS-RBF, MMA, 70 iterations) and we report
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import sys
 import time
 import numpy as np

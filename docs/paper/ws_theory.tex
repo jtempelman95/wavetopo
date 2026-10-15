@@ -41,7 +41,7 @@ its mean energy density times the group velocity $\bm c_g=\nabla_{\bm k}\omega$
 so the energy travels at the angle $\psi+\delta(\psi)$ from the fiber. Here $\delta$ is
 the \emph{skew} between the energy direction and the wave normal. For the CFRP lamina
 ($E_{f1}/E_{f2}=14.6$) the qP speed falls from $9.07$ along the fiber to $2.38$ across
-it, and the skew reaches $65^\circ$ at $\psi=75^\circ$.
+it, and the skew reaches $\WSkewMax^\circ$ at $\psi=75^\circ$.
 \begin{itemize}[itemsep=1pt]
 \item A qP wave whose normal is $60^\circ$ off the fibers carries its energy only
 $4^\circ$ off them.
@@ -54,13 +54,7 @@ an isotropic lamina it is $22\%$, the purely geometric fraction $20/90$. Along t
 family $\mathbf Q(s)$, which keeps the isotropic invariants and scales the anisotropic
 ones (Sec.~\ref{sec:dose}), it rises monotonically:
 \begin{center}\small
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
-$E_{f1}/E_{f2}$ & 1.0 & 1.7 & 2.9 & 5.4 & 14.6 & 31.9\\
-max qP skew & $0^\circ$ & $18^\circ$ & $35^\circ$ & $50^\circ$ & $65^\circ$ & $71^\circ$\\
-$s_{20}$ & 22\% & 42\% & 61\% & 75\% & 88\% & 94\%\\
-\bottomrule
-\end{tabular}
+\IfFileExists{wt_skew_table.tex}{\input{wt_skew_table.tex}}{\textit{table pending}}
 \end{center}
 A CFRP lamina therefore sends the energy of almost every incident direction along its
 fibers. This is the physical content of the hypothesis. When $\theta$ varies slowly on

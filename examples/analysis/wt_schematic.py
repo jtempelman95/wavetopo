@@ -15,7 +15,6 @@ r"""Physical schematic of the three wave-control problems and of the mechanism (
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import os
 import sys
 import numpy as np
@@ -72,8 +71,7 @@ fig.text(0.01, 0.955, r"(\textbf{a}) orientation-only lens", fontsize=8.5)
 
 # ---------------------------------------------------------------- (b) channeling
 bx = fig.add_axes([0.55, 0.5, 0.43, 0.45]); bx.set_aspect("equal"); bx.axis("off")
-sys.path.insert(0, (_NLTOPT + ""))
-from nltopt.laminate import lamina_Q
+from lamina import lamina_Q
 Q = lamina_Q() / 1e9; rho = 1.6
 psi = np.linspace(0, 2 * np.pi, 721)
 c = np.array([np.sqrt(np.linalg.eigvalsh(np.array([[Q[0, 0] * np.cos(p) ** 2 + Q[2, 2] * np.sin(p) ** 2,

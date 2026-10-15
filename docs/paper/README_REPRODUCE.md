@@ -2,8 +2,9 @@
 
 Solves use a dolfinx (FEniCSx) environment with a real-scalar PETSc; post-processing and figures use a
 plain Python with numpy/scipy/matplotlib and LaTeX (pgf figures). Run from the repository root with
-`PYTHONPATH=.` (and `XDG_CACHE_HOME=.fenics-cache` for dolfinx). The lamina helpers used by the
-post-processing come from the companion repository `NLTopt` (set `NLTOPT_DIR`, default `../NLTopt`).
+`PYTHONPATH=.` (and `XDG_CACHE_HOME=.fenics-cache` for dolfinx). The repository is self-contained:
+the plotting style (`examples/analysis/paperstyle.py`) and lamina helpers (`examples/analysis/lamina.py`)
+are included.
 
 Paper-producing scripts (all write into `results/`):
 - designs: `examples/dolfinx/dolfinx_lens.py`, `dolfinx_cloak_conforming_vec.py`,

@@ -10,7 +10,6 @@ lamina, not of the design.
 """
 import os as _os
 _ROOT = _os.path.abspath(_os.path.join(_os.path.dirname(__file__), "..", ".."))
-_NLTOPT = _os.environ.get("NLTOPT_DIR", _os.path.join(_os.path.dirname(_ROOT), "NLTopt"))
 import sys
 import numpy as np
 sys.path.insert(0, (_ROOT + "/examples/dolfinx"))

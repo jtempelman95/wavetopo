@@ -26,7 +26,7 @@ W1 isotropic plate: no control (identity; consistency check) & Remark~\ref{rem:i
 W2 redirection is broadband, extra gain is resonant & Table~\ref{tab:lensband}, Fig.~\ref{fig:lensband}; damping test (App.~\ref{app:verify}) & holds for $\omega\ge37.5$ ($G_\varphi=2.3$ at $35$); fails at long wavelength ($G_\varphi<1$ at $\omega=20$ and $25$)\\
 W3 energy flux follows the fibers & lens: $\WFluxDevBandMin$--$\WFluxDevBandMax^\circ$ across the band (Fig.~\ref{fig:flux}); unoptimized controls: $\WCtrlDevMin$--$\WCtrlDevMax^\circ$ & holds\\
 W4 redirection grows with anisotropy & Table~\ref{tab:dose}, Fig.~\ref{fig:limitsW}a & holds coarsely (1 at isotropy, several times once $E_{f1}/E_{f2}\gtrsim3$); finer steps are within optimizer variability\\
-W5 redirection is unaffected while $R\lesssim0.7\lambda$, then declines; strong cloaking is narrowband & Tables~\ref{tab:front},~\ref{tab:cloakband}; multi-start front & partly holds: redirection is bounded by the tow radius, but declines gradually rather than failing at $R\sim\lambda$ (front values are lower bounds)\\
+W5 redirection is unaffected while $R\lesssim0.7\lambda$, then declines; strong cloaking is narrowband & Tables~\ref{tab:front},~\ref{tab:cloakband}; multi-start front & partly holds: redirection is bounded by the tow radius, but declines gradually rather than failing at $R\sim\lambda$ (front values are lower bounds); the cloak half holds (strong cancellation only near the design frequency)\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -88,8 +88,8 @@ The channeling picture suggests where orientation design should go next:
 
 \section{Conclusions}\label{sec:conclusion}
 \begin{enumerate}[itemsep=2pt]
-\item In a CFRP lamina, wave energy is skewed toward the fibers by up to $65^\circ$, and
-  $88\%$ of quasi-P wave normals carry their energy within $20^\circ$ of the fiber
+\item In a CFRP lamina, wave energy is skewed toward the fibers by up to $\WSkewMax^\circ$, and
+  $\WSTwentyCFRP\%$ of quasi-P wave normals carry their energy within $20^\circ$ of the fiber
   direction (Sec.~\ref{sec:theory}).
 \item An orientation-only lens redirects energy into its target by $\WRedirForty\times$ at
   its design frequency and by at least $\WRedirBandMin\times$ over $\omega\in[37.5,60]$;
