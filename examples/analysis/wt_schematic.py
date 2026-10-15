@@ -64,8 +64,8 @@ line_source(ax, 0.1, 0.3, 2.7)
 ax.add_patch(Rectangle((0.78 * Lx - 0.18, Ly / 2 - 0.18), 0.36, 0.36, fill=False, ec=TGT, ls="--", lw=1.2, zorder=7))
 ax.text(-0.5, Ly / 2, "line\nsource", color=ps.RED, fontsize=7.5, ha="left", va="center", rotation=90)
 ax.text(Lx + 0.05, Ly - 0.3, "absorbing\nlayer", fontsize=7, color=ps.GREY, ha="left", va="top")
-ax.text(0.78 * Lx, Ly / 2 + 0.28, "objective", color="#127f93", fontsize=7.5, ha="center", zorder=8,
-        bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
+ax.annotate("objective", xy=(0.78 * Lx + 0.18, Ly / 2 + 0.18), xytext=(Lx + 0.08, Ly / 2 + 0.55), color="#127f93", fontsize=7.5,
+            ha="left", va="center", zorder=8, arrowprops=dict(arrowstyle="-", color="#127f93", lw=0.7))
 ax.text(Lx / 2, -0.3, r"$4\times3$, tow paths of the optimized lens", fontsize=7.5, ha="center")
 fig.text(0.01, 0.955, r"(\textbf{a}) orientation-only lens", fontsize=8.5)
 
