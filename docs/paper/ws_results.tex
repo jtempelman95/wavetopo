@@ -119,7 +119,8 @@ $\WFluxStrongFrac\%$ of the interior carries the energy transport.
 \item \textbf{qP content.} As a proxy for the qP share, $\WPolLens\%$ of the lens's interior kinetic energy is
   polarized along the local fibers ($\WPolStraight\%$ with straight fibers; $\WPolMin$--$\WPolMax\%$ across the band). In CFRP the qP
   polarization lies within a few degrees of the fiber for most wave normals, so this is the qP-like
-  share (an upper bound, since qS waves crossing the fibers are also polarized along them). The rest is qS
+  share (approximately; qS waves crossing the fibers are also polarized along them, while qP waves crossing
+  them are not). The rest is qS
   motion and mode conversion, which channeling does not describe.
 \item \textbf{Rays predict the redirection.} Tracing qP rays \eqref{eq:rays} through the fiber field alone
   (\texttt{wt\_r1\_rays.py}; Fig.~\ref{fig:lens}c) gives a target share of $\WRayShareLens\%$ against
@@ -285,8 +286,8 @@ mesh, $h=0.045$; designs fixed).}\label{tab:cloakband}
 the shell.} Conforming traction-free void ($R_V=0.55$) at $\omega=50$, plate interior; all eight maps on one
 color scale, set by the maximum of the void-free field (a) and clipped there. The drive acts along $x$ at the
 left edge, outside the region shown. Top row, total field $|\vu|$:
-\textbf{(a)}~void-free reference, used as the incident field (it includes the absorbing layer's weak
-reflections); \textbf{(b)}~void with straight fibers: shadow and reflections; \textbf{(c)}~the
+\textbf{(a)}~void-free reference, used as the incident field (it includes the absorbing layer's moderate
+reflections, $|R|\approx0.3$); \textbf{(b)}~void with straight fibers: shadow and reflections; \textbf{(c)}~the
 optimized shell (dashed circle: design shell $R_{\rm des}$); \textbf{(d)}~its tow paths. Bottom row, scattered field
 $|\vu-\vu_{\rm inc}|$, with the far-field observation boundary $R_C$ (dotted white): \textbf{(e)}~straight fibers;
 \textbf{(f)}~optimized; \textbf{(g)}~transformation-cloak fiber directions on the fixed-contrast lamina;
