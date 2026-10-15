@@ -304,7 +304,7 @@ $\vx$ with relative density $\tau=\exp(-\int\nabla\!\cdot\bm n\,\mathrm{d}\ell)$
 lens, $\tau$ spans $\WTauMin$ to $\WTauMax$, so the field cannot be laid with uncut courses and needs tow cut/add.
 With cut/add inside courses of $N$ tows, the coverage mismatch averages half a tow at a course boundary. As in
 the defect-layer method \cite{fayazbakhsh2013}, we model a defect area fraction
-$f_d=\tfrac{1}{2N}\min(1,|\ln\tau|/\ln(1+1/N))$ as resin gaps (stiffness and density of epoxy) or as overlaps
+$f_d=\tfrac{1}{2N}\min(1,|\ln\tau|/\ln(1+1/N))$ as resin gaps (stiffness and density reduced toward those of epoxy in proportion to $f_d$, keeping the lamina's anisotropy) or as overlaps
 (thickness $1+f_d$; \texttt{wt\_r1\_lens.py asbuilt}). For $N=4$, $8$ and $16$ the band-averaged redirection
 stays at $\WAsBuiltMin$--$\WAsBuiltMax\times$, against $\WRedirBandMean\times$ for the idealized field, with the
 paper's layer. Wave redirection is insensitive to such defects because it depends on the fiber
