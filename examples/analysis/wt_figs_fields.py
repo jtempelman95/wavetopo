@@ -106,7 +106,7 @@ for pth in RY["paper_paths"]:
         ax[2].plot(pth[:, 0], pth[:, 1], color=ps.RED, lw=0.65, zorder=4)
 ax[2].plot([3.4, 3.4], [0, 3], color=ps.GREY, lw=0.6, ls=":"); ax[2].plot([0, 4], [0.6, 0.6], color=ps.GREY, lw=0.6, ls=":")
 ax[2].plot([0, 4], [2.4, 2.4], color=ps.GREY, lw=0.6, ls=":")
-square(ax[2], *tgt, color=TGT)
+square(ax[2], *tgt, color=TGT, lw=1.3, halo=True)
 frame(ax[2], (0, 4, 0, 3), r"{\fontsize{9}{11}\selectfont (\textbf{c})}\ tow paths (gray), energy rays (red)")
 cb = fig.colorbar(im, cax=cax_l); cb.ax.tick_params(labelsize=FS)
 cb.set_label(r"$|\mathbf{u}|/\max|\mathbf{u}|$ (per panel)", fontsize=FS)
@@ -201,8 +201,8 @@ b.axvspan(44, 56, color=ps.FILL_MUTE, zorder=0)
 for key, ls in (("band", "-"), ("tone", "--")):
     r = S[key]
     b.semilogy(r[:, 0], r[:, 1], ls, color=C_SEN, lw=1.2)
-    b.semilogy(r[:, 0], r[:, 2], ls, color=C_PAY, lw=1.2)
-    b.semilogy(r[:, 0], r[:, 3], ls, color=C_RIM, lw=1.2)
+    b.semilogy(r[:, 0], r[:, 2], ls, color=C_PAY, lw=1.2, marker="s", ms=3.0, mfc="white", markevery=2)
+    b.semilogy(r[:, 0], r[:, 3], ls, color=C_RIM, lw=1.2, marker="^", ms=3.4, mfc="white", markevery=2)
 b.axhline(1, color=ps.GREY, lw=0.6, ls=":")
 b.set_xticks([42, 46, 50, 54, 58])
 b.set_yticks([0.1, 0.2, 0.5, 1, 2]); b.set_yticklabels(["0.1", "0.2", "0.5", "1", "2"]); b.minorticks_off()
@@ -211,8 +211,8 @@ b.set_xlabel(r"drive frequency $\omega$"); b.set_ylabel("energy / straight fiber
 b.set_title(r"{\fontsize{9}{11}\selectfont (\textbf{d})}\ performance across frequency", loc="left", fontsize=FS, pad=3)
 ps.grid(b); ps.despine(b)
 b.legend(handles=[Line2D([], [], color=C_SEN, lw=1.2, label="sensor S"),
-                  Line2D([], [], color=C_PAY, lw=1.2, label="payload P"),
-                  Line2D([], [], color=C_RIM, lw=1.2, label="rims"),
+                  Line2D([], [], color=C_PAY, lw=1.2, marker="s", ms=3.0, mfc="white", label="payload P"),
+                  Line2D([], [], color=C_RIM, lw=1.2, marker="^", ms=3.4, mfc="white", label="rims"),
                   Line2D([], [], color=ps.INK, lw=1.2, ls="-", label="band design"),
                   Line2D([], [], color=ps.INK, lw=1.2, ls="--", label="single-$\\omega$ design")],
          frameon=False, fontsize=6.4, loc="upper center", ncol=3, handlelength=1.6, columnspacing=0.8, borderaxespad=0.1)

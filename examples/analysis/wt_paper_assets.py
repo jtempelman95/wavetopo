@@ -202,12 +202,13 @@ if have("lens_dose.npy") or have("lens_front.npy"):
         ax[0].plot(_bx, _b2, "D--", color="#7a5195", ms=3.5, mfc="white", mew=1.0, lw=1.1, zorder=3)
         ax[0].set_xscale("log"); logticks(ax[0], [1, 2, 3, 5, 10, 20, 30])
         ax[0].set_xlabel(r"lamina anisotropy $E_{f1}/E_{f2}$")
-        ax[0].set_ylabel(RED_LAB); ax[0].set_ylim(0, 9.6); ax[0].set_yticks(range(0, 8))
+        ax[0].set_ylabel(RED_LAB); ax[0].set_ylim(0, 12.5); ax[0].set_yticks(range(0, 8))
         t = ax[0].twinx(); t.plot(D[:, 1], [s20[round(s, 2)] for s in D[:, 0]], "s--", color=ps.GREY, ms=3, lw=1.0)
-        t.set_ylim(0, 128); t.set_yticks([0, 20, 40, 60, 80, 100]); t.set_ylabel(r"channeling share $s_{20}$ (\%)", color=ps.GREY)
+        t.set_ylim(0, 166); t.set_yticks([0, 20, 40, 60, 80, 100]); t.set_ylabel(r"channeling share $s_{20}$ (\%)", color=ps.GREY)
         t.tick_params(axis="y", colors=ps.GREY); t.spines["top"].set_visible(False)
         ax[0].legend(handles=[Line2D([], [], color=ps.GREEN, marker="o", ms=4, label=r"best of 4, $|R|\approx0.33$"),
                               Line2D([], [], color="#7a5195", marker="D", mfc="white", ls="--", ms=3.5, label=r"best of 4, $|R|\le0.13$"),
+                              Line2D([], [], color=ps.GREEN, marker="o", mfc="white", ls=":", ms=3.2, label="straight start (one run)"),
                               Line2D([], [], color=ps.GREY, alpha=0.5, lw=3, label="range over starts"),
                               Line2D([], [], color=ps.GREY, marker="s", ls="--", ms=3, label=r"lamina $s_{20}$ (right)")],
                      frameon=False, fontsize=6.6, loc="upper left", borderaxespad=0.1, handlelength=1.6)
@@ -221,11 +222,12 @@ if have("lens_dose.npy") or have("lens_front.npy"):
         ax[1].plot([], [], color=ps.GREEN, alpha=0.35, lw=3, label=f"range over {NSTART} starts")
         ax[1].plot(1 / (Fr[fin, 0] * LAM_L), Fr[fin, 4], "o-", color=ps.GREEN, ms=4, lw=1.4, label="best found (lower bound)", zorder=3)
         ax[1].axhline(Fr[~fin, 4][0], color=ps.GREEN, lw=0.9, ls=":", label="best, no limit")
-        ax[1].axvline(0.7, color=ps.GREY, lw=0.7, ls="--", zorder=0)
+        ax[1].plot([0.7, 0.7], [0, 7.6], color=ps.GREY, lw=0.7, ls="--", zorder=0)
+        ax[1].text(0.7, 7.7, r"$0.7\lambda_\parallel$", fontsize=6.4, color=ps.GREY, ha="center", va="bottom")
         ax[1].set_xscale("log"); logticks(ax[1], [0.2, 0.5, 1, 2])
         ax[1].set_xlabel(r"min.\ tow radius $R/\lambda_\parallel$"); ax[1].set_ylabel(r"redirection $\langle G_\varphi\rangle$")
-        ax[1].set_ylim(0, 10.8); ax[1].set_yticks(range(0, 8)); ax[1].set_title("lens", fontsize=8.5)
-        ax[1].legend(frameon=False, fontsize=6.6, loc="lower left", ncol=1, handlelength=1.6, borderaxespad=0.1)
+        ax[1].set_ylim(0, 12.5); ax[1].set_yticks(range(0, 8)); ax[1].set_title("lens", fontsize=8.5)
+        ax[1].legend(frameon=False, fontsize=6.6, loc="upper left", ncol=1, handlelength=1.6, borderaxespad=0.1)
         ps.panel(ax[1], "b"); ps.grid(ax[1]); ps.despine(ax[1])
     if CF is not None:
         LAM_C = 2 * np.pi * 9.0712 / 50.0                            # along-fiber qP wavelength, cloak
@@ -322,16 +324,6 @@ if have("dolfinx_panel_band_repro_data.npz"):
         ob = ~ib; put(f"WPan{nm}SenOutMin", r[ob, 1].min(), "{:.2f}")
     fq = PB["freqs"]; put("WPanBLo", fq.min(), "{:.0f}"); put("WPanBHi", fq.max(), "{:.0f}"); put("WPanNF", len(fq), "{:d}")
 
-# ---------------------------------------------------------------- write macros
-import glob, re
-used = set()
-for f in glob.glob(os.path.join(P, "ws_*.tex")):
-    used |= set(re.findall(r"\\(W[A-Z][A-Za-z]*)", open(f).read()))
-for u in sorted(used - set(M)):
-    M[u] = r"\textbf{??}"
-missing = sorted(u for u in used if M[u] == r"\textbf{??}")
-if missing:
-    print("MISSING:", " ".join(missing))
 # ---------------------------------------------------------------- Revision R1
 if have("wt_r1_rays.npz"):
     RY = np.load(os.path.join(R, "wt_r1_rays.npz"), allow_pickle=True)
@@ -405,6 +397,27 @@ if have("wt_r1_panel.npz"):
     put("WPanToneRimMean", t[inb, 3].mean(), "{:.2f}"); put("WPanToneRimWorst", t[inb, 3].max(), "{:.2f}")
     put("WPanRimWorst", b[inb, 3].max(), "{:.2f}")
 
+if have("wt_r1_power.npy"):
+    for which, tag in ((0, "Paper"), (1, "Abs")):
+        q = PW[PW[:, 1] == which]; inb = (q[:, 0] >= 35) & (q[:, 0] <= 50)
+        rn = (q[:, 9] / q[:, 7]) / (q[:, 5] / q[:, 3])                 # target share of the STRUCTURAL loss
+        put(f"WPowNorm{tag}Min", rn[inb].min()); put(f"WPowNorm{tag}Max", rn[inb].max())
+if have("wt_r1_fluxmap.npy"):
+    put("WFluxDevMThirtyFive", FMd["lens_35"]["dev_w"]); put("WFluxDevMFortyFive", FMd["lens_45"]["dev_w"])
+    put("WFluxDevMFifty", FMd["lens_50"]["dev_w"])
+if CF is not None:
+    _z = np.asarray(CF["zeta_all"]); _r = np.asarray(CF["reduction"])
+    put("WCFrontThreeFive", _r[np.argmin(np.abs(_z - 3.5))]); put("WCFrontUnc", float(CF["red_unc"]))
+# ---------------------------------------------------------------- write macros
+import glob, re
+used = set()
+for f in glob.glob(os.path.join(P, "ws_*.tex")):
+    used |= set(re.findall(r"\\(W[A-Z][A-Za-z]*)", open(f).read()))
+for u in sorted(used - set(M)):
+    M[u] = r"\textbf{??}"
+missing = sorted(u for u in used if M[u] == r"\textbf{??}")
+if missing:
+    print("MISSING:", " ".join(missing))
 with open(os.path.join(P, "wt_numbers.tex"), "w") as fh:
     fh.write("% AUTO-GENERATED by examples/analysis/wt_paper_assets.py\n")
     for k in sorted(M):

@@ -37,15 +37,18 @@ $\omega\in\{35,40,45,50\}$.
   (Sec.~\ref{sec:power}) rises from $\WPowPaperPiZero\%$ to $\WPowPaperPiOne\%$ at $\omega=40$, and its
   ratio to straight fibers is $\WPowPaperMin$--$\WPowPaperMax\times$ over $\omega\in[35,50]$
   ($\WPowAbsMin$--$\WPowAbsMax\times$ for the re-optimized lens with the wider layer;
-  Fig.~\ref{fig:lensband}d). Stored-energy share and absorbed-power share agree in sign and order of
-  magnitude at every frequency tested, so the redirection is a redirection of power flow, not only of
-  standing energy.
+  Fig.~\ref{fig:lensband}d). This ratio is also raised near the resonance, where the plate dissipates a larger
+  fraction of the injected power structurally rather than in the sponge. As a share of the structural loss
+  alone, the target's power rises $\WPowNormPaperMin$--$\WPowNormPaperMax\times$ ($\WPowNormAbsMin$--$\WPowNormAbsMax\times$).
+  Stored-energy share and absorbed-power share agree in sign and order of magnitude at every frequency
+  tested, so the redirection is a redirection of power flow, not only of standing energy.
 \item \textbf{The excess gain is whole-field growth, consistent with resonance.} The interior field grows
   $\WGrowthForty\times$ at $\omega=40$ ($\WAbsGr\times$ with the wider layer, where $G=\WAbsG\times=\WAbsP\times$
   redirection $\times\,\WAbsGr\times$ growth). A fine sweep ($\Delta\omega=0.25$) shows a single peak of the
   growth, $\WFinePeak\times$ at $\omega=\WFinePeakOm$, with a half-power width of $\WFineWidth$, i.e.\ a
   quality factor $\approx\WFineQ$, consistent with the plate's loss factor $\eta=0.02$ ($Q=50$) plus the
-  sponge loss. Across the peak $G_\varphi$ varies smoothly ($\WFineGpMin$--$\WFineGpMax$) without a peak.
+  sponge loss. Across the peak $G_\varphi$ varies smoothly ($\WFineGpMin$--$\WFineGpMax$, with a broad maximum near
+  $\omega\approx41.4$) and has no peak at the resonance.
   The growth also scales as $1/\eta$ while $G_\varphi$ does not (Appendix~\ref{app:verify}). At $\omega=37.5$
   and $42.5$, only $\pm6\%$ away, $G$ falls to $\WGainMinusFive\times$ and $\WGainPlusFive\times$.
 \end{itemize}
@@ -70,7 +73,8 @@ fibers); growth: interior energy ratio; $P$: injected power ratio. $G=G_\varphi\
 \caption{\textbf{The orientation-only lens concentrates the field on its target, and rays traced through
 its fibers converge there.} Full $4\times3$ plate at the design frequency $\omega=40$, driven along $x$ at
 its left edge (arrows); dotted white lines: where the absorbing layer begins; dashed square: the target
-$(0.78L_x,L_y/2)\pm0.18$; structured mesh, $9$ elements per shortest (qS) wavelength.
+$(0.78L_x,L_y/2)\pm0.18$; structured mesh, $9$ elements per shortest (qS) wavelength. The white strip at the
+left of (a,b) only holds the drive arrows.
 \textbf{(a)}~Field magnitude $|\vu|$ with straight fibers and \textbf{(b)}~with the optimized fiber field,
 each normalized by its own maximum, so the comparison is of \emph{where} the energy goes; the gain and
 redirection are in the title. \textbf{(c)}~Optimized tow paths (gray) and qP energy rays traced through them
@@ -84,12 +88,12 @@ by \eqref{eq:rays} from the drive (red), absorbed where the layer begins.}
 \caption{\textbf{The lens's single-frequency gain is a narrow resonance; its redirection and its routing
 of power are broadband and survive a converged absorbing layer.} All on one frequency axis; dashed
 vertical line: the design frequency $\omega=40$; shaded: the band over which $\langle G_\varphi\rangle$ is
-averaged; dotted: parity with straight fibers. Solid green: the paper's lens with the paper's layer
+averaged; dotted: parity with straight fibers. Solid black: the paper's lens with the paper's layer
 ($|R|\approx\WReflMin$--$\WReflMax$); dashed purple: the lens re-optimized with a layer twice as wide
 ($|R|\le\WReflOne$). \textbf{(a)}~Target-energy gain $G$. \textbf{(b)}~Redirection $G_\varphi$; open triangles: the
-paper's lens with layers of width 1.8 and 2.4 ($|R|\approx\WReflTwo$ and $\WReflThree$); blue band: the ray
+paper's lens with layers of width 1.8 and 2.4 ($|R|\le\WReflTwo$ and $\WReflThree$); blue band: the ray
 prediction from the two fiber fields (Sec.~\ref{sec:flux}). \textbf{(c)}~Interior field growth, with a fine
-sweep ($\Delta\omega=0.25$) through the peak. \textbf{(d)}~Share of the injected power absorbed in the target,
+sweep ($\Delta\omega=0.25$, small dots) through the peak. \textbf{(d)}~Share of the injected power absorbed in the target,
 relative to straight fibers \eqref{eq:balance}.}
 \label{fig:lensband}
 \end{figure}
@@ -103,18 +107,20 @@ $\WFluxStrongFrac\%$ of the interior carries the energy transport.
 \item \textbf{Optimized lens.} The $|\bm P|$-weighted mean deviation of the flux from the fibers is
   $\WFluxDevMasked^\circ$ at $\omega=40$ ($\WFluxDev^\circ$ without the mask), and $\WFluxShareMasked\%$ of the
   flux runs within $20^\circ$ of them. The flux deviates $\WFluxDevX^\circ$ on average from the drive
-  direction $x$. Across the band the deviation is $\WFluxDevThirtyFive^\circ$, $\WFluxDevFortyFive^\circ$
-  and $\WFluxDevFifty^\circ$ at $\omega=35,45,50$.
+  direction $x$. Across the band the (masked) deviation is $\WFluxDevMThirtyFive^\circ$, $\WFluxDevMFortyFive^\circ$
+  and $\WFluxDevMFifty^\circ$ at $\omega=35,45,50$.
 \item \textbf{Where channeling fails.} The deviation map (Fig.~\ref{fig:flux}b) is small almost everywhere
   and large in one place: just behind the target, where the fibers converge sharply. Binned by how fast
   the fibers turn (Fig.~\ref{fig:flux}d), the mean deviation stays at $2$--$4^\circ$ while the fibers turn
-  by less than about $4$\,rad per along-fiber wavelength, and rises to $12$--$24^\circ$ beyond. This is the
-  ray-validity condition of Sec.~\ref{sec:theory} made quantitative. The lens's sharpest turning has a
+  by less than about $4$\,rad per along-fiber wavelength, and rises to $12$--$24^\circ$ beyond. This is an
+  empirical threshold for the ray picture of Sec.~\ref{sec:theory} (it rests mainly on the two highest bins),
+  more permissive than a strict slow-variation (WKB) condition. The lens's sharpest turning has a
   gradient length $L_\theta=0.15$, a tenth of $\lambda_\parallel$ (Table~\ref{tab:scales}).
-\item \textbf{qP content.} $\WPolLens\%$ of the lens's interior kinetic energy is polarized along the
-  local fibers ($\WPolStraight\%$ with straight fibers; $\WPolMin$--$\WPolMax\%$ across the band). In CFRP the qP
+\item \textbf{qP content.} As a proxy for the qP share, $\WPolLens\%$ of the lens's interior kinetic energy is
+  polarized along the local fibers ($\WPolStraight\%$ with straight fibers; $\WPolMin$--$\WPolMax\%$ across the band). In CFRP the qP
   polarization lies within a few degrees of the fiber for most wave normals, so this is the qP-like
-  share. The rest is qS motion and mode conversion, which channeling does not describe.
+  share (an upper bound, since qS waves crossing the fibers are also polarized along them). The rest is qS
+  motion and mode conversion, which channeling does not describe.
 \item \textbf{Rays predict the redirection.} Tracing qP rays \eqref{eq:rays} through the fiber field alone
   (\texttt{wt\_r1\_rays.py}; Fig.~\ref{fig:lens}c) gives a target share of $\WRayShareLens\%$ against
   $\WRayShareStraight\%$ for straight fibers. That is $G_{\rm ray}=\WRayPaper\times$ for the paper's lens and
@@ -136,12 +142,13 @@ the optimizer only chooses where the fibers point. This is why the redirection i
 \centering
 \includegraphics[width=\textwidth]{figs/wt_flux.pdf}
 \caption{\textbf{The energy flux follows the fibers wherever they turn slowly on the wavelength scale.}
-Optimized lens at $\omega=40$, window $0\le x\le3.4$, $0.6\le y\le2.4$ (excluding the absorbing layers).
+Optimized lens at $\omega=40$, window $0.3\le x\le3.4$, $0.6\le y\le2.4$ (excluding the drive strip and the
+absorbing layers; the statistics use the same window).
 \textbf{(a)}~Flux direction (green arrows) and fiber direction (gray segments) at the same points; arrows are
-omitted where $|\bm P|<5\%$ of its maximum. \textbf{(b)}~Angle between flux and fiber; gray: $|\bm P|<5\%$ of its
+omitted where $|\bm P|<5\%$ of its maximum over the cells, as in (b). \textbf{(b)}~Angle between flux and fiber; gray: $|\bm P|<5\%$ of its
 maximum (direction ill-defined). \textbf{(c)}~$|\bm P|$-weighted distribution of the flux--fiber angle and of the
 flux--drive angle (strong-flux cells). \textbf{(d)}~Mean flux--fiber angle against the local fiber turning per
-along-fiber wavelength, $\lambda_\parallel|\nabla\theta|$. \textbf{(e)}~qP energy direction vs.\ wave normal
+along-fiber wavelength, $\lambda_\parallel|\nabla\theta|$ (numbers: cells per bin). \textbf{(e)}~qP energy direction vs.\ wave normal
 \eqref{eq:skew} for an isotropic lamina, the intermediate lamina $E_{f1}/E_{f2}=2.9$ of the family $\mathbf Q(s)$, and
 CFRP.}
 \label{fig:flux}
@@ -221,7 +228,7 @@ wavelengths ($\lambda_\parallel=1.42$ and $1.14$). In (b), circles: the best des
 computed designs that satisfy it (a lower bound); shaded bars: the range over the independent starts;
 dotted: the best design found with no limit; dashed: $R=0.7\lambda_\parallel$. In (c), dotted: the loosest-limit run
 of this study ($\zeta_{\rm all}=5$, effectively unconstrained). At $\zeta_{\rm all}=3.5$ the constrained cloak
-($38.4\times$) slightly exceeds the unconstrained one ($37.7\times$), within optimizer variability.}
+($\WCFrontThreeFive\times$) slightly exceeds the unconstrained one ($\WCFrontUnc\times$), within optimizer variability.}
 \label{fig:limitsW}
 \end{figure}
 
@@ -276,8 +283,10 @@ mesh, $h=0.045$; designs fixed).}\label{tab:cloakband}
 \includegraphics[width=\textwidth]{figs/wt_cloak.pdf}
 \caption{\textbf{The optimized shell cancels the scattered field outside the observation radius, not inside
 the shell.} Conforming traction-free void ($R_V=0.55$) at $\omega=50$, plate interior; all eight maps on one
-color scale, set by the maximum of the incident field (a) and clipped there. Top row, total field $|\vu|$:
-\textbf{(a)}~incident (void-free); \textbf{(b)}~void with straight fibers: shadow and reflections; \textbf{(c)}~the
+color scale, set by the maximum of the void-free field (a) and clipped there. The drive acts along $x$ at the
+left edge, outside the region shown. Top row, total field $|\vu|$:
+\textbf{(a)}~void-free reference, used as the incident field (it includes the absorbing layer's weak
+reflections); \textbf{(b)}~void with straight fibers: shadow and reflections; \textbf{(c)}~the
 optimized shell (dashed circle: design shell $R_{\rm des}$); \textbf{(d)}~its tow paths. Bottom row, scattered field
 $|\vu-\vu_{\rm inc}|$, with the far-field observation boundary $R_C$ (dotted white): \textbf{(e)}~straight fibers;
 \textbf{(f)}~optimized; \textbf{(g)}~transformation-cloak fiber directions on the fixed-contrast lamina;
@@ -334,12 +343,13 @@ straight-fiber normalization, is given in Appendix~\ref{app:panelobj}.
 \includegraphics[width=\textwidth]{figs/wt_panel.pdf}
 \caption{\textbf{One curvature-feasible fiber layout routes vibration to a sensor, shields a payload and protects
 fastener rims across a band, by redirection rather than resonance.} Four conforming fastener holes; Gaussian-beam
-drive along $x$ at the left edge (arrows); dotted white: where the absorbing layer begins.
+drive along $x$ at the left edge (arrows, in the white strip); dotted white: where the absorbing layer begins.
 \textbf{(a,b)}~$|\vu|$ at the band center with straight fibers and with the band-optimized layout, each normalized by
 its own maximum: the beam splits around the payload (P, green dash-dot) and reconverges on the sensor (S, blue
 dashed) while the fastener rims (red dotted) stay quiet. \textbf{(c)}~Tow paths, curvature-feasible.
 \textbf{(d)}~Energy in the sensor, payload and rims relative to straight fibers across frequency, band-optimized
-(solid) and optimized at $\omega=50$ only (dashed); shaded: design band. \textbf{(e)}~The sensor's energy ratio
+(solid) and optimized at $\omega=50$ only (dashed); markers distinguish the regions in grayscale
+(none: sensor; squares: payload; triangles: rims); shaded: design band. \textbf{(e)}~The sensor's energy ratio
 (solid) split into its share of the interior energy (dashed) and the whole-field growth (dotted).
 \textbf{(f)}~Band means over $[44,56]$ and worst cases in the band (triangles: lowest for the sensor, highest for
 payload and rims).}
