@@ -1,0 +1,52 @@
+\begin{abstract}
+\noindent\textbf{Question.} How much control over an in-plane elastic wave field can the
+fiber orientation of a continuous-fiber composite exert, at fixed material and mass and
+under the tow-curvature limit of automated placement? By what mechanism does it act, and
+what bounds it?
+
+\noindent\textbf{Hypothesis.} In a strongly anisotropic lamina, wave energy is skewed
+toward the fiber direction: by up to $65^\circ$ for CFRP, so that $88\%$ of quasi-P wave
+normals carry their energy within $20^\circ$ of the fibers. A fiber field should
+therefore act as a designable field of energy streamlines. Its robust effect should be
+\emph{redirection} of energy, which is broadband. It should vanish for isotropic material,
+grow with anisotropy, and be limited by how sharply tows may turn.
+
+\noindent\textbf{Analysis.} We solve the genuine two-dimensional orthotropic
+time-harmonic problem in \texttt{dolfinx}, using an exact real four-field split and
+automatic discrete adjoints, with a smooth radial-basis orientation field and a
+pointwise tow-curvature constraint. We decompose every focus gain exactly into
+redirection and field growth, sweep frequency on fixed designs, compute the energy-flux
+field, re-optimize along an anisotropy family, and trace the curvature front.
+
+\noindent\textbf{Results.}
+\begin{itemize}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
+\item An orientation-only lens's $\WGainForty\times$ single-frequency focus gain factorizes
+  into $\WRedirForty\times$ redirection (target share $\WPhiZero\%\to\WPhiOne\%$) and a
+  $\WGrowthForty\times$ resonant growth of the whole field. With a better absorber ($|R|\le\WReflThickMax$ instead of $\WReflMin$--$\WReflMax$) the re-optimized lens gives
+  $\WAbsG\times=\WAbsP\times$ redirection $\times\,\WAbsGr\times$ growth: the split is
+  robust, the redirection is absorber-dependent.
+\item Only the redirection persists off-design: it stays $\ge\WRedirBandMin\times$ over
+  $\omega\in[37.5,60]$ ($\ge\WAbsMinFortySixty\times$ over $[40,60]$ with the better
+  absorber), while the gain collapses to $\WGainMinusFive\times$ at $-6\%$.
+\item The energy flux follows the local fibers: its mean deviation from them is
+  $\WFluxDev^\circ$ at the design frequency and at most $\WFluxDevThirtyFive^\circ$ across the
+  band tested, and by only $\WCtrlDevMin$--$\WCtrlDevMax^\circ$ in curved fields that were
+  never optimized.
+\item Redirection is exactly absent for isotropic material and grows with anisotropy.
+  It is unaffected while the minimum tow radius is at most about $0.7$ along-fiber
+  wavelengths; beyond it the best design found declines gradually.
+\item A cloak reduces the far-field mismatch $\WCloakPeak\times$ at its design frequency (a
+  value tuned to its mesh: $\WCloakFineEval\times$ on a finer mesh, $\WCloakFineReopt\times$ when
+  re-optimized there) but only $\WCloakMinus$--$\WCloakPlus\times$ at $\pm5\%$, as expected for a full cloak that
+  relies on interference.
+\end{itemize}
+
+\noindent\textbf{Conclusion.} Fiber orientation steers in-plane elastic energy by channeling
+it along the fibers. The transferable, broadband capability is redirection of a few
+times. Large single-frequency gains of finite plates are mostly resonance and should not
+be reported as steering. Designs should be optimized and judged over a band.
+\end{abstract}
+
+\noindent\textbf{Keywords:} elastic waves; fiber steering; anisotropic plates; energy channeling;
+topology optimization; cloaking; automated fiber placement.
+

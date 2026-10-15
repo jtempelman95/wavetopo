@@ -3,13 +3,13 @@ For each design (straight-fiber baseline is the denominator at every omega), rep
 the sensor / payload / rims energy ratios across a band, for both the single-TONE
 design and the BAND-optimized design.  Saves results/dolfinx_panel_sweep.npz.
 
-    XDG_CACHE_HOME=... PYTHONPATH=/home/jrt/wavetopo python3 \
+    XDG_CACHE_HOME=... PYTHONPATH=. python3 \
         examples/dolfinx/dolfinx_panel_sweep.py
 """
 import sys
 import numpy as np
 
-sys.path.insert(0, "/home/jrt/wavetopo/examples/dolfinx")
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
 import dolfinx_panel as P
 
 FREQS = np.arange(41.0, 59.01, 1.0)             # the swept band (fine resolution)
@@ -19,6 +19,13 @@ DESIGNS = {
     "tone": "results/dolfinx_panel_deep_data.npz",
     "band": "results/dolfinx_panel_band_data.npz",
 }
+OUT = "results/dolfinx_panel_sweep.npz"
+if "--repro" in sys.argv:          # the documented re-runs (paper):
+    # dolfinx_panel.py --band 44,47,50,53,56 --lam-p 3 --stiff 0.3 --tag _band_repro
+    # dolfinx_panel.py --band 50             --lam-p 3 --stiff 0.3 --tag _tone_repro
+    DESIGNS = {"tone": "results/dolfinx_panel_tone_repro_data.npz",
+               "band": "results/dolfinx_panel_band_repro_data.npz"}
+    OUT = "results/dolfinx_panel_sweep_repro.npz"
 
 
 def sweep_one(thopt):
@@ -46,8 +53,8 @@ def main():
             continue
         print(f"=== {name} design ({path}) ===", flush=True)
         out[name] = sweep_one(th)
-    np.savez("results/dolfinx_panel_sweep.npz", **out)
-    print("saved results/dolfinx_panel_sweep.npz", flush=True)
+    np.savez(OUT, **out)
+    print("saved " + OUT, flush=True)
 
 
 if __name__ == "__main__":

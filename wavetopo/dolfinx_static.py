@@ -135,7 +135,7 @@ class StaticElastic:
 if __name__ == "__main__":
     # --- finite-difference verification of the orientation gradient --------
     import sys
-    sys.path.insert(0, "/home/jrt/wavetopo")
+    sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__))))
     from wavetopo.dolfinx_mesh import rect_mesh
 
     Lx, Ly = 4.0, 2.5

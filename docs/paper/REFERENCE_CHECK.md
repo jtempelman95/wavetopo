@@ -1,0 +1,90 @@
+# Full reference check against Crossref (2026-10-15), every bibitem: refcheck.py output, then manual adjudication of flagged entries
+===== /home/jrt/NLTopt/docs/paper/sec_refs.tex
+shaw                   CHECK title~0.82 year:1993(y) vol:164(True) p:85(True) doi:10.1006/jsvi.1993.1198
+kerschen2009           OK    title~0.88 year:2009(y) vol:23(True) p:170(True) doi:10.1016/j.ymssp.2008.04.002
+haller2016             OK    title~0.91 year:2016(y) vol:86(True) p:1493(True) doi:10.1007/s11071-016-2974-z
+ponsioen2018           OK    title~0.90 year:2018(y) vol:420(True) p:269(True) doi:10.1016/j.jsv.2018.01.048
+jain2022               CHECK title~0.91 year:2021(N) vol:107(True) p:1417(True) doi:10.1007/s11071-021-06957-4
+vizzaccaro2022         OK    title~0.95 year:2022(y) vol:110(True) p:525(True) doi:10.1007/s11071-022-07651-9
+opreni2023             CHECK title~0.95 year:2022(N) vol:111(True) p:5401(True) doi:10.1007/s11071-022-07978-3
+touze                  OK    title~0.91 year:2021(y) vol:105(True) p:1141(True) doi:10.1007/s11071-021-06693-9
+krack2015              OK    title~0.90 year:2015(y) vol:154(True) p:59(True) doi:10.1016/j.compstruc.2015.03.008
+nayfeh1979             CHECK title~0.50 year:1981(N) vol:13(False) p:31(False) doi:10.1177/058310248101300507
+amabili2008            CHECK title~0.85 year:2008(y) vol:(None) p:(None) doi:10.1017/cbo9780511619694
+dou2015                CHECK title~0.84 year:2015(y) vol:373(True) p:20140408(True) doi:10.1098/rsta.2014.0408
+doujensen2016          OK    title~0.91 year:2016(y) vol:164(True) p:63(True) doi:10.1016/j.compstruc.2015.11.001
+li2024                 OK    title~0.88 year:2024(y) vol:112(True) p:16733(True) doi:10.1007/s11071-024-09947-4
+pozzi2025              OK    title~0.91 year:2025(y) vol:481(True) p:20250244(True) doi:10.1098/rspa.2025.0244
+pozzi2024lsm           OK    title~0.87 year:2024(y) vol:112(True) p:15719(True) doi:10.1007/s11071-024-09881-5
+pozzi2025smo           OK    title~0.91 year:2025(y) vol:68(True) p:72(True) doi:10.1007/s00158-025-04010-1
+liang2025              OK    title~0.91 year:2026(y) vol:114(True) p:713(True) doi:10.1007/s11071-026-12603-8
+xiao2026               CHECK title~0.27 year:2026(y) vol:(None) p:(None) doi:10.2514/6.2026-1246
+kacem2009              OK    title~0.91 year:2009(y) vol:20(True) p:275501(True) doi:10.1088/0957-4484/20/27/275501
+tsai1968               CHECK title~0.35 year:1968(y) vol:2(False) p:68(True) doi:10.1177/002199836800200106
+hyer1991               OK    title~0.92 year:1991(y) vol:18(True) p:239(True) doi:10.1016/0263-8223(91)90035-w
+gurdal                 OK    title~0.91 year:2008(y) vol:39(True) p:911(True) doi:10.1016/j.compositesa.2007.11.015
+lopes2008              OK    title~0.92 year:2008(y) vol:86(True) p:897(True) doi:10.1016/j.compstruc.2007.04.016
+abdalla2007            OK    title~0.91 year:2007(y) vol:81(True) p:283(True) doi:10.1016/j.compstruct.2006.08.018
+ijsselmuiden           OK    title~0.90 year:2010(y) vol:48(True) p:134(True) doi:10.2514/1.42490
+akhavan2015            OK    title~0.90 year:2015(y) vol:76(True) p:176(True) doi:10.1016/j.ijnonlinmec.2015.06.004
+akhavan2017            OK    title~0.92 year:2017(y) vol:109(True) p:286(True) doi:10.1016/j.compositesb.2016.10.059
+houmat2013             OK    title~0.90 year:2013(y) vol:106(True) p:211(True) doi:10.1016/j.compstruct.2013.05.058
+yan2021                OK    title~0.90 year:2021(y) vol:269(True) p:113954(True) doi:10.1016/j.compstruct.2021.113954
+farsadi2021            OK    title~0.92 year:2021(y) vol:262(True) p:113629(True) doi:10.1016/j.compstruct.2021.113629
+farsadi2025            OK    title~0.93 year:2025(y) vol:237(True) p:112972(True) doi:10.1016/j.ymssp.2025.112972
+wu2013                 OK    title~0.86 year:2013(y) vol:103(True) p:34(True) doi:10.1016/j.compstruct.2013.03.004
+raju2018               OK    title~0.87 year:2018(y) vol:56(True) p:2045(True) doi:10.2514/1.j056043
+akhavan2018            OK    title~0.89 year:2018(y) vol:194(True) p:335(True) doi:10.1016/j.compstruct.2018.03.101
+akhavan2020            CHECK title~0.92 year:2020(N) vol:103(True) p:3037(True) doi:10.1007/s11071-020-05838-6
+farsadi2019            CHECK title~0.89 year:2019(N) vol:231(True) p:715(True) doi:10.1007/s00707-019-02564-y
+akhavan2011            OK    title~0.90 year:2011(y) vol:93(True) p:3040(True) doi:10.1016/j.compstruct.2011.04.027
+ribeiro2012            OK    title~0.89 year:2012(y) vol:70(True) p:1535(True) doi:10.1007/s11071-012-0554-4
+ribeiroakhavan2012     OK    title~0.88 year:2012(y) vol:94(True) p:2424(True) doi:10.1016/j.compstruct.2012.03.025
+stegmann2005           OK    title~0.87 year:2005(y) vol:62(True) p:2009(True) doi:10.1002/nme.1259
+nomura2015             CHECK title~0.92 year:2014(N) vol:101(True) p:571(True) doi:10.1002/nme.4799
+matsuzaki2016          OK    title~0.89 year:2016(y) vol:6(True) p:23058(True) doi:10.1038/srep23058
+wong2026               OK    title~0.94 year:2026(y) vol:378(True) p:119897(True) doi:10.1016/j.compstruct.2025.119897
+kraft1988              CHECK title~0.31 year:2026(N) vol:31(False) p:(None) doi:10.58286/33083
+wendland1995           OK    title~0.91 year:1995(y) vol:4(True) p:389(True) doi:10.1007/bf02123482
+===== /home/jrt/wavetopo/docs/paper/ws_refs.tex
+hyer1991               OK    title~0.92 year:1991(y) vol:18(True) p:239(True) doi:10.1016/0263-8223(91)90035-w
+gurdal                 OK    title~0.91 year:2008(y) vol:39(True) p:911(True) doi:10.1016/j.compositesa.2007.11.015
+stegmann2005           OK    title~0.87 year:2005(y) vol:62(True) p:2009(True) doi:10.1002/nme.1259
+nomura2015             CHECK title~0.92 year:2014(N) vol:101(True) p:571(True) doi:10.1002/nme.4799
+matsuzaki2016          OK    title~0.89 year:2016(y) vol:6(True) p:23058(True) doi:10.1038/srep23058
+abdalla2007            OK    title~0.91 year:2007(y) vol:81(True) p:283(True) doi:10.1016/j.compstruct.2006.08.018
+akhavan2011            OK    title~0.90 year:2011(y) vol:93(True) p:3040(True) doi:10.1016/j.compstruct.2011.04.027
+niu2010                OK    title~0.91 year:2010(y) vol:47(True) p:2097(True) doi:10.1016/j.ijsolstr.2010.04.008
+dede2013smo            CHECK title~0.89 year:2013(N) vol:49(True) p:59(True) doi:10.1007/s00158-013-0963-0
+dede2013apl            OK    title~0.92 year:2013(y) vol:103(True) p:063501(True) doi:10.1063/1.4816775
+wong2025               OK    title~0.94 year:2026(y) vol:378(True) p:119897(True) doi:10.1016/j.compstruct.2025.119897
+pendry2006             CHECK title~0.77 year:2006(y) vol:312(True) p:1780(True) doi:10.1126/science.1125907
+milton2006             OK    title~0.90 year:2006(y) vol:8(True) p:248(True) doi:10.1088/1367-2630/8/10/248
+norris2008             CHECK title~0.71 year:2008(y) vol:464(True) p:2411(True) doi:10.1098/rspa.2008.0076
+norrisshuvalov2011     CHECK title~0.70 year:2011(y) vol:48(True) p:525(True) doi:10.1016/j.wavemoti.2011.03.002
+olsson2011             OK    title~0.88 year:2011(y) vol:27(True) p:045010(True) doi:10.1088/0266-5611/27/4/045010
+chen2011               CHECK title~0.83 year:2011(y) vol:2(True) p:176(True) doi:10.1038/ncomms1176
+popa2011               CHECK title~0.80 year:2011(y) vol:106(True) p:253901(True) doi:10.1103/physrevlett.106.253901
+parnell2012            CHECK title~0.86 year:2011(N) vol:468(True) p:563(True) doi:10.1098/rspa.2011.0477
+norrisparnell2012      OK    title~0.89 year:2012(y) vol:468(True) p:2881(True) doi:10.1098/rspa.2012.0123
+brun2009               CHECK title~0.81 year:2009(y) vol:94(True) p:061903(True) doi:10.1063/1.3068491
+climente2014           OK    title~0.88 year:2014(y) vol:105(True) p:064101(True) doi:10.1063/1.4893153
+tol2017                OK    title~0.90 year:2017(y) vol:111(True) p:013503(True) doi:10.1063/1.4991684
+capers2023             CHECK title~0.83 year:2023(y) vol:20(True) p:034064(True) doi:10.1103/physrevapplied.20.034064
+sigmund2003            OK    title~0.89 year:2003(y) vol:361(True) p:1001(True) doi:10.1098/rsta.2003.1177
+duhring2008            CHECK title~0.80 year:2008(y) vol:317(True) p:557(True) doi:10.1016/j.jsv.2008.03.042
+andkjaer2011           OK    title~0.86 year:2011(y) vol:98(True) p:021112(True) doi:10.1063/1.3540687
+andkjaer2013           CHECK title~0.81 year:2013(y) vol:135(True) p:041011(True) doi:10.1115/1.4023828
+jensen2005             OK    title~0.91 year:2005(y) vol:22(True) p:1191(True) doi:10.1364/josab.22.001191
+jensen2011             CHECK title~0.78 year:2010(N) vol:5(True) p:308(True) doi:10.1002/lpor.201000014
+auld                   CHECK title~0.66 year:1974(N) vol:27(False) p:63(False) doi:10.1063/1.3128926
+rose2014               CHECK title~0.79 year:2014(y) vol:(None) p:(None) doi:10.1017/cbo9781107273610
+chapuis2010            OK    title~0.88 year:2010(y) vol:127(True) p:198(True) doi:10.1121/1.3263607
+kiefer2023             OK    title~0.90 year:2023(y) vol:9(True) p:eadk6846(True) doi:10.1126/sciadv.adk6846
+svanberg1987           OK    title~0.87 year:1987(y) vol:24(True) p:359(True) doi:10.1002/nme.1620240207
+wendland1995           OK    title~0.91 year:1995(y) vol:4(True) p:389(True) doi:10.1007/bf02123482
+
+## Adjudication of CHECK flags
+All flagged entries with a Crossref record match authors, title, venue, volume and pages; flags arise from online-vs-print year (paper uses print year) or LaTeX accents lowering title similarity:
+
+No Crossref record (books/report/thesis; standard bibliographic data): nayfeh1979 (Wiley 1979), tsai1968 (Composite Materials Workshop, Technomic 1968), kraft1988 (DFVLR-FB 88-28), auld (Krieger 1990, 2nd ed.), xiao2026 (PhD thesis, Univ. Bristol; title and author verified on the local PDF docs/literature/xiao_2026_phd_thesis.pdf).

@@ -1,0 +1,365 @@
+\section{Finite-element discretization in \texttt{dolfinx}}
+\label{sec:fem}
+
+\subsection{Function spaces, element types, and the mesh for each problem}
+\label{sec:spaces}
+Structured and boundary-conforming meshes both appear, so we state the discrete
+spaces explicitly before deriving anything. Table~\ref{tab:spaces}
+collects them.
+
+The state space for the wave-control problems is a \emph{four-component}
+continuous Lagrange space,
+\begin{equation}
+  \vU_h\in\mathcal W_h=\bigl[\mathbb P_1(\mathcal T_h)\bigr]^4
+  =\operatorname{span}\{\text{\texttt{("Lagrange",1,(4,))}}\},
+  \qquad
+  \vU=(u_x^r,u_y^r,u_x^i,u_y^i),
+  \label{eq:Wspace}
+\end{equation}
+i.e.\ \emph{four} scalar degrees of freedom per vertex: the two in-plane
+components of the real part and the two of the imaginary part. This is the
+discrete carrier of the real four-field split \eqref{eq:block} --- it is why a
+real \texttt{PETSc} build suffices, and it is the reason the block operator is
+$4\times4$ rather than $2\times2$.
+
+The design fields live in the \emph{discontinuous, element-wise constant} space
+\begin{equation}
+  \theta_h\in\mathcal S_h=\mathbb{DG}_0(\mathcal T_h)
+  =\operatorname{span}\{\text{\texttt{("DG",0)}}\},
+\end{equation}
+one orientation per cell. The pairing
+$\mathcal W_h=[\mathbb P_1]^4$ with $\mathcal S_h=\mathbb{DG}_0$ is deliberate:
+the state must be conforming in $H^1$, whereas the design must be free to vary
+cell-by-cell without any inter-element continuity, and the cell gradient
+\eqref{eq:sens} is then obtained simply by differentiating the residual against
+the $\mathbb{DG}_0$ test function.
+
+\paragraph{The adjoint is solved in the same space.} We use a Galerkin
+discretization, so the adjoint state
+$\bm\Lambda_h\in\mathcal W_h$ --- the \emph{same} $[\mathbb P_1]^4$ space as the
+forward state, on the same mesh. Discretely the adjoint operator is the transpose
+$\mathcal A_h\T$ of the forward matrix, not a separately discretized continuous
+adjoint; this ``discretize-then-differentiate'' order is what makes the gradient
+exact for the discrete objective (and is why it matches finite differences to
+$\sim\!10^{-6}$ rather than to truncation error). Practically, the forward solve
+factors $\mathcal A_h=\mathbf{LU}$ and the adjoint solves with the transposed operator
+$\mathcal A_h\T$ by a second sparse LU factorization, so one gradient costs two
+factorizations (the forward factors could be reused for the transposed solve; we do not
+exploit this).
+
+\paragraph{Meshes.} The lens uses a structured right-triangle mesh of
+$[0,L_x]\times[0,L_y]$. The cloak and the
+panel instead use a
+\texttt{gmsh}/OCC mesh in which each circular hole is \emph{cut from the geometry}
+so the triangulation \emph{conforms} to the circle, refined on the rim. With linear (P1)
+elements the resolution of the slowest (quasi-shear) wave is about $\WElemLens$ elements per
+wavelength for the lens ($\omega=40$), $\WElemCloak$ for the cloak ($h=0.045$, $\omega=50$) and
+$\WElemPanel$ for the panel ($h=0.055$, $\omega=50$); the coarser two are checked by refinement
+in Appendix~\ref{app:verify}. The hole boundary is then exactly
+circular and traction-free by the natural boundary condition of the weak form. We
+flag the distinction because it is the substantive reason for using
+\texttt{dolfinx} here at all: representing a hole instead as a soft
+$\mathbb{DG}_0$ density void on a structured grid staircases the boundary to
+within one element, scatters off the staircase corners, and blurs the very radius
+$R$ that the curvature rule $\zeta_{\rm all}=1/R$ is tied to.
+
+\begin{table}[h]
+\centering\small
+\caption{Discrete spaces, element types and meshes ($\mathcal T_h$ the cell complex).}
+\label{tab:spaces}
+\begin{tabular}{ll}
+\toprule
+& wave control (\texttt{dolfinx})\\
+\midrule
+cells & triangles ($\mathbb P_1$ affine)\\
+mesh & structured; \texttt{gmsh} conforming w/ holes\\
+state space & $[\mathbb P_1]^4$, \texttt{("Lagrange",1,(4,))}\\
+DOF per node & 4 ($u^r_x,u^r_y,u^i_x,u^i_y$)\\
+DOF per element & 12\\
+quadrature & UFL-estimated degree\\
+mass & consistent\\
+design $\theta$ & $\mathbb{DG}_0$, \texttt{("DG",0)}\\
+parametrization & CS-RBF $\theta=\mathbf B\hat\theta$\\
+solve & sparse LU (real \texttt{PETSc})\\
+dual & adjoint in $\mathcal W_h$, $\mathcal A_h\T$ (second sparse LU)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Real four-field split of the complex vector problem}
+The weak form of \eqref{eq:strong} is the complex-symmetric system
+\begin{equation}
+  \bigl[(1+\ii\eta)\mathbf K(\vth)-\omega^2\mathbf M+\ii\omega\mathbf C\bigr]\vu
+  =\mathbf f,\quad
+  \mathbf K=\!\int_\Omega\!\veps(\cdot)\T\mathbf D_f(\theta)\veps(\cdot),\ \
+  \mathbf M=\!\int_\Omega\!\rho\,(\cdot)\!\cdot\!(\cdot),\ \
+  \mathbf C=\!\int_\Omega\!c\,(\cdot)\!\cdot\!(\cdot).
+  \label{eq:complex}
+\end{equation}
+The \texttt{PETSc} build stores \emph{real} scalars only, so we split
+$\vu=\vu_r+\ii\vu_i$ (each a 2-vector) and solve the equivalent real block system
+on the four-component field $U=(u_{xr},u_{yr},u_{xi},u_{yi})$,
+\begin{equation}
+  \begin{bmatrix} A & -B\\ B & \phantom{-}A\end{bmatrix}
+  \begin{bmatrix} \vu_r\\ \vu_i\end{bmatrix}
+  =\begin{bmatrix} \mathbf f_r\\ \mathbf f_i\end{bmatrix},\qquad
+  A=\mathbf K(\vth)-\omega^2\mathbf M,\qquad B=\eta\,\mathbf K(\vth)+\omega\mathbf C,
+  \label{eq:block}
+\end{equation}
+which is exactly $[\Real,-\Imag;\Imag,\Real]$ of the complex operator (the
+structural damping $\eta\mathbf K$ joins the sponge in the imaginary block $B$).
+
+\paragraph{Where \eqref{eq:block} comes from.} Write the complex operator as
+$\mathcal A_{\mathbb C}=A+\ii B$ with $A=\mathbf K-\omega^2\mathbf M$ and
+$B=\eta\mathbf K+\omega\mathbf C$ \emph{both real and symmetric}. Expanding the
+complex product and separating real and imaginary parts,
+\begin{equation}
+  (A+\ii B)(\vu_r+\ii\vu_i)
+  =\underbrace{\bigl(A\vu_r-B\vu_i\bigr)}_{\text{real part}}
+  +\ \ii\underbrace{\bigl(B\vu_r+A\vu_i\bigr)}_{\text{imaginary part}}
+  \ \overset{!}{=}\ \mathbf f_r+\ii\mathbf f_i ,
+\end{equation}
+and equating the two parts \emph{separately} --- legitimate because
+$\{1,\ii\}$ is a basis of $\mathbb C$ over $\mathbb R$ --- gives the two coupled
+real equations $A\vu_r-B\vu_i=\mathbf f_r$ and $B\vu_r+A\vu_i=\mathbf f_i$, i.e.\
+exactly \eqref{eq:block}. This is the standard \emph{realification}, the injective
+ring homomorphism
+$a+\ii b\ \mapsto\ \bigl[\begin{smallmatrix}a&-b\\ b&\phantom{-}a\end{smallmatrix}\bigr]$
+applied blockwise; nothing is approximated, dropped, or symmetrized.
+
+\begin{proposition}[Exactness of the split and of its adjoint]
+\label{prop:split}
+Let $A,B\in\mathbb R^{n\times n}$ be symmetric and
+$\mathcal A=\bigl[\begin{smallmatrix}A&-B\\ B&\phantom{-}A\end{smallmatrix}\bigr]$.
+Then
+\begin{enumerate}\itemsep0pt
+\item $(\vu_r,\vu_i)$ solves $\mathcal A(\vu_r,\vu_i)\T=(\mathbf f_r,\mathbf f_i)\T$
+if and only if $\vu=\vu_r+\ii\vu_i$ solves $(A+\ii B)\vu=\mathbf f_r+\ii\mathbf f_i$;
+in particular $\mathcal A$ is invertible exactly when $A+\ii B$ is.
+\item $\mathcal A\T=\bigl[\begin{smallmatrix}A&B\\ -B&A\end{smallmatrix}\bigr]$
+is the realification of $A-\ii B=(A+\ii B)\HH$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(1) is the displayed computation read in both directions. For (2), transposing
+blockwise and using $A\T=A$, $B\T=B$ gives
+$\mathcal A\T=\bigl[\begin{smallmatrix}A&B\\ -B&A\end{smallmatrix}\bigr]$, which
+is the image of $A-\ii B$ under
+$a+\ii b\mapsto\bigl[\begin{smallmatrix}a&-b\\ b&a\end{smallmatrix}\bigr]$; and
+$(A+\ii B)\HH=A\HH-\ii B\HH=A-\ii B$ since $A,B$ are real symmetric.
+\end{proof}
+
+Part (2) is the reason the real formulation costs us nothing in the optimization:
+the discrete adjoint equation \eqref{eq:adj} is solved with the \emph{transpose}
+$\mathcal A\T$, and Proposition~\ref{prop:split} says that transposing the real
+block system is precisely applying the complex \emph{Hermitian} adjoint. So the
+real solve returns the true complex adjoint state, not an approximation of it ---
+which is why the resulting gradient matches finite differences to
+$\sim\!10^{-6}$.
+
+\begin{remark}[Cost, and when the split can be dropped]
+\label{rem:cost}
+$\mathcal A$ is real but \emph{non}-symmetric whenever $B\neq0$ (i.e.\ whenever
+there is damping or a sponge), so it is factored by sparse LU, not Cholesky. The
+split doubles the unknowns; for a sparse factorization this costs a small constant factor
+over a native complex build of half the size, which we accept because the split is exact
+and runs on a real-scalar \texttt{PETSc} build. With a complex-scalar \texttt{PETSc}/\texttt{SLEPc} the
+entire construction of this subsection collapses to assembling
+\eqref{eq:complex} directly on a two-component complex space, and only the
+objective (which is already real-valued) needs care. Nothing else in the paper
+would change: the adjoint, the sensitivity \eqref{eq:sens} and every reported
+number are properties of the discrete problem, not of how its scalars are stored.
+\end{remark}
+
+We discretize $U$ on the four-component continuous $P_1$ space
+\eqref{eq:Wspace} and assemble \eqref{eq:block} as a single bilinear form. Writing the stiffness pairing
+$s(\mathbf a,\mathbf b)=\int_\Omega\veps(\mathbf a)\T\mathbf D_f(\theta)\veps(\mathbf b)$
+and the mass/sponge pairings $m(\mathbf a,\mathbf b)=\int_\Omega\rho\,\mathbf a
+\!\cdot\!\mathbf b$, $d(\mathbf a,\mathbf b)=\int_\Omega c\,\mathbf a\!\cdot\!
+\mathbf b$ for the test 2-vectors $\mathbf p_r,\mathbf p_i$,
+\begin{equation}
+\begin{aligned}
+  a(U,P;\vth)=\ &s(\vu_r,\mathbf p_r)-\omega^2 m(\vu_r,\mathbf p_r)
+  -\eta\,s(\vu_i,\mathbf p_r)-\omega\,d(\vu_i,\mathbf p_r)\\[-1pt]
+  +\ &s(\vu_i,\mathbf p_i)-\omega^2 m(\vu_i,\mathbf p_i)
+  +\eta\,s(\vu_r,\mathbf p_i)+\omega\,d(\vu_r,\mathbf p_i),\qquad
+  \ell(P)=\int_\Omega\mathbf f\!\cdot\!\mathbf p_r .
+\end{aligned}
+\label{eq:aform}
+\end{equation}
+The orientation $\theta$, the sponge $c$ and the region indicators are element-wise
+($DG_0$) fields; $\mathbf D_f(\theta)$ is built from \eqref{eq:Df} directly in UFL.
+Material, thickness and density are the same everywhere and in every design: voids are
+cut from the mesh, never represented by a density. We assemble
+\eqref{eq:aform} and solve with a sparse LU factorization; write the discrete
+system $\mathcal A(\vth)\,\vU=\vb$.
+
+\subsection{Absorbing sponge and drive}
+\label{sec:sponge}
+The sponge coefficient ramps quadratically into a boundary margin of width $m$,
+\begin{equation}
+  c(\vx)=c_0\Bigl[\max\Bigl(0,\ \tfrac{x-(L_x-m)}{m},\ \tfrac{m-y}{m},\
+  \tfrac{y-(L_y-m)}{m}\Bigr)\Bigr]^2 ,
+  \label{eq:sponge}
+\end{equation}
+absorbing outgoing waves at the right, top and bottom edges (the left edge carries the
+drive). The layer is imperfect: for the along-fiber qP wave it reflects
+$|R|=\WReflMin$--$\WReflMax$ at the lens frequencies, and $|R|\le\WReflThickMax$ when its width
+is doubled (Appendix~\ref{app:verify}), so the finite plate is weakly resonant. The drive is an $x$-directed line source
+concentrated near the left edge,
+\begin{equation}
+  \mathbf f(\vx)=\bigl(A\,e^{-\beta (x-x_0)^2},\,0\bigr),\qquad
+  (A,\beta,x_0)=(30,\,80,\,0.1),
+  \label{eq:source}
+\end{equation}
+a plane pressure wave. Parameters $(c_0,m)$ are $(80,0.6)$ for the lens and
+$(70,0.6)$ for the cloak (Table~\ref{tab:params}). Since $\mathbf C,\mathbf M$
+and $\mathbf f$ are $\theta$-independent, they drop out of every design
+sensitivity (\S\ref{sec:adj}).
+
+\section{Objectives and the discrete-adjoint sensitivity}
+\label{sec:adj}
+Both objectives are quadratic in the state, $J=\int_\Omega w\,\Psi(U)$ with $w$ a
+region indicator:
+\begin{equation}
+  \Psi_{\rm lens}=|\vu|^2=\!\sum_{k=0}^{3}U_k^2,\qquad
+  \Psi_{\rm cloak}=|\vu-\vu_{\rm ref}|^2=\!\sum_{k=0}^{3}(U_k-U_k^{\rm ref})^2,
+\end{equation}
+the focus energy in a target box (maximized) and the far-field mismatch to a
+void-free reference (minimized).
+
+\subsection{Lagrangian, adjoint equation, and residual derivative}
+Adjoin the forward problem $\mathcal A(\vth)\vU-\vb=\mathbf0$ with a multiplier
+$\bm\Lambda$: $\mathcal L=J(\vU)+\bm\Lambda\T(\mathcal A\vU-\vb)$. On the
+constraint manifold $\mathcal L=J$, and expanding the total derivative,
+\begin{equation}
+  \frac{\rmd J}{\rmd\theta_\ell}
+  =\underbrace{\Bigl(\tfrac{\partial J}{\partial\vU}
+  +\mathcal A\T\bm\Lambda\Bigr)\T\tfrac{\rmd\vU}{\rmd\theta_\ell}}
+  _{\text{eliminated by the adjoint}}
+  +\ \bm\Lambda\T\frac{\partial\mathcal A}{\partial\theta_\ell}\vU .
+\end{equation}
+Choosing $\bm\Lambda$ to kill the implicit state term gives the \emph{discrete
+adjoint equation}, and the design derivative then reduces to the explicit
+$\theta$-dependence of the residual:
+\begin{equation}
+  \boxed{\ \mathcal A(\vth)\T\bm\Lambda=-\frac{\partial J}{\partial\vU}\ }
+  \qquad
+  \boxed{\ \frac{\rmd J}{\rmd\theta_\ell}=\frac{\partial R}{\partial\theta_\ell},
+  \quad R(\vth)\equiv a(\vU,\bm\Lambda;\vth)-\ell(\bm\Lambda)\ }
+  \label{eq:adj}
+\end{equation}
+with $\vU,\bm\Lambda$ frozen. Only the stiffness terms in $R$ carry $\theta$, so
+\begin{equation}
+  \frac{\rmd J}{\rmd\theta_\ell}
+  =\int_{\Omega_\ell}\!\Bigl[\veps(\vu_r)\T
+  \tfrac{\partial\mathbf D_f}{\partial\theta}\veps(\bm\lambda_r)
+  +\veps(\vu_i)\T\tfrac{\partial\mathbf D_f}{\partial\theta}\veps(\bm\lambda_i)
+  +\eta\bigl(\veps(\vu_r)\T\tfrac{\partial\mathbf D_f}{\partial\theta}
+  \veps(\bm\lambda_i)-\veps(\vu_i)\T\tfrac{\partial\mathbf D_f}{\partial\theta}
+  \veps(\bm\lambda_r)\bigr)\Bigr],
+  \label{eq:sens}
+\end{equation}
+where $\bm\lambda_r,\bm\lambda_i$ are the real/imag adjoint displacements and
+$\partial\mathbf D_f/\partial\theta=\mathbf T'\mathbf Q_f\mathbf T\T+\mathbf T
+\mathbf Q_f\mathbf T'^{\,\T}$. The mass, sponge and source carry no
+$\theta$-dependence and drop out: the whole gradient is built from
+$\partial\mathbf D_f/\partial\theta$, so it vanishes identically for an isotropic
+material, making Remark~\ref{rem:iso} an exact statement about the gradient.
+
+\subsection{Automatic implementation, scaling, and verification}
+Each boxed step is one line of UFL. The adjoint load $\partial J/\partial\vU$ is
+$\texttt{derivative}(w\Psi(U)\rmd\vx,U,P)$; \eqref{eq:adj} is solved with the
+transposed operator $\mathcal A\T$ (a second sparse LU factorization); the cell gradient is
+$\texttt{derivative}(R,\theta,\hat P)$ against the $DG_0$ test function --- no
+element derivatives by hand. Both the lens and cloak gradients match central
+finite differences to a relative error $\sim\!10^{-6}$. The raw objectives are
+tiny ($\sim\!10^{-4}$), so for the lens we descend the scale-invariant
+\emph{log}-objective $g_\ell=(\partial_{\theta_\ell}J)/J$, restoring $O(1)$
+gradients for the Method of Moving Asymptotes (MMA) \cite{svanberg1987} under
+$\theta_\ell\in[-\tfrac\pi2,\tfrac\pi2]$.
+
+\subsection{Smooth orientation parametrization and manufacturable toolpaths}
+\label{sec:rbf}
+A raw per-cell orientation is mesh-scale noisy --- un-manufacturable and, driving
+the wave field, incoherent. We therefore parametrize $\theta$ by a coarse grid of
+support-point angles $\hat\theta=\{\hat\theta_i\}$ at sites $\{\mathbf s_i\}$
+(spacing $h_s$) interpolated to the cell centroids $\{\vx_c\}$ with a compactly
+supported Wendland $C^2$ radial basis \cite{wendland1995} $\phi(q)=(1-q)^4(4q+1)$ (support $q<1$), as in \cite{wong2025}:
+\begin{equation}
+  \theta_c=(B\hat\theta)_c=\sum_i B_{ci}\hat\theta_i,\qquad
+  B_{ci}=\frac{\phi(q_{ci})}{\sum_j\phi(q_{cj})},\qquad
+  q_{ci}=\frac{\lVert\vx_c-\mathbf s_i\rVert}{r},
+  \label{eq:rbf}
+\end{equation}
+a row-stochastic map ($\sum_i B_{ci}=1$); $B\T$ propagates to the gradient,
+$\partial J/\partial\hat\theta=B\T(\partial J/\partial\theta)$. Support spacing and
+radius are $(h_s,r)=(0.33,0.7)$ for the lens and $(0.28,0.6)$ for the cloak. This CS-RBF map makes
+the design low-dimensional and smooth \emph{by construction}. When the problem has a mirror symmetry (as the
+lens does about $y=L_y/2$) we enforce it on the design: a fiber field is
+symmetric under $y\!\mapsto\!L_y-y$ iff $\theta(x,L_y-y)=-\theta(x,y)$, so we use
+a support grid symmetric about the axis and project the design each iteration
+onto that subspace, $\hat\theta\mapsto\tfrac12(\hat\theta-\hat\theta_{\rm mirror})$.
+This removes the spurious asymmetry that the (non-symmetric) triangulation and
+optimizer would otherwise introduce, yielding a symmetric lens with a horizontal
+fiber on the axis. We delineate the resulting fiber \emph{toolpaths} with the
+wave projection of \cite{wong2025}: from the sign-free double-angle director
+$(\cos2\theta,\sin2\theta)$ we recover a smooth (seam-free) orientation branch by
+region-growing sign propagation, then solve for a phase field $\Phi$ whose gradient
+is unit and orthogonal to the fibers,
+\begin{equation}
+  \nabla\Phi(\vx)=\mathbf g\equiv[-\sin\theta,\ \cos\theta]\T,\qquad
+  \Phi=\arg\min_{\Phi}\int_\Omega\lVert\nabla\Phi-\mathbf g\rVert^2 ,
+  \label{eq:phase}
+\end{equation}
+discretized as a sparse least-squares gradient match on the grid (\texttt{lsqr};
+matching $\nabla\Phi$ \emph{directly} keeps $|\nabla\Phi|$ close to $1$ wherever the
+director field is nearly divergence-free --- the normal-equations Poisson form drops the
+boundary flux and collapses the pitch). The level sets of $\Phi$ at increments $d$ ---
+equivalently the peaks of the wave projection $\chi=\tfrac12+\tfrac12\cos(2\pi\Phi/d)$ ---
+are the as-manufactured tow center-lines; they follow the fiber direction, are masked out
+of any prescribed void, so no toolpath crosses a hole, and their spacing is $d$ only where
+the field does not converge or diverge: where it converges (as near the axis of the lens,
+Fig.~\ref{fig:lens}c) the tows crowd together, which a fiber placement process would
+resolve by cutting or adding tows. These paths visualize the field; we do not model the
+resulting thickness or gap variations. Together with the structural damping $\eta$,
+this smoothing is what renders the optimized fields coherent rather than speckled.
+
+\subsection{Fiber-curvature (curl) constraint}
+\label{sec:curl}
+A printable toolpath cannot bend arbitrarily tightly: the tow has a minimum
+turning radius. Following \cite{wong2025}, we bound the local
+\emph{fiber-path curvature} --- the directional derivative of the orientation
+along the fiber, $\vn=(\cos\theta,\sin\theta)$,
+\begin{equation}
+  \zeta(\vx)=(\vn\!\cdot\!\nabla)\theta
+  =\cos\theta\,\partial_x\theta+\sin\theta\,\partial_y\theta,\qquad
+  |\zeta(\vx)|\le\zeta_{\rm all},
+  \label{eq:curl}
+\end{equation}
+so $\zeta$ is exactly the signed curvature of the fiber streamlines and
+$\zeta_{\rm all}$ is the inverse minimum radius. The spatial derivatives come
+\emph{analytically} from the CS-RBF map \eqref{eq:rbf}:
+$\partial_x\theta=\mathbf B_x\hat\theta$, $\partial_y\theta=\mathbf B_y\hat\theta$.
+Writing $W_{ci}=\phi(q_{ci})$, $S_c=\sum_j W_{cj}$ (so $B_{ci}=W_{ci}/S_c$) and
+differentiating the kernel \emph{and} its normalization consistently,
+\begin{equation}
+  \partial_x W_{ci}=-\frac{20(1-q_{ci})^3}{r^2}\,(x_c-s_{ix}),\qquad
+  (\mathbf B_x)_{ci}=\frac{\partial_x W_{ci}}{S_c}
+  -B_{ci}\,\frac{\sum_j\partial_x W_{cj}}{S_c},
+  \label{eq:rbfderiv}
+\end{equation}
+and likewise $\mathbf B_y$ (using $\phi'(q)=-20\,q(1-q)^3$); we impose
+\eqref{eq:curl} through a penalty on the cell average of the excess of $\zeta^2$ over
+$\zeta_{\rm all}^2$,
+\begin{equation}
+  \mathcal C(\hat\theta)=\big\langle\,\max\!\big(0,\ \zeta^2-\zeta_{\rm all}^2\big)\,\big\rangle,
+  \qquad
+  \min_{\hat\theta}\ -\ln E(\hat\theta)+\mu\,\mathcal C(\hat\theta),
+\end{equation}
+whose gradient uses the curvature Jacobian
+$\partial\zeta/\partial\hat\theta=\operatorname{diag}(-\sin\theta\,\theta_x+\cos
+\theta\,\theta_y)\mathbf B+\operatorname{diag}(\cos\theta)\mathbf B_x
++\operatorname{diag}(\sin\theta)\mathbf B_y$ (finite-difference verified to
+$\sim\!10^{-10}$), with the penalty weight $\mu$ raised by continuation until the
+constraint is met.

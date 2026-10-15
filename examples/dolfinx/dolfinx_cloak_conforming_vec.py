@@ -14,8 +14,8 @@ field cannot be obtained by setting the density to one.  It is solved on a
 SEPARATE hole-free mesh of the same plate and transferred to the holed mesh by
 non-matching interpolation.
 
-    XDG_CACHE_HOME=/home/jrt/wavetopo/.fenics-cache PYTHONPATH=/home/jrt/wavetopo \
-    /home/jrt/miniforge3/envs/dolfinx_complex/bin/python3 \
+    XDG_CACHE_HOME=.fenics-cache PYTHONPATH=. \
+    python3  # dolfinx (real PETSc) env \
         examples/dolfinx_cloak_conforming_vec.py
 """
 import os

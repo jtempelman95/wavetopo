@@ -15,8 +15,8 @@ Removing material where the load path and the wave both need it costs the first 
 / last term respectively, so the optimum keeps the load paths and beam corridors
 solid and sheds the corners -- a lighter, stiffer, still-multifunctional panel.
 
-    XDG_CACHE_HOME=/home/jrt/wavetopo/.fenics-cache PYTHONPATH=/home/jrt/wavetopo \
-    /home/jrt/miniforge3/envs/dolfinx_complex/bin/python3 \
+    XDG_CACHE_HOME=.fenics-cache PYTHONPATH=. \
+    python3  # dolfinx (real PETSc) env \
         examples/dolfinx/dolfinx_panel_density.py --warm results/dolfinx_panel_band_data.npz
 """
 import argparse

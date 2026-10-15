@@ -1,0 +1,105 @@
+\section{Theory: how a fiber field steers wave energy}\label{sec:theory}
+
+\subsection{Plane waves in a rotated lamina}
+Consider a homogeneous lamina with fiber angle $\theta$ and a plane wave
+$\vu=\bm a\,e^{\ii(\omega t-k\,\vn\cdot\vx)}$ with unit wave normal
+$\vn=(\cos\phi,\sin\phi)$. The engineering strain is $\veps=-\ii k\,\mathbf N(\vn)\bm a$,
+with $\mathbf N(\vn)=\begin{bsmallmatrix}n_1&0\\0&n_2\\n_2&n_1\end{bsmallmatrix}$.
+Substituting into \eqref{eq:strong} without damping gives the Christoffel problem
+\begin{equation}
+\bm\Gamma(\vn;\theta)\,\bm a=\rho c^2\bm a,\qquad
+\bm\Gamma(\vn;\theta)=\mathbf N(\vn)\T\mathbf D_f(\theta)\,\mathbf N(\vn),\qquad c=\omega/k .
+\label{eq:christoffel}
+\end{equation}
+Its two eigenvalues give the phase speeds of the quasi-longitudinal (qP) and
+quasi-shear (qS) waves.
+
+\begin{proposition}[Only the relative angle matters]\label{prop:relangle}
+$\bm\Gamma(\vn;\theta)$ is unitarily similar to $\bm\Gamma(\vn_\psi;0)$, where $\vn_\psi$ is
+the unit vector at the relative angle $\psi=\phi-\theta$. Hence $c=c(\psi)$, and for
+an isotropic lamina $c$ is independent of $\psi$.
+\end{proposition}
+\begin{proof}
+Let $\bm R$ be the in-plane rotation by $\theta$. Then
+$\mathbf N(\bm R\vn_\psi)=\mathbf T(\theta)^{-\mathsf T}\mathbf N(\vn_\psi)\bm R^{\!\mathsf T}$
+(strain rotation), and $\mathbf D_f(\theta)=\mathbf T\mathbf Q_f\mathbf T\T$. Hence
+$\bm\Gamma(\vn;\theta)=\bm R\,\mathbf N(\vn_\psi)\T\mathbf Q_f\mathbf N(\vn_\psi)\bm
+R\T=\bm R\,\bm\Gamma(\vn_\psi;0)\,\bm R\T$. If $\mathbf Q_f$ is isotropic, then
+$\mathbf D_f(\theta)=\mathbf Q_f$ (Remark~\ref{rem:iso}) and $\bm\Gamma$ depends on $\vn$
+only through its rotation.
+\end{proof}
+
+\subsection{Energy velocity and skew}
+For a lossless homogeneous medium, the time-averaged energy flux of a plane wave equals
+its mean energy density times the group velocity $\bm c_g=\nabla_{\bm k}\omega$
+\cite{auld}. Writing $\omega=k\,c(\psi)$ in polar wave-vector coordinates,
+\begin{equation}
+\bm c_g=c(\psi)\,\vn+c'(\psi)\,\vn^\perp,\qquad
+\tan\delta(\psi)=\frac{c'(\psi)}{c(\psi)} ,
+\label{eq:skew}
+\end{equation}
+so the energy travels at the angle $\psi+\delta(\psi)$ from the fiber. Here $\delta$ is
+the \emph{skew} between the energy direction and the wave normal. For the CFRP lamina
+($E_{f1}/E_{f2}=14.6$) the qP speed falls from $9.07$ along the fiber to $2.38$ across
+it, and the skew reaches $65^\circ$ at $\psi=75^\circ$.
+\begin{itemize}[itemsep=1pt]
+\item A qP wave whose normal is $60^\circ$ off the fibers carries its energy only
+$4^\circ$ off them.
+\item The qS skew reaches $59^\circ$.
+\end{itemize}
+
+\paragraph{Channeling.} We call the fraction of wave normals whose energy direction lies
+within $20^\circ$ of the fiber the \emph{channeling share} $s_{20}$ of the lamina. For
+an isotropic lamina it is $22\%$, the purely geometric fraction $20/90$. Along the
+family $\mathbf Q(s)$, which keeps the isotropic invariants and scales the anisotropic
+ones (Sec.~\ref{sec:dose}), it rises monotonically:
+\begin{center}\small
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+$E_{f1}/E_{f2}$ & 1.0 & 1.7 & 2.9 & 5.4 & 14.6 & 31.9\\
+max qP skew & $0^\circ$ & $18^\circ$ & $35^\circ$ & $50^\circ$ & $65^\circ$ & $71^\circ$\\
+$s_{20}$ & 22\% & 42\% & 61\% & 75\% & 88\% & 94\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+A CFRP lamina therefore sends the energy of almost every incident direction along its
+fibers. This is the physical content of the hypothesis. When $\theta$ varies slowly on
+the wavelength scale, ray (WKB) theory applies locally, and the energy paths of a
+wave field in a steered plate approximate the integral curves of the fiber field. The
+fiber field is then a designable field of energy streamlines.
+
+\subsection{Predictions}\label{sec:predictions}
+\begin{itemize}[itemsep=2pt]
+\item \textbf{W1 (isotropy).} By Proposition~\ref{prop:relangle} and
+Remark~\ref{rem:iso}, an isotropic lamina makes the operator independent of $\theta$.
+Every orientation sensitivity vanishes identically. This is an identity of the model,
+not an empirical prediction; we use it as a consistency check of the discrete gradient.
+\item \textbf{W2 (redirection is the robust effect).} Write the target-energy gain of a
+design against straight fibers as
+\begin{equation}
+G=\frac{E_f}{E_f^0}=\underbrace{\frac{E_f/E_{\mathrm{int}}}{E_f^0/E^0_{\mathrm{int}}}}_{G_\varphi\ \text{(redirection)}}
+\;\times\;\underbrace{\frac{E_{\mathrm{int}}}{E^0_{\mathrm{int}}}}_{\text{field growth}},
+\label{eq:gainsplit}
+\end{equation}
+where $E_f$ is the energy in the target and $E_{\mathrm{int}}$ the energy in the plate
+interior (outside the sponge). The identity is exact. Channeling acts on
+$G_\varphi$ and does not depend on frequency, because \eqref{eq:skew} is
+non-dispersive. The field-growth factor depends on standing-wave interference in the
+finite, lightly damped plate, and so on frequency. A gain beyond $G_\varphi$ at the
+design frequency should therefore not survive a frequency change.
+\item \textbf{W3 (flux follows fibers).} In any slowly curving fiber field, optimized or
+not, the local energy flux should align with the local fiber director far better than
+with the drive direction. The control is a set of curved fields that were never
+optimized: if channeling were selected by the optimizer rather than imposed by the
+lamina, the flux would not follow their fibers.
+\item \textbf{W4 (anisotropy).} $G_\varphi$ should grow with the anisotropy, following
+$s_{20}$, from $1$ at isotropy.
+\item \textbf{W5 (limits).} A tow of minimum radius $R$ turns by at most $\ell/R$ over a run
+$\ell$. Energy channeled along the fibers can therefore be redirected only as fast as
+the fibers turn. Redirection should survive while tows can still turn on the
+wavelength scale, and fail once $R$ exceeds it. Exact cloaking, by contrast,
+needs the singular anisotropy of transformation media \cite{norris2008}. A
+fixed-contrast lamina must therefore rely on interference to cancel a scattered field, and
+we expect such cancellation to be tuned to one frequency (a hypothesis, tested in
+Sec.~\ref{sec:cloak}, not a theorem).
+\end{itemize}

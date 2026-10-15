@@ -30,8 +30,8 @@ The joint is CUT FROM THE GEOMETRY (conforming gmsh mesh, traction-free rim), an
 the fiber curvature is limited by the PRINT HEAD radius, zeta_all = 1/R_TOW
 (not by the hole: see the R_TOW comment below).
 
-    XDG_CACHE_HOME=/home/jrt/wavetopo/.fenics-cache PYTHONPATH=/home/jrt/wavetopo \
-    /home/jrt/miniforge3/envs/dolfinx_complex/bin/python3 \
+    XDG_CACHE_HOME=.fenics-cache PYTHONPATH=. \
+    python3  # dolfinx (real PETSc) env \
         examples/dolfinx_guide_joint.py
 """
 import numpy as np

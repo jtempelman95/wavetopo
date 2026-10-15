@@ -1,0 +1,55 @@
+\section{Governing model and the anisotropy lever}
+\label{sec:model}
+Consider in-plane time-harmonic motion $\Real\{\vu(\vx)e^{+\ii\omega t}\}$ (with this sign convention, structural damping $(1+\ii\eta)$ and a viscous sponge $+\ii\omega c$ are both dissipative),
+$\vu=(u_x,u_y)$, of a thin composite plate $\Omega\subset\mathbb R^2$ under
+plane-stress. With the engineering Voigt strain
+\begin{equation}
+  \veps(\vu)=\bigl[\,\partial_x u_x,\ \ \partial_y u_y,\ \
+  \partial_y u_x+\partial_x u_y\,\bigr]\T,
+\end{equation}
+the fiber composite has the rotated orthotropic plane-stress stiffness
+\begin{equation}
+  \mathbf D_f(\theta)=\mathbf T(\theta)\,\mathbf Q_f\,\mathbf T(\theta)\T,\qquad
+  \mathbf T(\theta)=\begin{bmatrix} c^2 & s^2 & -2sc\\ s^2 & c^2 & 2sc\\
+  sc & -sc & c^2-s^2\end{bmatrix},\ \ (c,s)=(\cos\theta,\sin\theta),
+  \label{eq:Df}
+\end{equation}
+where $\mathbf Q_f$ is the fiber stiffness in material axes,
+\begin{equation}
+  \mathbf Q_f=\begin{bmatrix} Q_{11}&Q_{12}&0\\ Q_{12}&Q_{22}&0\\
+  0&0&Q_{66}\end{bmatrix},\quad
+  Q_{11}=\tfrac{E_{f1}}{1-\nu_{12}\nu_{21}},\ \
+  Q_{22}=\tfrac{E_{f2}}{1-\nu_{12}\nu_{21}},\ \
+  Q_{12}=\tfrac{\nu_{12}E_{f2}}{1-\nu_{12}\nu_{21}},\ \ Q_{66}=G_{12},
+\end{equation}
+with $\nu_{21}=\nu_{12}E_{f2}/E_{f1}$. We use a carbon/epoxy lamina
+$E_{f1}=131,\ E_{f2}=9,\ G_{12}=5,\ \nu_{12}=0.27$ (a modulus contrast
+$E_{f1}/E_{f2}\approx14.6$), density $\rho=1.6$. The time-harmonic displacement
+obeys
+\begin{equation}
+  -\nabla\!\cdot\!\bigl[(1+\ii\eta)\,\bm\sigma(\vu;\theta)\bigr]
+  -\omega^2\rho\,\vu+\ii\,\omega\,c\,\vu=\mathbf f,\qquad
+  \bm\sigma=\mathbf D_f(\theta)\,\veps(\vu),
+  \label{eq:strong}
+\end{equation}
+where $\eta$ is a small structural (hysteretic) damping that keeps the response
+off sharp undamped resonances (we use $\eta=0.02$ in every computation, and test $0.01$ and $0.04$ in
+Appendix~\ref{app:verify}; without it the field is
+speckle), and $c(\vx)\ge0$ is a mass-proportional absorbing sponge
+(\S\ref{sec:sponge}). The orientation $\theta(\vx)$ is the sole design field.
+
+\begin{remark}[Isotropy annihilates the orientation lever]
+\label{rem:iso}
+The stiffness of an \emph{isotropic} material is a rotationally invariant tensor:
+if $\mathbf Q_f$ is isotropic ($Q_{11}=Q_{22}$ and $Q_{66}=\tfrac12(Q_{11}-Q_{12})$)
+then $\mathbf T(\theta)\mathbf Q_f\mathbf T(\theta)\T=\mathbf Q_f$ for every
+$\theta$, so $\mathbf D_f(\theta)$ --- and hence the entire operator
+\eqref{eq:strong} --- is \emph{independent of $\theta$}. Consequently
+$\partial\mathbf D_f/\partial\theta\equiv\mathbf 0$, every orientation
+sensitivity below (which we show is built from $\partial\mathbf D_f/\partial
+\theta$) vanishes identically, and fiber orientation is a \emph{dead design
+variable} for an isotropic plate. Fiber anisotropy is therefore \emph{necessary} for orientation-based wave control.
+How much control it buys is the subject of Sec.~\ref{sec:theory} and of the
+anisotropy study of Sec.~\ref{sec:dose}.
+\end{remark}
+

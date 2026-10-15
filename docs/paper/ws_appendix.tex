@@ -1,0 +1,497 @@
+\section{Complete numerical parameters}\label{app:params}
+Every constant below is the literal argument of the drivers
+(\texttt{examples/\allowbreak dolfinx/\allowbreak dolfinx\_\allowbreak lens.py}, \texttt{dolfinx\_\allowbreak cloak\_\allowbreak conforming\_\allowbreak vec.py},
+\texttt{dolfinx\_\allowbreak panel.py}) and the analysis scripts in \texttt{examples/\allowbreak analysis/}.
+\begin{table}[h]
+\centering\small
+\caption{Complete parameter set.}\label{tab:params}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+quantity & lens & cloak \\ \midrule
+lamina $(E_{f1},E_{f2},G_{12},\nu_{12})$, $\rho$ & \multicolumn{2}{c}{$(131,\,9,\,5,\,0.27)$, $1.6$}\\
+frequency $\omega$ (design) & $40$ & $50$\\
+structural damping $\eta$ & $0.02$ & $0.02$\\
+domain & $4\times3$ & $8\times5$, void $R_V=0.55$ at $(3.2,2.5)$\\
+mesh & structured, $130\times98$ ($\times2$ triangles) & \texttt{gmsh} conforming, $h=0.045$ ($h/2$ on rim)\\
+sponge $(c_0,m)$, Eq.~\eqref{eq:sponge} & $(80,\,0.6)$ & $(70,\,0.6)$\\
+source $(A,\beta,x_0)$, Eq.~\eqref{eq:source} & \multicolumn{2}{c}{$(30,\,80,\,0.1)$}\\
+CS-RBF $(h_s,r)$ & $(0.33,\,0.7)$, mirror-symmetric & $(0.28,\,0.6)$, shell $R_{\rm des}=1.5$ (tapered)\\
+objective region & box $(0.78L_x,L_y/2)\pm0.18$ & interior, $r>R_C=1.7$\\
+MMA move & $0.10$, 70 iterations & $0.15$ adaptive, 200--240 iterations\\
+curvature limit $\zeta_{\rm all}$ & none / front (Table~\ref{tab:front}) & none / $1/R_V=1.82$\\
+toolpath pitch $d$ & \multicolumn{2}{c}{$0.16$}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Algorithm}\label{app:alg}
+\begin{algorithm}[H]
+\caption{Orientation design for wave control (\texttt{dolfinx})}
+\label{alg:wave}
+\begin{algorithmic}[1]
+\Require mesh, material $\mathbf Q_f$, frequency $\omega$, damping $\eta$, sponge
+  $c(\vx)$, drive $\vb$, support sites $\{\mathbf s_i\}$, radius $r$, curvature
+  limit $\zeta_{\rm all}$, void set $\mathcal V$
+\State \textbf{mesh:} cut each void in $\mathcal V$ from the geometry
+  (\texttt{gmsh}/OCC), refining the rim, so $\mathcal T_h$ conforms to it and the
+  hole boundary is traction-free \Comment{no soft void, no staircase}
+\State build $\mathbf B,\mathbf B_x,\mathbf B_y$ from \eqref{eq:rbf},
+  \eqref{eq:rbfderiv}; build $\mathbf S$ from $\mathbf S=\tfrac12(\mathbf I-\bm\Pi)$
+\State $\hat\theta\gets\mathbf 0$ \Comment{straight-fiber baseline}
+\State solve $\vU_{\rm ref}$ on a \emph{separate void-free} mesh and transfer it by
+  non-matching interpolation (cloak only); record the baseline metric
+\For{$\mu\in\{\mu_0,\dots,\mu_{\rm max}\}$} \Comment{penalty continuation}
+  \For{$t=1,\dots,T$}
+    \State $\hat\theta\gets\mathbf S\hat\theta$;\quad
+           $\theta\gets\mathbf B\hat\theta$
+           \Comment{symmetrize, then interpolate}
+    \State assemble $\mathcal A(\vth)$ as the real $4\times4$ block
+           \eqref{eq:block} \Comment{voids already absent from $\mathcal T_h$}
+    \State \textbf{forward:} factor $\mathcal A=\mathbf{LU}$, solve
+           $\mathcal A\vU=\vb$
+    \State evaluate $J$, and $E$ (focus energy) or the far-field mismatch
+    \State \textbf{adjoint:} solve $\mathcal A\T\bm\Lambda=-\partial J/\partial\vU$
+           (sparse LU of $\mathcal A\T$)
+    \State $d_\ell\gets\partial R/\partial\theta_\ell$ by UFL differentiation
+           \eqref{eq:sens}
+    \State $\bm\zeta\gets\cos\theta\,(\mathbf B_x\hat\theta)
+           +\sin\theta\,(\mathbf B_y\hat\theta)$;\quad
+           $\mathcal C\gets\langle\max(0,\zeta^2-\zeta_{\rm all}^2)\rangle$
+    \State $\mathbf g\gets$ \eqref{eq:sens} with the curvature penalty of \S\ref{sec:curl}
+           \Comment{$\mathbf S\T\mathbf B\T$ plus curvature term}
+    \State $\hat\theta\gets\textsc{MMA}\bigl(\hat\theta,\mathbf g;\
+           -\tfrac\pi2\le\hat\theta\le\tfrac\pi2\bigr)$
+  \EndFor
+  \If{$\max_c|\zeta_c|\le\zeta_{\rm all}$} \textbf{break} \Comment{feasible}
+  \EndIf
+\EndFor
+\State \textbf{delineate toolpaths:} sign-consistent branch of
+  $(\cos2\theta,\sin2\theta)$; solve $\nabla\Phi=\mathbf g$ by \texttt{lsqr}
+  \eqref{eq:phase}; tows $\chi=\tfrac12+\tfrac12\cos(2\pi\Phi/d)$, masked off
+  $\mathcal V$
+\State \Return $\hat\theta$, $\theta$, $\vU$, gain/reduction, $\chi$
+\end{algorithmic}
+\end{algorithm}
+\section{Detailed derivations (modeling)}
+\label{app:derivmodel}
+This appendix carries every modeling step in full, so each equation of
+\S\ref{sec:model}--\S\ref{sec:sponge} can be re-derived and independently checked.
+
+\subsection{Orthotropic plane-stress stiffness $\mathbf Q_f$}
+In the fiber (material) frame $(1,2)$, under plane stress
+($\sigma_{33}=\sigma_{13}=\sigma_{23}=0$), the orthotropic compliance relating the
+engineering strain $\veps=[\varepsilon_{11},\varepsilon_{22},\gamma_{12}]\T$ to the
+stress $\bm\sigma=[\sigma_{11},\sigma_{22},\sigma_{12}]\T$ is
+\begin{equation}
+  \veps=\mathbf S\,\bm\sigma,\qquad
+  \mathbf S=\begin{bmatrix} 1/E_{f1} & -\nu_{21}/E_{f2} & 0\\[1pt]
+  -\nu_{12}/E_{f1} & 1/E_{f2} & 0\\[1pt] 0 & 0 & 1/G_{12}\end{bmatrix},
+\end{equation}
+with the reciprocity $\nu_{12}/E_{f1}=\nu_{21}/E_{f2}$, i.e.\
+$\nu_{21}=\nu_{12}E_{f2}/E_{f1}$, which makes $\mathbf S$ symmetric. The stiffness
+is $\mathbf Q_f=\mathbf S^{-1}$. The upper $2\times2$ block inverts with determinant
+$\Delta=\tfrac{1}{E_{f1}E_{f2}}(1-\nu_{12}\nu_{21})$, giving
+\begin{equation}
+  Q_{11}=\frac{E_{f1}}{1-\nu_{12}\nu_{21}},\quad
+  Q_{22}=\frac{E_{f2}}{1-\nu_{12}\nu_{21}},\quad
+  Q_{12}=\frac{\nu_{12}E_{f2}}{1-\nu_{12}\nu_{21}},\quad Q_{66}=G_{12},
+\end{equation}
+the entries of \eqref{eq:Df} (\texttt{Qf\_matrix}). The shear row decouples, hence
+$Q_{16}=Q_{26}=0$.
+
+\subsection{Rotation to the global frame and $\partial\mathbf D_f/\partial\theta$}
+Let $\theta$ be the fiber angle and $(c,s)=(\cos\theta,\sin\theta)$. Rotating the
+material-frame engineering strain to the global frame is $\veps_{\rm mat}=\mathbf
+T(\theta)\T\veps$ with the engineering-strain rotation
+\begin{equation}
+  \mathbf T(\theta)=\begin{bmatrix} c^2 & s^2 & -2sc\\ s^2 & c^2 & 2sc\\
+  sc & -sc & c^2-s^2\end{bmatrix},
+\end{equation}
+so that the global stiffness is a congruence transform of the material one,
+\begin{equation}
+  \mathbf D_f(\theta)=\mathbf T(\theta)\,\mathbf Q_f\,\mathbf T(\theta)\T .
+  \label{eq:Dfcong}
+\end{equation}
+Differentiating entry-by-entry ($c'=-s$, $s'=c$),
+\begin{equation}
+  \mathbf T'(\theta)=\frac{\rmd\mathbf T}{\rmd\theta}
+  =\begin{bmatrix} -2sc & 2sc & -2(c^2-s^2)\\ 2sc & -2sc & 2(c^2-s^2)\\
+  c^2-s^2 & -(c^2-s^2) & -4sc\end{bmatrix},
+\end{equation}
+and by the product rule on \eqref{eq:Dfcong},
+\begin{equation}
+  \frac{\partial\mathbf D_f}{\partial\theta}
+  =\mathbf T'\mathbf Q_f\mathbf T\T+\mathbf T\mathbf Q_f\mathbf T'^{\,\T},
+  \label{eq:dDf}
+\end{equation}
+which is the object every orientation sensitivity is built from
+(cf.\ \eqref{eq:sens}).
+
+\subsection{Exact five-term Fourier decomposition of $\mathbf D_f(\theta)$}
+\label{app:fourier}
+The \texttt{dolfinx} implementation behind every result in this paper evaluates
+\eqref{eq:Dfcong}--\eqref{eq:dDf} directly, as a congruence product differentiated
+symbolically by UFL. The rotation nevertheless has a sharper structure, which we derive
+here because it exposes the material invariants through which every orientation effect
+acts (Sec.~\ref{sec:theory}) and because it gives an equivalent closed form, cheaper to
+evaluate, that a structured-grid implementation can use: \emph{$\mathbf D_f(\theta)$ is a
+trigonometric polynomial of degree four in $\theta$, exactly}.
+
+Start from the entries of $\mathbf T(\theta)$. Each is a quadratic monomial in
+$(c,s)$ --- one of $c^2$, $s^2$, or $sc$ --- and the double-angle identities write
+every such monomial in the fixed basis $\{1,\cos2\theta,\sin2\theta\}$:
+\begin{equation}
+  c^2=\tfrac12(1+\cos2\theta),\qquad
+  s^2=\tfrac12(1-\cos2\theta),\qquad
+  sc=\tfrac12\sin2\theta .
+  \label{eq:double}
+\end{equation}
+So every entry of $\mathbf T$ --- and hence of $\mathbf T\T$ --- lives in
+$\operatorname{span}\{1,\cos2\theta,\sin2\theta\}$. The congruence
+\eqref{eq:Dfcong} multiplies two $\mathbf T$-factors (with the constant $\mathbf
+Q_f$ between them), so each entry of $\mathbf D_f$ is a sum of \emph{products of two}
+such first-harmonic terms. The product-to-sum identities collapse those products to
+the second harmonic and no higher,
+\begin{equation}
+  \cos2\theta\cos2\theta=\tfrac12(1+\cos4\theta),\quad
+  \sin2\theta\sin2\theta=\tfrac12(1-\cos4\theta),\quad
+  \cos2\theta\sin2\theta=\tfrac12\sin4\theta ,
+\end{equation}
+so nothing beyond $4\theta$ can appear. Every entry of $\mathbf D_f(\theta)$ therefore
+lies in the five-dimensional space
+$\operatorname{span}\{1,\cos2\theta,\sin2\theta,\cos4\theta,\sin4\theta\}$, and
+collecting the coefficient of each basis function into its own constant $3\times3$
+matrix gives the \emph{exact} decomposition
+\begin{equation}
+  \boxed{\;\mathbf D_f(\theta)=\sum_{s=0}^{4}c_s(\theta)\,\mathbf C_s\;},\qquad
+  \mathbf c(\theta)=\bigl[\,1,\ \cos2\theta,\ \sin2\theta,\ \cos4\theta,\ \sin4\theta\,\bigr],
+  \label{eq:dffourier}
+\end{equation}
+in which the five $\mathbf C_s$ depend only on $\mathbf Q_f$ (each symmetric, since
+$\mathbf D_f$ is). They are recovered once, offline, by projecting $\mathbf
+D_f(\theta)$ onto the basis $\mathbf c$ over a dense $\theta$-sample --- an exact fit,
+not an approximation, because the five functions span the range; in the
+implementation the residual of the least-squares recovery is
+$8.5\times10^{-16}$, i.e.\ machine zero, which is the numerical confirmation that the
+degree is really four and not higher.
+
+Two consequences make this the preferred form. First, the derivative no longer needs
+the product rule \eqref{eq:dDf}; it is just the (elementwise) derivative of the
+scalar basis,
+\begin{equation}
+  \frac{\partial\mathbf D_f}{\partial\theta}=\sum_{s=0}^{4}c_s'(\theta)\,\mathbf C_s,
+  \qquad
+  \mathbf c'(\theta)=\bigl[\,0,\ -2\sin2\theta,\ 2\cos2\theta,\ -4\sin4\theta,\ 4\cos4\theta\,\bigr],
+  \label{eq:dffourierderiv}
+\end{equation}
+which is exact to round-off and shares the constant $\mathbf C_s$ with the value
+\eqref{eq:dffourier}, so value and gradient cost one small matrix combination each.
+Second, the decomposition passes \emph{through} the element integral. The fiber
+element stiffness is $\mathbf k_f(\theta)=\int_e \mathbf B\T\mathbf D_f(\theta)\,
+\mathbf B$, and because the $c_s(\theta)$ are scalars they factor out of the integral,
+\begin{equation}
+  \mathbf k_f(\theta)=\sum_{s=0}^{4}c_s(\theta)\,\underbrace{\int_e \mathbf B\T
+    \mathbf C_s\,\mathbf B}_{\textstyle \mathbf k_f^{(s)}}
+  =\sum_{s=0}^{4}c_s(\theta)\,\mathbf k_f^{(s)} ,
+  \label{eq:kffourier}
+\end{equation}
+so an implementation can cache five fixed matrices $\mathbf k_f^{(s)}$ per element (for
+a linear triangle, $\mathbf k_f^{(s)}=A\,\mathbf B\T\mathbf C_s\mathbf B$, since
+$\mathbf B$ is constant), and every value or $\theta$-derivative of the element stiffness
+is a five-term weighted sum of them. The two forms give identical stiffness and gradients;
+the symbolic form is what we use.
+
+\subsection{Isotropy annihilation (proof of Remark~\ref{rem:iso})}
+$\mathbf Q_f$ is isotropic iff $Q_{11}=Q_{22}$ and $Q_{66}=\tfrac12(Q_{11}-Q_{12})$.
+Then $\mathbf Q_f=\lambda\mathbf 1\mathbf 1\T+2\mu\,\mathbf P$ with $\mathbf
+1=[1,1,0]\T$ and $\mathbf P$ the deviatoric projector, both invariant under the
+in-plane rotation $\mathbf T(\theta)$ (an isotropic tensor is unchanged by
+rotation): $\mathbf T\mathbf Q_f\mathbf T\T=\mathbf Q_f$ for all $\theta$. Hence
+$\mathbf D_f(\theta)\equiv\mathbf Q_f$ and, by \eqref{eq:dDf},
+$\partial\mathbf D_f/\partial\theta\equiv\mathbf 0$; by \eqref{eq:sens} every
+orientation sensitivity vanishes. Orientation is a dead variable exactly when the
+material is isotropic. $\square$
+
+\subsection{Elastodynamics, time-harmonic reduction, damping, sponge}
+Momentum balance for the displacement $\vu(\vx,t)$ with mass density $\rho$ and
+the plane-stress constitutive law $\bm\sigma=\mathbf D_f(\theta)\veps(\vu)$ is
+$\nabla\!\cdot\!\bm\sigma=\rho\,\ddot{\vu}$. Seeking time-harmonic motion
+$\vu(\vx,t)=\Real\{\vu(\vx)e^{+\ii\omega t}\}$ turns $\ddot{\vu}\to-\omega^2\vu$ and $\dot\vu\to\ii\omega\vu$.
+Structural (hysteretic) damping multiplies the stiffness by $(1+\ii\eta)$, and a
+mass-proportional absorbing sponge $c(\vx)\ge0$ adds a term $+\ii\omega c\,\vu$
+(the $\dot{\vu}\to\ii\omega\vu$ of a viscous force $c\dot\vu$), giving the strong
+form \eqref{eq:strong}. Multiplying by a test function $\vv$ and integrating by
+parts (the sponge edges carry the outgoing radiation, the driven edge the source)
+yields the weak form and, after $P_1$ interpolation, the complex system
+\eqref{eq:complex} with
+$\mathbf K=\int\veps(\cdot)\T\mathbf D_f\veps(\cdot)$,
+$\mathbf M=\int\rho(\cdot)\!\cdot\!(\cdot)$,
+$\mathbf C=\int c(\cdot)\!\cdot\!(\cdot)$ (\texttt{\_forms}).
+
+\subsection{Exact real four-field split}
+Write the complex operator of \eqref{eq:complex} as
+$\mathbf D=(1+\ii\eta)\mathbf K-\omega^2\mathbf M+\ii\omega\mathbf C=A+\ii B$ with
+\begin{equation}
+  A=\mathbf K-\omega^2\mathbf M,\qquad B=\eta\mathbf K+\omega\mathbf C,
+\end{equation}
+both real symmetric. Splitting $\vu=\vu_r+\ii\vu_i$ and $\mathbf f=\mathbf
+f_r+\ii\mathbf f_i$, the equation $(A+\ii B)(\vu_r+\ii\vu_i)=\mathbf f_r+\ii\mathbf
+f_i$ separates into real and imaginary parts,
+\begin{equation}
+  A\vu_r-B\vu_i=\mathbf f_r,\qquad B\vu_r+A\vu_i=\mathbf f_i,
+\end{equation}
+i.e.\ the real block system \eqref{eq:block} on
+$\vU=(u_{xr},u_{yr},u_{xi},u_{yi})$. It is exactly $[\Real,-\Imag;\Imag,\Real]$ of
+$\mathbf D$, so a real \texttt{PETSc} build solves the complex problem without
+complex scalars.
+
+\section{Detailed derivations (optimization)}
+\label{app:derivopt}
+
+\subsection{Discrete adjoint and design sensitivity}
+Let the assembled forward problem be $\mathcal A(\vth)\vU=\vb$ with
+$\mathcal A=[A,-B;B,A]$, and let $J(\vU)$ be an objective. Form the Lagrangian with
+a multiplier $\bm\Lambda$,
+$\mathcal L=J(\vU)+\bm\Lambda\T(\mathcal A\vU-\vb)$; on the constraint manifold
+$\mathcal L=J$. Its total derivative in a design $\theta_\ell$ is
+\begin{equation}
+  \frac{\rmd J}{\rmd\theta_\ell}
+  =\frac{\partial J}{\partial\vU}\T\frac{\rmd\vU}{\rmd\theta_\ell}
+  +\bm\Lambda\T\Bigl(\mathcal A\frac{\rmd\vU}{\rmd\theta_\ell}
+  +\frac{\partial\mathcal A}{\partial\theta_\ell}\vU\Bigr)
+  =\Bigl(\frac{\partial J}{\partial\vU}+\mathcal A\T\bm\Lambda\Bigr)\T
+  \frac{\rmd\vU}{\rmd\theta_\ell}
+  +\bm\Lambda\T\frac{\partial\mathcal A}{\partial\theta_\ell}\vU .
+\end{equation}
+Choosing $\bm\Lambda$ to annihilate the bracket gives the adjoint equation and
+reduces the sensitivity to the explicit design dependence of the residual
+$R(\vth)=\bm\Lambda\T\big(\mathcal A(\vth)\vU-\vb\big)$ (with $\vU,\bm\Lambda$ frozen):
+\begin{equation}
+  \mathcal A\T\bm\Lambda=-\frac{\partial J}{\partial\vU},\qquad
+  \frac{\rmd J}{\rmd\theta_\ell}=\bm\Lambda\T
+  \frac{\partial\mathcal A}{\partial\theta_\ell}\vU .
+\end{equation}
+Only $\mathbf K(\vth)$ (hence $A,B$) depends on $\theta$, and only through
+$\partial\mathbf D_f/\partial\theta$ \eqref{eq:dDf}; expanding $\bm\Lambda=(\bm
+\lambda_r,\bm\lambda_i)$ block-wise and using $\partial A/\partial\theta_\ell=
+\partial\mathbf K/\partial\theta_\ell$, $\partial B/\partial\theta_\ell=\eta\,
+\partial\mathbf K/\partial\theta_\ell$ gives the explicit cell integral
+\eqref{eq:sens}. The mass, sponge and source terms carry no $\theta$ and drop out,
+so the gradient is entirely built from $\partial\mathbf D_f/\partial\theta$ ---
+which vanishes for an isotropic material, making Remark~\ref{rem:iso} a statement
+about the gradient itself. For a quadratic objective $J=\int w|\vu|^2$ the adjoint
+load is linear, $\partial J/\partial\vU=2\,\mathrm{diag}(w)\vU$ (a signed weight $w$ gives the
+multi-region objectives of Sec.~\ref{sec:panel}); in the code both the
+adjoint load and the residual derivative are single \texttt{ufl.derivative} calls
+(\texttt{\_sensitivity}), FD-verified to $\sim\!10^{-6}$.
+
+\subsection{CS-RBF chain rule and its analytic derivatives}
+With $\theta=B\hat\theta$ \eqref{eq:rbf}, the reduced gradient is
+$\partial J/\partial\hat\theta=B\T(\partial J/\partial\theta)$. For the curvature
+constraint we also need $\partial_x\theta,\partial_y\theta$. Writing
+$W_{ci}=\phi(q_{ci})$ and $S_c=\sum_jW_{cj}$ so $B_{ci}=W_{ci}/S_c$, the chain rule
+on $q_{ci}=\lVert\vx_c-\mathbf s_i\rVert/r$ with $\phi'(q)=-20q(1-q)^3$ gives
+$\partial_x W_{ci}=\phi'(q_{ci})\,\partial_x q_{ci}
+=-\tfrac{20(1-q_{ci})^3}{r^2}(x_c-s_{ix})$, and the quotient rule on $B_{ci}$
+yields \eqref{eq:rbfderiv}, i.e.\ $\mathbf B_x=S^{-1}W_x-\mathrm{diag}(S^{-1}W_x
+\mathbf 1)\,B$ (and $\mathbf B_y$ likewise); the second term is the derivative of
+the partition-of-unity normalization, without which $\sum_i(\mathbf B_x)_{ci}\neq0$
+and the curvature would be biased (\texttt{csrbf\_operators}).
+
+\subsection{Fiber-curvature functional and its Jacobian}
+The fiber-path curvature is the directional derivative of $\theta$ along the fiber
+$\vn=(\cos\theta,\sin\theta)$,
+$\zeta=\cos\theta\,\theta_x+\sin\theta\,\theta_y$ with $\theta_x=\mathbf
+B_x\hat\theta$, $\theta_y=\mathbf B_y\hat\theta$. Differentiating w.r.t.\
+$\hat\theta$ (product rule, $\partial\theta/\partial\hat\theta=B$),
+\begin{equation}
+  \frac{\partial\zeta}{\partial\hat\theta}
+  =\mathrm{diag}(-\sin\theta\,\theta_x+\cos\theta\,\theta_y)\,B
+  +\mathrm{diag}(\cos\theta)\,\mathbf B_x+\mathrm{diag}(\sin\theta)\,\mathbf B_y .
+\end{equation}
+The penalty $\mathcal C=\langle\max(0,\zeta^2-\zeta_{\rm all}^2)\rangle$ has gradient
+$\partial\mathcal C/\partial\hat\theta=\tfrac{2}{n}(\partial\zeta/\partial\hat\theta)\T
+[\zeta\odot\mathbf 1_{\{\zeta^2>\zeta_{\rm all}^2\}}]$ (restricted to solid cells
+for the cloak), FD-verified to $\sim\!10^{-10}$ (\texttt{curl\_penalty}). It is
+added to the objective with a continuation weight $\mu$ ramped until the
+constraint is met.
+
+\subsection{Phase-field toolpath extraction}
+The tow field is the level set of $\Phi$ with $\nabla\Phi=\mathbf g=[-\sin\theta,
+\cos\theta]\T$ (unit, orthogonal to the fiber). This overdetermined system
+(two equations, one unknown) is solved in the least-squares sense
+$\min_\Phi\int\lVert\nabla\Phi-\mathbf g\rVert^2$. Its Euler--Lagrange condition is
+the Poisson equation $\nabla^2\Phi=\nabla\!\cdot\mathbf g$ with the \emph{natural}
+Neumann data $\partial\Phi/\partial n=\mathbf g\!\cdot\!\vn$ on $\partial\Omega$.
+The boundary flux is essential: dropping it (homogeneous Neumann) leaves only
+$\nabla^2\Phi=\nabla\!\cdot\mathbf g$, whose solution for a nearly divergence-free
+$\mathbf g$ collapses to $\Phi\approx\mathrm{const}$ ($|\nabla\Phi|\!\to\!0$), i.e.\
+washed-out tows. We therefore assemble the discrete forward-difference gradient
+operator $G=[G_x;G_y]$ on the grid and solve $\min_\Phi\lVert G\Phi-\mathbf
+g\rVert^2$ directly (\texttt{lsqr}, one pinned node fixing the constant), which
+enforces $|\nabla\Phi|\approx1$, and hence a constant tow pitch, where the director field is nearly divergence-free. The tows are the
+peaks of $\chi=\tfrac12+\tfrac12\cos(2\pi\Phi/d)$ (\texttt{fiber\_phase}). A
+seam-free director branch is obtained beforehand by region-growing sign
+propagation (\texttt{\_orient\_consistent}).
+
+\subsection{Symmetry projector}
+The map $\bm\Pi$ exchanging each support site with its mirror image is an involutive
+permutation ($\bm\Pi^2=\mathbf I$, $\bm\Pi\T=\bm\Pi$), so with
+$\mathbf S=\tfrac12(\mathbf I-\bm\Pi)$,
+$\mathbf S\T=\mathbf S$ and
+$\mathbf S^2=\tfrac14(\mathbf I-2\bm\Pi+\bm\Pi^2)=\tfrac12(\mathbf I-\bm\Pi)
+=\mathbf S$. Thus $\mathbf S$ is the \emph{orthogonal} projector onto
+$\{\hat\theta:\bm\Pi\hat\theta=-\hat\theta\}$, the mirror-symmetric fiber fields.
+Being self-adjoint, the same operator symmetrizes the design and the gradient, so
+imposing symmetry introduces no inconsistency between the two --- the projected
+gradient is exactly the gradient of the restricted problem. \qed
+
+\subsection{MMA subproblem}
+Each iteration the Method of Moving Asymptotes \cite{svanberg1987} replaces $J,\mathcal C$ by convex
+separable approximations built from moving asymptotes $L_\ell<\hat\theta_\ell<U_\ell$,
+\begin{equation}
+  \tilde J(\hat\theta)=r+\sum_\ell\Bigl(\frac{p_\ell}{U_\ell-\hat\theta_\ell}
+  +\frac{q_\ell}{\hat\theta_\ell-L_\ell}\Bigr),\quad
+  \begin{cases} p_\ell=(U_\ell-\hat\theta_\ell^{(k)})^2\,(\partial_\ell J)^+\\
+  q_\ell=(\hat\theta_\ell^{(k)}-L_\ell)^2\,(\partial_\ell J)^-\end{cases}
+\end{equation}
+($(\cdot)^\pm$ the positive/negative parts), with the asymptotes contracted or
+expanded by the sign history of $\hat\theta_\ell$ and a move limit per step. The
+separable convex subproblem is solved by its (cheap) dual. Because the raw
+objectives are $O(10^{-4})$ we feed MMA the scale-invariant log-gradient
+$g_\ell=(\partial_{\theta_\ell}J)/J$ for the lens focus, restoring $O(1)$
+sensitivities; the cloak uses the raw gradient (well scaled). Bounds are
+$\hat\theta_\ell\in[-\tfrac\pi2,\tfrac\pi2]$ (\texttt{cfrp\_optimizer.py : MMA}).
+
+\section{Multifunctional panel objective}\label{app:panelobj}
+
+With the region energies $E_R=\int_{\Omega_R}|\mathbf u|^2\,\mathrm d\mathbf x$, the four
+wave jobs compose into a single scalar
+\begin{equation}
+  \mathcal J_{\rm wave}=W_S\log\frac{E_S}{E_S^0}
+  -\lambda_P\frac{E_P}{E_P^0}-\lambda_F\frac{E_F}{E_F^0}-\lambda_O\frac{E_O}{E_O^0},
+  \label{eq:panelobj}
+\end{equation}
+with the regions made \emph{disjoint} by priority (rims $>$ payload $>$ sensor $>$
+outside) so no cell is rewarded and penalized at once, and each term divided by its
+straight-fiber baseline $E_R^0$ so all four are $O(1)$ and directly comparable. Two
+choices matter. The delivery reward is \emph{logarithmic}: with a plain ratio a bright
+sensor term would swamp the rim penalty and the optimizer would buy delivery by letting
+the fasteners get busier, whereas $\log$ has diminishing returns so protecting the rims
+stays worthwhile however bright the port already is. The confinement term penalizes
+interior energy \emph{outside} the target regions, which forces a clean routed beam
+rather than a diffraction spray. The gradient still needs one adjoint solve per state:
+for $\mathcal J_{\rm wave}=\sum_R c_R E_R$ (the log term contributing $c_S=W_S/E_S$,
+re-evaluated each iterate) the adjoint load is the summed region weight
+$w=\sum_R(\partial\mathcal J/\partial E_R)\,\mathbf 1_{\Omega_R}$, and the
+discrete-adjoint sensitivity of \S\ref{sec:adj} returns
+$\mathrm d\mathcal J_{\rm wave}/\mathrm d\theta_\ell$; the CS-RBF transpose then gives the
+reduced gradient. The panel is mirror-symmetric about $y=L_y/2$, enforced exactly by a
+symmetric support grid and the antisymmetric projector of \S\ref{sec:rbf}.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Parameters of the multifunctional panel. Band design:
+\texttt{dolfinx\_panel.py --band 44,47,50,53,56 --lam-p 3 --stiff 0.3}; the single-frequency
+design uses \texttt{--band 50} with the same settings.}\label{tab:panelparams}
+\begin{tabular}{@{}ll@{}}
+\toprule
+plate, lamina, damping & $7\times4$; lamina of Table~\ref{tab:params}; $\eta=0.02$\\
+mesh & \texttt{gmsh} conforming, $h=0.055$ ($h/2$ on hole rims)\\
+sponge $(c_0,m)$ & $(80,\,0.6)$ on the right, top and bottom edges\\
+drive & $55\,e^{-80(x-0.15)^2}e^{-((y-2)/0.95)^2}$ ($x$-directed beam)\\
+fastener holes & radius $0.20$ at $(2.55,1.05)$, $(2.55,2.95)$, $(4.35,1.05)$, $(4.35,2.95)$\\
+rim regions $F$ & annuli of width $0.18$ around the holes\\
+payload $P$ & square $(3.2,2.0)\pm0.5$\\
+sensor $S$ & square $(5.9,2.0)\pm0.3$\\
+weights $(W_S,\lambda_P,\lambda_F,\lambda_O)$ & $(1,\,3,\,1,\,0.5)$ (strong shield)\\
+stiffness term & clamped at the four bolt rims, unit downward load over $P$; $w_c=0.3$\\
+band & $\omega\in\{44,47,50,53,56\}$ (single-frequency design: $\omega=50$)\\
+tow limit & $R=0.16$ ($\zeta_{\rm all}=6.25$); achieved $\max|\zeta|=\WPanZmax$\\
+optimizer & MMA, 110 iterations from straight fibers\\
+CS-RBF & mirror-symmetric support grid, as for the lens\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Operational bandwidth.}
+A single-frequency optimum is a single-tone trick. We make the design robust across an
+operational band $[\WPanBLo,\WPanBHi]$ by averaging the objective over $\WPanNF$ sample
+frequencies,
+\begin{equation}
+  \mathcal J=\frac1K\sum_{k=1}^{K}\mathcal J_{\rm wave}(\omega_k;\theta),\qquad
+  \frac{\mathrm d\mathcal J}{\mathrm d\theta_\ell}
+  =\frac1K\sum_k\frac{\mathrm d\mathcal J_{\rm wave}(\omega_k)}{\mathrm d\theta_\ell},
+  \label{eq:panelband}
+\end{equation}
+one forward and one adjoint solve per frequency per iterate. The band optimization earns
+its keep at the band \emph{edges}: a design tuned at the center alone holds the shield and
+delivery across the band but lets the fastener protection degrade toward the edges, which
+the averaged design restores (Figure~\ref{fig:panel}d).
+
+\paragraph{Stiffness.}
+The same orientation is scored for static stiffness. The panel is clamped at the four bolt
+rims (the bolted mount) and carries a service load over the payload footprint; the
+compliance $c=\mathbf f^\top\mathbf u$ and its self-adjoint orientation sensitivity
+$\mathrm d c/\mathrm d\theta_\ell=-\int_{\Omega_\ell}
+\boldsymbol\varepsilon(\mathbf u)^\top(\partial\mathbf D_f/\partial\theta)
+\boldsymbol\varepsilon(\mathbf u)\,\mathrm d\mathbf x$ --- one extra linear solve, reusing
+the static factorization --- enter the objective as $-w_c\,c/c_0$. The fiber angle is largely
+spent on the wave, so with this weight ($w_c=0.3$, an explicit term of the objective) the
+band-optimized layout reaches $\WPanStiff\times$ the straight-fiber stiffness at no added
+mass; pushing stiffness
+harder trades directly against the routing and shielding. A density/topology field would
+decouple stiffness and mass from the wave, but a SIMP soft-void contradicts the
+conforming-void modeling used throughout and is not pursued here.
+
+\section{Numerical verification}\label{app:verify}
+All checks are produced by the scripts \texttt{wt\_\allowbreak verify.py},
+\texttt{cloak\_\allowbreak fine.py}, \texttt{lens\_\allowbreak absorber.py} and
+\texttt{lens\_\allowbreak flux\_\allowbreak control.py}
+in \texttt{examples/\allowbreak analysis/}; Table~\ref{tab:verify} lists the lens checks.
+\begin{itemize}[itemsep=1pt]
+\item \textbf{Mesh.} The lens is re-solved with the optimized field resampled (through
+  $(\cos2\theta,\sin2\theta)$, the field being a smooth CS-RBF field) on structured meshes
+  with $n_x=130$ (the design mesh: about 9 P1 elements per wavelength of the slowest,
+  quasi-shear wave at $\omega=40$, and about 46 per along-fiber qP wavelength), $195$ and
+  $260$. At $\omega=40$, $G$ stays within $\WMeshGmin$--$\WMeshGmax$
+  and $G_\varphi$ within $\WMeshPmin$--$\WMeshPmax$. The cloak, refined from $h=0.045$ to
+  $0.03$, is discussed in Sec.~\ref{sec:cloak}.
+\item \textbf{Damping.} At $\omega=40$ the redirection is independent of the damping
+  ($G_\varphi=\WEtaOneP$, $\WEtaTwoP$, $\WEtaFourP$ for $\eta=0.01$, $0.02$, $0.04$), while
+  the interior growth falls roughly as $1/\eta$ ($\WEtaOneGr$, $\WEtaTwoGr$, $\WEtaFourGr$: a ratio of $1.7$--$2.0$ per doubling of $\eta$), and so
+  does the gain ($\WEtaOneG$, $\WEtaTwoG$, $\WEtaFourG$). This directly confirms that the
+  gain beyond $G_\varphi$ is resonant.
+\item \textbf{Absorbing layer.} The reflection coefficient is fitted on the centerline of
+  the straight-fiber plate, $u_x=Ae^{-ikx}+Be^{ikx}$ with the complex along-fiber qP
+  wavenumber, over $0.5<x<3.3$ (fit residual $\le2\%$); $|R|=|B/A|$ at the sponge entrance.
+  The paper's sponge (width $0.6$) gives $|R|=\WReflMin$--$\WReflMax$ over
+  $\omega\in[35,50]$ (Table~\ref{tab:verify} lists $37.5$--$50$); doubling its width outward, so that the interior is unchanged, gives
+  $|R|\le\WReflThickMax$. Table~\ref{tab:verify} lists the lens metrics for both.
+\item \textbf{Re-optimization with the better absorber.} The lens is re-optimized from
+  straight fibers with the doubled sponge (same objective, MMA settings, 70 iterations and
+  mirror-symmetric CS-RBF field; \texttt{lens\_\allowbreak absorber.py}). At $\omega=40$ it
+  reaches $G=\WAbsG\times=\WAbsP\times$ ($G_\varphi$) $\times\,\WAbsGr\times$ (growth), with
+  $G_\varphi\ge\WAbsMinFortySixty\times$ over $[40,60]$ and a band average of
+  $\WAbsBand\times$, equal to that of the original design evaluated with the same absorber
+  ($\WAbsBandOld\times$). The original design does not exploit the reflections; the
+  reflections raise the redirection metric of any design.
+\item \textbf{Panel mesh.} The band design re-evaluated on a finer conforming mesh
+  ($h=0.04$ instead of $0.055$; \texttt{panel\_\allowbreak mesh\_\allowbreak check.py}) keeps every
+  qualitative result across the band: the sensor at or above $\WPanFineSenMin\times$, the
+  payload at or below $\WPanFinePayMax\times$ and the rims at or below $\WPanFineRimMax\times$
+  their straight-fiber energies. Sensor and payload ratios change by at most
+  $\WPanMeshSenDev\%$; the rim ratios, the smallest energies, change most (by up to
+  $\WPanMeshRimDevAbs$ in absolute terms).
+\item \textbf{Cloak frequency response on the finer mesh.} The cloak re-optimized on $h=0.03$
+  gives $\WCloakFineMinus\times$ and $\WCloakFinePlus\times$ at $\omega=47.5$ and $52.5$
+  against $\WCloakFineReopt\times$ at $50$ (\texttt{cloak\_\allowbreak fine\_\allowbreak band.py}),
+  as narrowband as the design on the coarser mesh.
+\end{itemize}
+\begin{table}[h]
+\centering\footnotesize
+\caption{Numerical verification of the lens (fixed optimized design).}\label{tab:verify}
+\IfFileExists{wt_verify_table.tex}{\input{wt_verify_table.tex}}{\textit{table pending}}
+\end{table}
+

@@ -1,0 +1,159 @@
+\section{Introduction}\label{sec:intro}
+
+\paragraph{Motivation.} Automated fiber placement and continuous-fiber printing lay
+composite tows along curved paths, so the local fiber orientation $\theta(\bm x)$ of a
+part becomes a design field. That field is routinely designed for \emph{static}
+performance: stiffness and strength under a minimum turning-radius constraint, with the
+toolpath carried through the optimization \cite{wong2025}. A carbon/epoxy lamina is
+also strongly \emph{acoustically} anisotropic. Its quasi-longitudinal wave speed
+differs by a factor of almost four between the fiber and transverse directions. This
+raises the possibility that the same manufacturing freedom, with no change of material
+or mass, could steer in-plane elastic waves: concentrate vibration where it is wanted,
+keep it from where it is not, or hide an obstacle from it.
+
+\subsection{Related work and positioning}\label{sec:related}
+\paragraph{Fiber-orientation design.} Curvilinear fiber formats were introduced to raise
+buckling loads and relieve stress concentrations \cite{hyer1991}. Variable-stiffness
+laminates are now designed routinely for stiffness and buckling \cite{gurdal}. Orientation
+is also optimized element-wise in discrete-material and continuous-orientation topology
+optimization \cite{stegmann2005,nomura2015}. Continuous-fiber additive manufacturing
+\cite{matsuzaki2016} has made arbitrary in-plane fiber fields buildable. Wong et al.\
+integrated toolpath generation and a local fiber-curvature limit into
+compliance-minimizing topology optimization \cite{wong2025}. We adopt their CS-RBF
+orientation field and curvature constraint. This work targets \emph{static}, \emph{modal} or
+forced-vibration objectives: the fundamental frequency \cite{abdalla2007}, the natural
+modes of curvilinear-fiber laminates \cite{akhavan2011}, and minimum sound radiation from
+vibrating laminates by discrete orientation selection \cite{niu2010}. Anisotropic composite layouts have also
+been designed to shield, focus and cloak \emph{diffusive} heat flux
+\cite{dede2013smo,dede2013apl}. Olsson and Wall chose fiber directions for exact partial cloaking in the inextensible
+limit \cite{olsson2011}; to our knowledge, fiber-orientation fields have not been
+\emph{optimized}, under the manufacturing constraints of real tows, to steer elastic
+waves.
+
+\paragraph{Wave control by graded media.} Transformation optics \cite{pendry2006} and
+transformation elastodynamics \cite{milton2006,norris2008,brun2009,norrisshuvalov2011} prescribe material
+fields that bend waves arbitrarily. The required media are singular at the inner
+surface of a cloak. With isotropic stiffness the density must become infinite there, and a
+finite-mass cloak needs anisotropic (pentamode) stiffness instead \cite{norris2008}; for
+in-plane elasticity the transform keeps the Navier form but with a tensor that is singular
+at the inner boundary and lacks the minor symmetries of a Cauchy solid
+\cite{brun2009,norrisshuvalov2011}, and in general the transformed equations are not of
+Cauchy-elastic form \cite{milton2006}, so no lamina can realize them. Pre-stressing a
+hyperelastic solid is another route to the required properties
+\cite{parnell2012,norrisparnell2012}. Olsson and Wall showed that inextensible
+fibers in a variable direction give form-invariant equations of motion and exact partial
+cloaking at all frequencies \cite{olsson2011}; this is the idealized limit of unbounded
+anisotropy, which a real lamina does not reach. Ground-plane (carpet) cloaks, which only
+need to mimic a flat reflecting surface, can be broadband with bounded (natural or layered) anisotropy
+\cite{chen2011,popa2011}. In practice, elastic lenses and wave guides
+use graded index fields made from thickness variations \cite{climente2014} or
+phononic crystals \cite{tol2017}, mostly for flexural waves in isotropic plates. Adjoint
+inverse design of plate wave devices has used pinning, mass loading and grading
+\cite{capers2023}. Topology optimization of wave problems is well developed for band
+gaps, acoustics and photonics \cite{sigmund2003,duhring2008,jensen2011}, including
+low-contrast optical cloaks \cite{andkjaer2011} and acoustic cloaks \cite{andkjaer2013}, and the
+single-frequency optima it produces are known to be narrowband, which motivates
+band-averaged objectives \cite{jensen2005,andkjaer2013}. In these approaches the design variable is the
+\emph{amount} of material or its local stiffness, not its \emph{orientation}.
+
+\paragraph{Waves in anisotropic plates.} In anisotropic solids, energy does not travel
+along the wave normal: the group velocity is skewed toward stiff directions
+\cite{auld,rose2014}. In fiber-reinforced composite plates this focuses guided waves into the directions of
+minimum slowness, which are the stiff directions \cite{chapuis2010}. In some anisotropic plates the power flux of slow guided waves can even
+be perpendicular to the wave vector \cite{kiefer2023}. In non-destructive evaluation the skew
+is a nuisance to be compensated. Here it is the mechanism to be designed.
+
+\paragraph{What is new here.} We pose wave control with the fiber orientation as the
+\emph{only} design field: material, thickness and mass are fixed, and the field is
+manufacturable under the tow-curvature limit of \cite{wong2025}. We identify the mechanism,
+energy channeling by group-velocity skew, and test it prediction by prediction. We also
+show that the large single-frequency gains such optimizations produce in finite plates are
+mostly resonant field build-up: an elementary exact identity separates that build-up from
+the steering itself, and, following band-objective practice in wave topology optimization
+\cite{jensen2005,andkjaer2013}, we evaluate every design across a band.
+
+\subsection{Question, hypothesis and predictions}\label{sec:qh}
+\paragraph{Scientific question.}
+\begin{quote}\itshape
+How much control over an in-plane elastic wave field can the fiber orientation of a
+continuous-fiber composite exert, at fixed material and mass and under the tow-curvature
+limit of automated placement? By what mechanism does that control act, and what bounds
+it?
+\end{quote}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figs/wt_schematic.pdf}
+\caption{The three problems and the mechanism. \textbf{(a)}~The lens: a $4\times3$ CFRP plate
+driven by an $x$-directed line source at its left edge, with absorbing layers on the other three
+edges (shaded), the tow paths of the optimized lens, and the objective region (dashed).
+\textbf{(b)}~Why fibers channel energy: the quasi-P slowness curve of the CFRP lamina (fibers
+along $x$). The energy of a plane wave travels along the outward normal to this curve, so a
+wave whose normal is $60^\circ$ off the fibers carries its energy only a few degrees off them
+(Sec.~\ref{sec:theory}). \textbf{(c)}~The cloak: a traction-free void cut from the mesh, the
+design shell in which the orientation may change (dashed), and the far-field observation
+region beyond $R_C$ (dotted). \textbf{(d)}~The multifunctional panel: four fastener holes with
+their rim regions (dotted), the payload P and sensor S, and a Gaussian-beam drive.}
+\label{fig:schematic}
+\end{figure}
+
+\paragraph{Hypothesis.} (Fig.~\ref{fig:schematic}.) In a strongly anisotropic lamina, the energy of a plane wave does
+not travel along its wave normal. It is skewed toward the fiber direction, by up to
+$65^\circ$ for CFRP (Sec.~\ref{sec:theory}). Most wave normals therefore carry their
+energy within a narrow cone about the fibers. We hypothesize that a fiber field acts as a
+field of \emph{energy streamlines}: designing $\theta(\bm x)$ designs where vibration
+energy goes, because energy is channeled along the fibers. Section~\ref{sec:theory}
+makes this precise. It predicts:
+\begin{enumerate}[label=\textbf{W\arabic*},leftmargin=2.4em,itemsep=1pt]
+\item An isotropic plate offers no orientation control at all.
+\item The robust effect of an optimized field is \emph{redirection}: a larger share of
+  the wave energy in the target. Because the energy skew of a homogeneous lamina does
+  not depend on frequency, redirection is broadband. Any gain beyond redirection that
+  appears at the design frequency is field build-up (resonance) and is narrowband.
+\item In the optimized designs, the local energy flux follows the fiber direction.
+\item Redirection grows with the lamina anisotropy, tracking the share of wave normals
+  that the lamina channels toward its fibers.
+\item Energy can follow a curving fiber field only as fast as the field may turn, so the
+  tow-curvature limit bounds the redirection. Canceling the field of a finite scatterer in free space (a full cloak, not a
+  ground-plane cloak) needs the singular anisotropy of transformation media. With the
+  bounded anisotropy of a real lamina it must rely on interference, and we predict it to be
+  narrowband.
+\end{enumerate}
+
+\subsection{Approach and findings}
+\paragraph{Approach.} We solve the genuine two-dimensional orthotropic time-harmonic
+problem: the rotated plane-stress stiffness $\bm D_f(\theta)$ with
+$E_{f1}/E_{f2}=14.6$, light structural damping, and an absorbing sponge. A real
+four-field split runs it on a real-arithmetic \texttt{PETSc}/\texttt{dolfinx} build,
+and automatic discrete adjoints give the orientation sensitivity. The field is
+parametrized by smooth compactly supported radial basis functions and bounded by the
+tow curvature. We optimize a lens and a cloak, then test each prediction by
+decomposing the gains, sweeping frequency, measuring the energy-flux field, varying the
+anisotropy, and tightening the curvature limit. A band-averaged multifunctional panel
+shows how the results translate into a design practice.
+
+\paragraph{Findings in brief.}
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt]
+\item \textbf{W1.} Orientation is exactly inert for an isotropic lamina (a consistency
+  check: this is an identity of the model, verified on the discrete gradient).
+\item \textbf{W2.} The lens's single-frequency target-energy gain of $\WGainForty\times$
+  factorizes exactly into a redirection of $\WRedirForty\times$ (target share
+  $\WPhiZero\%\to\WPhiOne\%$) and a $\WGrowthForty\times$ growth of the whole interior
+  field. Only the redirection survives a frequency change: it stays
+  $\ge\WRedirBandMin\times$ over $\omega\in[37.5,60]$, while the gain falls to
+  $\WGainMinusFive\times$ and $\WGainPlusFive\times$ at $\pm6\%$. With a better absorber the
+  same split holds ($\WAbsG\times=\WAbsP\times$ ($G_\varphi$) $\times\,\WAbsGr\times$ (growth)) at a lower redirection.
+\item \textbf{W3.} At the design frequency, the energy flux in the lens deviates from the
+  local fiber direction by $\WFluxDev^\circ$ on average; in curved fiber fields that were
+  never optimized it deviates by only $\WCtrlDevMin$--$\WCtrlDevMax^\circ$, so channeling is
+  a property of the lamina, not of the design.
+\item \textbf{W4.} Redirection grows with anisotropy.
+\item \textbf{W5, tow curvature.} Redirection is unaffected while the minimum tow radius is at most
+  $\approx0.7$ along-fiber wavelengths; beyond it the best design found declines gradually (to about half by
+  $1.2$ wavelengths).
+\item \textbf{W5, cloak.} The cloak's $\WCloakPeak\times$ far-field reduction is confined to the
+  design frequency ($\WCloakMinus\times$ and $\WCloakPlus\times$ at $\pm5\%$), as
+  predicted.
+\item \textbf{Consequence for design.} Single-frequency gains of finite plates overstate
+  what orientation does. Redirection, band-averaged, is the meaningful measure.
+\end{itemize}

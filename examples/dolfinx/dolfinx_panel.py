@@ -20,8 +20,8 @@ each term normalised to its straight-fiber baseline (O(1), comparable), one adjo
 per solve.  For a BAND we average J over frequencies {w_k}: robustness across the
 band, not a single-tone trick.  The per-frequency transmission curve is reported.
 
-    XDG_CACHE_HOME=/home/jrt/wavetopo/.fenics-cache PYTHONPATH=/home/jrt/wavetopo \
-    /home/jrt/miniforge3/envs/dolfinx_complex/bin/python3 \
+    XDG_CACHE_HOME=.fenics-cache PYTHONPATH=. \
+    python3  # dolfinx (real PETSc) env \
         examples/dolfinx/dolfinx_panel.py
 """
 import numpy as np
